@@ -4,6 +4,8 @@
 
 \usepackage{listings}
 \usepackage{color}
+\usepackage{xcolor}
+\usepackage{url}
  
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -17,9 +19,11 @@
     numberstyle=\tiny\color{codegray},
     stringstyle=\color{codepurple},
     basicstyle=\footnotesize,
+    language=C,
+    morekeywords={*, sequence, instrument, time, performance, in, on, play, always, at, and, except, after, sequentially, times, loop},
     breakatwhitespace=false,         
     breaklines=true,                 
-    captionpos=b,                    
+    captionpos=t,                    
     keepspaces=true,                 
     numbers=left,                    
     numbersep=5pt,                  
@@ -28,12 +32,16 @@
     showtabs=false,                  
     tabsize=2
 }
- 
 \lstset{style=slstyle}
+
+\usepackage{caption}
+\DeclareCaptionFont{white}{\color{white}}
+\DeclareCaptionFormat{listing}{\colorbox{gray}{\parbox{\textwidth}{#3}}}
+\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white}
 
 \title{Especificação da Linguagem}
 \author{Grupo 12, LFA}
-\date{Maio 2018}
+\date{Junho 2018}
 
 \usepackage{natbib}
 \usepackage{graphicx}
@@ -45,10 +53,10 @@
 \tableofcontents
 \vspace{2cm} %Add a 2cm space
 
-\section{Estruturas de Dados (Tipos de Variáveis)} \label{variables}
+\section{Estruturas de dados (e tipos de variáveis)} \label{variables}
 \subsection{Sequências}
 Uma sequência de notas e silêncios pode ser definida, através da palavra chave \texttt{sequence}, como:
-\begin{lstlisting}[language=C]
+\begin{lstlisting} 
 sequence melody = [C C G G A A G R F F E E D D C R]; // os espacos sao opcionais
 \end{lstlisting}
 
@@ -65,14 +73,12 @@ A notas são identificadas pela sua letra:
 \end{itemize}
 A letra \texttt{R} é usada para silêncios (derivada de \textit{Rests}).
 
-Um cardinal (\texttt{\#}) a seguir à letra sobe a respetiva nota por meio tom; um b minúsculo (\texttt{b}) a seguir à letra desce a respetiva nota por meio tom.
+Um cardinal (\texttt{\#}) a seguir à letra sobe a respetiva nota por meio tom; um b minúsculo (\texttt{b}) a seguir à letra desce a respetiva nota por meio tom. Mais que um \texttt{\#} ou \texttt{b} podem ser aplicados a uma nota (por exemplo, \texttt{C\#\#}).
 
-% Limite de # e b? (i.e. so 1 por nota?)
-
-Pode, depois do tom, aparecer um número, entre 1 e 8. Este especifica a oitava a usar, sendo 1 a mais grave e 8 a mais aguda. Por omissão, a quarta oitava é usada.
+Pode, depois do tom, aparecer um número, entre -2 e 8. Este especifica a oitava a usar, sendo -2 a mais grave e 8 a mais aguda. Por omissão, a quarta oitava é usada.
 
 Assim, a sequência já apresentada podia reescrita da seguinte forma:
-\begin{lstlisting}[language=C]
+\begin{lstlisting} 
 sequence melody = [C4 B# G G4 A4 A G R F E#4 Fb4 E D D4 C4 R];
 \end{lstlisting}
 % Outro exemplo a variar oitavas?
@@ -99,13 +105,13 @@ Uma nota pode, no entanto, tocar mais ou menos tempo. Há duas formas de especif
 \subsubsection{Acordes}
 O símbolo \texttt{|} é usado para tocar várias notas em simultâneo, numa só sequência.
 Para tocar o acorde de Dó maior (C, E e G), na quarta oitava, podíamos então escrever:
-\begin{lstlisting}[language=C]
+\begin{lstlisting} 
 sequence intro = [C|E|G];
 \end{lstlisting}
 
 \subsection{Performances}
 A associação duma sequência musical com um instrumento representa um terceiro tipo de dados, uma \texttt{performance}:
-\begin{lstlisting}[language=C]
+\begin{lstlisting} 
 sequence twinkle = [CC GG AA G{2} FF EE DD C{2}];
 performance p = twinkle on guitar;
 
@@ -117,24 +123,20 @@ performance p = [CC GG AA G{2} FF EE DD C{2}] on guitar;
 Um marco de tempo é uma variável que referencia um dado momento entre o início e o fim, inclusivé, da peça musical. \texttt{start} é um marco de tempo pré-definido, representando o início da peça. 
 \subsubsection{Funções auxiliares}
 A função auxiliar \texttt{duration}, aceita um parâmetro, do tipo sequence ou performance, e devolve um time igual à sua duração.
-\begin{lstlisting}[language=C]
+\begin{lstlisting} 
 sequence intro = [R{4} C{4} G{4} C5{3.5} E|G|C5{.5} Eb|G|C5{8} C{4} G{4}]; // Strauss - Also Sprach Zarathustra - Intro (https://www.8notes.com/scores/7213.asp)
 time endIntro = start + duration(intro);
 \end{lstlisting}
 
 \subsection{Inteiros}
-Inteiros também são suportados:
-\begin{lstlisting}[language=C]
+Inteiros são também suportados:
+\begin{lstlisting} 
 int octave = 4;
 \end{lstlisting}
 
-\subsection{Arrays (TODO)}
-Um array é uma coleção de várias instâncias da mesma estrutura de dados. Suportam-se arrays de sequências, instrumentos e performances.
-
-\section{Geração de aúdio} \label{audio}
 \subsection{Instrumentos}
 Para tocar sequência musical é, naturalmente, necessário especificar que instrumento deve ser utilizado. Assim, para tocar \textit{Twinkle, Twinkle, Little Star} com uma piano, teríamos:
-\begin{lstlisting}[language=C]
+\begin{lstlisting} 
 // definir a sequencia
 sequence twinkle =  [CC GG AA G{2} FF EE DD C{2}];
 
@@ -149,7 +151,7 @@ play twinkle on piano;
 play [CC GG AA G{2} FF EE DD C{2}] on piano;
 \end{lstlisting}
 
-Vários instrumentos podem ser usados para tocar uma dada sequência. No entantom nem todos suportam o mesmo registo (por exemplo, um piano suporta uma maior gama de notas que um violino). Se a um instrumento é dada uma sequência que este não suporta, as notas não suportadas são \textit{aparadas}, sendo substituídas pela nota mais próxima que é suportada. 
+Vários instrumentos podem ser usados para tocar uma dada sequência. No entanto, nem todos suportam o mesmo registo (por exemplo, um piano suporta uma gama maior de notas que um violino). Se a um instrumento é dada uma sequência que este não suporta, as notas não suportadas são substituídas pela nota mais próxima que é suportada. % doable?
 
 Os instrumentos disponíveis são os seguintes:
 \begin{itemize}
@@ -160,8 +162,52 @@ Os instrumentos disponíveis são os seguintes:
     \item \texttt{bass};
     \item \texttt{drums}.
 \end{itemize}
-A criação de novos instrumentos é suportada, estando detalhada na secção \ref{config}.
+A criação de novos instrumentos é suportada, num ficheiro externo de tipo auxiliar, estando detalhada na secção \ref{config}. No ficheiro de tipo principal, não é possível definir ou redefinir novos instrumentos, sendo apenas possível usá-los como constantes pré-definidas.
 
+\subsection{Arrays}
+Um array é uma coleção de várias instâncias da mesma estrutura de dados. Suportam-se arrays de sequências, instrumentos e performances.
+
+Um array pode ser definido de duas formas distintas:
+\begin{lstlisting} 
+// criar um array com 4 intrumentos - e necessario usar a palavra chave instrument para indicar que e um array de instrumentos
+instrument[] band = [piano, guitar, bass, drums];
+
+// outra forma de definir o mesmo array
+instrument[] band = piano and guitar and bass and drums;
+
+// criar um array com 3 performances
+performance[] p = [
+    [D{1.5} D{0.5}   E  D G F#{2}] on piano, 
+    [D{1.5} D{0.5}   E  D A G{2}] on bass,
+    [D{1.5} D{0.5}   D5 B G F# E] on guitar];
+\end{lstlisting} 
+
+Pode usar-se um array para criar outro. A palavra chave \texttt{and} anexa ao fim do array já existente o elemento ou elementos dados.  A palavra chave \texttt{except} retira o elemento ou elementos dados do array, se lá estiverem presentes.
+
+\begin{lstlisting} 
+instrument[] band = [piano, guitar, bass, drums];
+
+// definir arrrays a partir de outros arrays
+instrument[] new_band = band and violin;
+instrument[] left_over_band = band except bass;
+\end{lstlisting} 
+
+Para se aceder a um instrumento, a notação de parêntises retos, começando a contar no 0, é usada. A notação de intervalo, com dois pontos (\texttt{:}) é também suportada.
+\begin{lstlisting} 
+performance[] p = [
+    [D{1.5} D{0.5}   E  D G F#{2}] on piano, 
+    [D{1.5} D{0.5}   E  D A G{2}] on bass,
+    [D{1.5} D{0.5}   D5 B G F# E] on guitar];
+    
+// aceder ao primeiro elemento
+performance intro = p[0];
+
+// exemplo da notacao de intervalo
+performance[] q = p[0:1] and [C5{1.5} C5{0.5} B G A G{3}] on violin and p[2:];
+\end{lstlisting}
+
+
+\section{Geração de aúdio} \label{audio}
 \subsection{Modos de reprodução}
 No exemplo anterior, não foi especificado quando começar a tocar a sequência. Por omissão, a sequência começa a ser tocada no início da peça (por outras palavras, no tempo 0). Este tempo também pode ser obtido através da palavra chave \texttt{start}.
 
@@ -170,7 +216,7 @@ Averiguemos os diferentes modos de reprodução:
 \subsubsection{Simultâneo}
 Por omissão, todas as sequências são tocadas começando no tempo 0, ou \texttt{start}. Se há mais que uma sequência a ser tocada, todas as sequências são tocadas em paralelo.
 
-\begin{lstlisting}[language=C]
+\begin{lstlisting} 
 play [CC GG AA G{2} FF EE DD C{2}] on piano;
 
 // e equivalente, em termos do som produzido no ficheiro final, a
@@ -179,7 +225,7 @@ play [RR GG AA RR RF ER RD RR] on piano;
 \end{lstlisting}
 
 Um outro exemplo de reprodução simultânea é o seguinte, que separa melodia e harmonia em duas performances diferentes:
-\begin{lstlisting}[language=C]
+\begin{lstlisting} 
 // definir sequencias
 sequence twinkle = [CC GG AA G{2} FF EE DD C{2}];
 sequence twinkle_bass = [C|E|G{2} F|A|C{2} C|E|G{4} F|A|C C|E|G G|B|D C|E|G];
@@ -191,7 +237,7 @@ play twinkle_bass on guitar;
 
 \subsubsection{Sequencial}
 A palavra chave \texttt{after} indica que uma dada performance deve começar imediatamente após o fim doutra.
-\begin{lstlisting}[language=C]
+\begin{lstlisting} 
 // definir sequencias
 sequence first_line = [CC GG AA G{2}];
 sequence second_line = [FF EE DD C{2}];
@@ -209,7 +255,7 @@ Num exemplo mais avançado, onde a sequência de referência (no exemplo acima, 
 
 Para obter outros comportamentos, a palavra chave \texttt{always} pode ser utilizada.
 
-\begin{lstlisting}[language=C]
+\begin{lstlisting} 
 // definir sequencias
 sequence first_line = [CC GG AA G{2}];
 sequence second_line = [FF EE DD C{2}];
@@ -230,7 +276,7 @@ after second_line play first_line;
 
 \subsubsection{Usando Marcos de Tempo}
 A palavra chave \texttt{at} específica um Marco de Tempo específico no qual a performance deve começar, independentemente de haver outras performances a decorrer nesse momento. 
-\begin{lstlisting}[language=C]
+\begin{lstlisting} 
 performance verse = [CC E{2} GG B{2} C5C5 GG C{4}] on violin;
 performance chorus = [GAGA ABBA GEGE EBBE] on violin;
 
@@ -243,7 +289,7 @@ at chorusStart play chorus;
 \end{lstlisting}
 
 Uma performance pode ser tocada em mais que um momento. Para isso, além da palavra chave \texttt{at}, utiliza-se também a palavra chave  \texttt{and}.
-\begin{lstlisting}[language=C]
+\begin{lstlisting} 
 performance verse = [CC E{2} GG B{2} C5C5 GG C{4}] on violin;
 performance chorus = [GAGA ABBA GEGE EBBE] on violin;
 
@@ -257,7 +303,7 @@ at chorusStart and otherTimeChorusStarts play chorus;
 
 \subsubsection{Repetição}
 Há duas palavras chaves que permitem a repetição: o uso da palavra chave \texttt{times} permite repetir uma performance 0 ou mais vezes. \texttt{loop} permite repetir uma performance até ao fim da peça  (\texttt{loop} = \texttt{play} $\infty$ \texttt{times}).
-\begin{lstlisting}[language=C]
+\begin{lstlisting} 
 performance verse = [CC E{2} GG B{2} C5C5 GG C{4}] on violin;
 performance chorus = [GAGA ABBA GEGE EBBE] on violin;
 performance bass = [G|B|D{4} A|D|F#{4} G|B|D{4} A|D|F#{4}] on bass;
@@ -268,33 +314,114 @@ time chorusStart = start + 2*duration(verse);
 play verse 2 times on piano;
 at chorusStart play chorus;
 
-loop bass; // repeta ate ao fim da musica
+loop bass; // repete ate ao fim da musica
 \end{lstlisting}
 
-\subsection{Uso de arrays (TODO)}
-Palavras chaves all e sequentially
-\begin{lstlisting}[language=C]
-// perform
-play sequentially all melody_lines // , back-to-back, consecutively
-repeat_times times on piano;
+\subsection{Uso de arrays}
+Um array pode ser reproduzido de forma simultânea (forma utilizada por omissão) ou sequencialmente (através do uso da palavra chave \texttt{sequentially}).
 
+\begin{lstlisting} 
+// exemplo com sequencias
+sequence[] melody_lines = [
+    [D{1.5} D{0.5}   E  D G F#{2}], 
+    [D{1.5} D{0.5}   E  D A G{2}],
+    [D{1.5} D{0.5}   D5 B G F# E],
+    [C5{1.5} C5{0.5} B  G A G{3}]];
 
-(AFTER _ (ALWAYS?) | AT _ (AND _)* )? PLAY (SEQ? ALL)? _ (INT TIMES)? ON INST;
-
+play melody_lines /*sequentially*/ on piano; // descomentar sequentially para tocar melody_lines de forma sequencial
 \end{lstlisting}
 
-\subsection{Modulações (TODO)}
+\begin{lstlisting} 
+// exemplo com instrumentos
+instrument[] band = [piano, guitar, bass, drums];
+
+play melody_lines[0] /*sequentially*/ on band;
+\end{lstlisting}
+
+\begin{lstlisting} 
+// exemplo com performances
+performance[] perfors = [
+    [D{1.5} D{0.5}   E  D G F#{2}] on piano, 
+    [D{1.5} D{0.5}   E  D A G{2}] on bass,
+    [D{1.5} D{0.5}   D5 B G F# E] on guitar];
+    
+play perfors /*sequentially*/;
+\end{lstlisting}
+No entanto, não é possível reproduzir um array de sequências num array de instrumentos. Isto é, por exemplo, não é possível fazer o seguinte:
+
+\begin{lstlisting} 
+// definir array de sequencias
+sequence[] melody_lines = [
+    [D{1.5} D{0.5}   E  D G F#{2}], 
+    [D{1.5} D{0.5}   E  D A G{2}],
+    [D{1.5} D{0.5}   D5 B G F# E],
+    [C5{1.5} C5{0.5} B  G A G{3}]];
+
+// definir array de instrumentos
+intrument[] band = [piano, guitar, bass, drums];
+
+play melody_lines/*sequentially*/ on band; // ilegal!!
+\end{lstlisting}
+
+Para se obter este tipo de resultados, têm que ser utilizadas instruções de repetição (ver secção \ref{flux}).
+
+% (AFTER _ (ALWAYS?) | AT _ (AND _)* )? PLAY _ SEQUENTIALLY? (INT TIMES)? ON INST;
+
+\subsection{Modulações}
+Podem obter-se versões modificadas de sequências ou performances através das funções de modulação. Estas funções devolvem uma nova sequência ou performance, alterada em algum aspeto (tom ou tempo) em relação a uma dada sequência  ou performance original, respetivamente.
 \subsubsection{de Tom}
-Permitir slurring (mudança dinâmica) ou só pitch change (mudança "estática")? (Depende da biblioteca usada no backend)
+Pode mudar-se o tom de uma dada sequência ou performance de duas formas diferentes: \texttt{changeTone()} e \texttt{changeOctave()}. \texttt{changeTone()} aceita dois parâmetros - a sequência ou performance a alterar, e quantos meios-tons\footnote{Doze meios-tons constituem uma oitava.} deve subir ou descer; \texttt{changeOctave()} aceita, de forma semelhante, dois parâmetros - a sequência ou performance a alterar, e quantas oitavas deve subir ou descer.
+
+\begin{lstlisting} 
+// sequencia original
+sequence s = [D{1.5} D{0.5} E D G F#{2}];
+
+sequence s1 = changeOctave(s, -3); // diminuir a oitava por 3
+// equivalente a dizer:
+//    sequence s1 =  [D1{1.5} D1{0.5} E1 D1 G1 F#1{2}];
+
+// mudar oitava da sequencia
+sequence s5 = changeOctave(s, 1); // aumentar a oitava por 1
+// equivalente a dizer:
+//    sequence s5 =  [D5{1.5} D5{0.5} E5 D5 G5 F#5{2}];
+// ou a dizer:
+//    sequence s5 =  changeTone(s, 12);
+\end{lstlisting}
+\begin{lstlisting} 
+// performance original
+performance p = [D{1.5} D{0.5} E D G F#{2}] on bass;
+
+play changeTone(p, 5);
+// equivalente a:
+//    play  [F#{1.5} F#{0.5} G# F# B A#{2}] on bass;
+\end{lstlisting}
+
 \subsubsection{de Tempo}
-Acelerar ou desacelarar o BPM da muúsica, temporariamente ou nao
+Pode mudar-se o tempo (ou seja, a velocidade) de um dada sequência ou performance através da função \texttt{changeTempo()}. Esta função aceita dois parâmetros - a sequência ou performance a alterar, e um número maior que 0 que representa a relação entre o novo tempo e o tempo original. A nova velocidade é dada por \texttt{fator * tempo original}.\footnote{Assim, um número maior que 1 acelera a velocidade, e um número menor que 1 reduz a velocidade.}
+\begin{lstlisting} 
+// performance original
+performance p = [D{1.5} D{0.5} E D G F#{2}] on bass;
+
+play changeTempo(p, 5); // toca a sequencia 5x mais rapido (cada nota dura 1/5 do seu tempo original)
+// equivalente a:
+//    play  [D{.3} D{0.1} E{.2} D{.2} G{.2} F#{.4}] on bass;
+\end{lstlisting}
+
+\begin{lstlisting} 
+// performance original
+performance p = [D{1.5} D{0.5} E D G F#{2}] on bass;
+
+play changeTempo(changeTone(p, 5), 5); // toca a sequencia 5x mais rapido, com todas as notas 5 meios-tons mais agudas
+// equivalente a:
+//    play  [F#{.3} F#{0.1} G#{.2} F#{.2} B{.2} A#{.4}] on bass;
+\end{lstlisting}
 
 \section{Interação com o exterior} \label{exterior}
 \subsection{Estruturas de dados auxiliares}
 \subsubsection{Strings}
 Strings são sequências de caracteres, números e símbolos delimitadas por aspas (\texttt{"}). Dentro duma string, aspas podem ser escapadas através de \texttt{\textbackslash"}.
 
-Não existe um tipo de dados String explícito, sendo este usado apenas como paraâmetro opcional para funções de I/O.
+Não existe um tipo de dados String explícito, sendo este usado apenas como parâmetro opcional para funções de I/O.
 \subsection{getInt( string? )}
 \texttt{getInt()} permite obter um inteiro através do \textit{Standard In}. 
 
@@ -305,23 +432,26 @@ Opcionalmente, pode ser passada uma String, que será impressa antes de aguardar
 
 Opcionalmente, pode ser passada uma String, que será impressa antes de aguardar a resposta do utilizador (uma String de \textit{prompt}).
 
-% \subsection{putString(string)}
-% Imprime a string dada através do \textit{Standard Out}. Strings são sequências de caracteres, números e símbolos delimitadas por aspas (\texttt{"}). Dentro duma string, aspas podem ser escapadas através de \texttt{\textbackslash"}.
 
-% Não existe um tipo de dados String explícito, sendo este usado para esta função apenas. % mudar?
-
-% File IO?
-
-\section{Controlo de fluxo (TODO)} \label{flux}
+\section{Controlo de fluxo} \label{flux}
 \subsection{Instruções condicionais}
 \subsubsection{if}
-\begin{lstlisting}[language=C]
-if :
+As palavras chave \texttt{if}, \texttt{else if} e \texttt{else} permitem testar condições. Os operadores suportados numa condição são os de igualdade (\texttt{==}), desigualdade (\texttt{!=}), menor (\texttt{<}), maior (\texttt{>}), menor ou igual (\texttt{<=}), e maior ou igual (\texttt{>=}).
+\begin{lstlisting} 
+sequence s = getSequence("Enter a sequence: ");
+
+if duration(s) > 5:
+    play s on piano;
+else if duration(s) > 2:
+    play s on cello;
+else:
+    play s on guitar;
 \end{lstlisting}
 
 \subsubsection{with ... choose}
-\begin{lstlisting}[language=C]
-with getInt() choose:
+As palavras chave \texttt{with}, \texttt{choose}, \texttt{case} e \texttt{default} permitem testar a igualdade entre uma dada variável e um conjunto de valores. 
+\begin{lstlisting} 
+with getInt("Pick a number: ") choose:
     case 1:
         play seq on violin;
     case 2:
@@ -331,26 +461,89 @@ with getInt() choose:
 \end{lstlisting}
 
 \subsection{Intruções de repetição}
-loops - Faz sentido ter loops? Talvez forEach de instrumentos?
+\subsubsection{for}
+As palavras chave \texttt{for} e \texttt{in} permitem definir instruções de repetição, ou seja, permitem que um dado código seja executado múltiplas vezes, iterando sobre todos os elementos de um dado array.
+\begin{lstlisting} 
+// instrumentos 
+instrument[] band = [piano, guitar, bass, drums];
+for instrument inst in band:
+    play [ABCDCBA] on inst;
 
-Ter arrays? De sequencias, instrumentos(?), times e performances?
+// sequencias
+sequence[] sequences = [
+    [D{1.5} D{0.5}   E  D G F#{2}], 
+    [D{1.5} D{0.5}   E  D A G{2}],
+    [D{1.5} D{0.5}   D5 B G F# E],
+    [C5{1.5} C5{0.5} B  G A G{3}]];
+    
+for sequence seq in sequences:
+    play seq on piano;
+    
+// performances
+performance[] perfors = [
+    [D{1.5} D{0.5}   E  D G F#{2}] on piano, 
+    [D{1.5} D{0.5}   E  D A G{2}] on bass,
+    [D{1.5} D{0.5}   D5 B G F# E] on guitar];
+    
+time t = start;
+for performance perfor in perfors:
+    at t play perfor;
+    t = t + duration(perfor);
 
+// marcos de tempo
+start_times = [start, 1, 3, 7];
+for time t in start_times:
+    at t play [C1 E1 G1 E1] on piano;
+\end{lstlisting}
 
-\section{Configurações (TODO)} \label{config}
+Caso se pretenda iterar sobre algum código um dado número de vezes, sem haver correspondência direta entre esse número e o conteúdo de um dado array, pode usar-se inteiros num dado intervalo, usando a função \texttt{range(a,b)}, que devolve um array de inteiros de tipo \texttt{[a, a+1, ..., b-2, b-1]}:
+\begin{lstlisting} 
+instrument[] band = [piano, guitar, bass, drums];
+sequence[] sequences = [
+    [D{1.5} D{0.5}   E  D G F#{2}], 
+    [D{1.5} D{0.5}   E  D A G{2}],
+    [D{1.5} D{0.5}   D5 B G F# E],
+    [C5{1.5} C5{0.5} B  G A G{3}]];
+
+time t = start;
+for int i in range(0:4):
+    at t play sequences[i] on band[i];
+    t = t + duration(sequences[i]);
+\end{lstlisting}
+
+\section{Configurações (ficheiro auxiliar)} \label{config}
+Um ficheiro do tipo principal (ficheiros com extensão \texttt{.principal}) suporta um todas as operações descritas até este ponto. 
+Várias configurações podem ser feitas no ficheiro auxiliar (ficheiros com extensão \texttt{.auxiliar}). Nesta secção, vamos abordar as diferentes configurações que podem ser definidas através do ficheiro auxiliar.
 \subsection{BPM (Beats Per Minute)}
+\texttt{BPM} é uma palavra reservada\footnote{BPM não pode ser usado como nome de uma variável.} usada para configurar o \textit{tempo} da música. A configuração deve ser feita no ficheiro de configuração, mas é possível reescrevê-la no ficheiro principal (o que define a música a gerar).
+\begin{lstlisting} 
+BPM = 160;
+\end{lstlisting}
+
 \subsection{Especificação de (novos) instrumentos}
-(Depende da biblioteca externa...)
+O formato \textit{midi} suporta 128 instrumentos diferentes\footnote{Para obter mais informação sobre os diferentes instrumentos disponíveis, ver \url{http://www.ccarh.org/courses/253/handout/gminstruments/}.}.
+
+É possível criar novos instrumentos associando a uma palavra um número, através da palavra chave \texttt{instrument}. O nome dado ao instrumento deixa de poder ser usado como nome de variável.
+
+\begin{lstlisting} 
+// definir dois novos intrumentos
+instrument strings = 49;
+instrument synth1 = 81;
+\end{lstlisting}
+
+Os instrumentos já definidos estão associados aos seguintes códigos: 1(\texttt{piano}), 25(\texttt{guitar}), 41(\texttt{violin}), 43(\texttt{cello}), 44(\texttt{bass}), e 119(\texttt{drums}). 
+
+% \subsection{File IO}
 
 
 \section{Exemplos (TODO)} \label{example}
 \subsection{Parabéns}
-\begin{lstlisting}[language=C]
-// Happy Birthday
-// override BPM setting
-// BPM = 160;
+\begin{lstlisting}[caption=parabens.auxiliar]
+// set default BPM setting
+BPM = 160;
+\end{lstlisting}
 
-// have time signature?
-
+\begin{lstlisting}[caption=parabens.principal]
 // get user input
 int repeat_times = getInt("Number of repetitions: ");
 
@@ -362,16 +555,16 @@ sequence[] melody_lines = [
     [C5{1.5} C5{0.5} B  G A G{3}]];
 
 // perform
-play sequentially all melody_lines repeat_times times on piano;
+play melody_lines sequentially repeat_times times on piano;
 \end{lstlisting}
 
 \subsection{Looping machine like thingy?}
-\begin{lstlisting}[language=C]
+\begin{lstlisting} 
 // tipo, add looping track, add looping track, etc.
 \end{lstlisting}
 
 \subsection{Mais exemplos}
-\begin{lstlisting}[language=C]
+\begin{lstlisting} 
 \end{lstlisting}
 
 % \bibliographystyle{plain}
