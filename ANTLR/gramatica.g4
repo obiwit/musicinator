@@ -12,14 +12,14 @@ instructions: sequence
 		| BLOCK_COMMENT
 		;
 
-play: 	  'play' (WORD | stringNotes)  ('on' INSTRUMENTS)?';';	
-performance: 'performance' WORD '=' (WORD | stringNotes)  'on' INSTRUMENTS';' ;
+play: 	  'play' (WORD | stringNotes)  ('on' WORD)?';';	
+performance: 'performance' WORD '=' ( ((WORD | stringNotes)  ('on' WORD))| (WORD '[' INT+ ']') )';' ;
 sequence: 'sequence' WORD '='  stringNotes ';';
-performanceArray: 'performance' '[]' WORD '=' (('['stringNotes']')) ';' ;
-instrumentsArray: 'instrument' '[]' WORD '=' (('['(INSTRUMENTS (','INSTRUMENTS)* )*']') | (INSTRUMENTS ('and' INSTRUMENTS)* )* ) ';' ;
+performanceArray: 'performance' '[]' WORD '=' (('['(((WORD | stringNotes)  ('on' WORD) ) |(WORD | stringNotes)  ('on' WORD) ',')*']')) ';' ;
+instrumentsArray: 'instrument' '[]' WORD '=' (('['(WORD (','WORD)* )*']') | (WORD (('and'|'except') WORD)* )* ) ';' ;
 
 stringNotes : '[' (SOUND)* ']'  ;
-INSTRUMENTS: 'piano' | 'guitar' | 'violin' | 'cello' | 'bass' | 'drums' ;
+//INSTRUMENTS: 'piano' | 'guitar' | 'violin' | 'cello' | 'bass' | 'drums' ;
 
 	
 SOUND: (((NOTE OCTAVE?) | 'R' ) DOUBLE?) ('|' SOUND)*;
@@ -27,7 +27,7 @@ NOTE: LETTER ('#'|'b')* ;
 LETTER: [A-G];
 
 
-
+INT: DIGIT;
 OCTAVE: ('-'[1-2] | [0-8]);
 DOUBLE: ('{' ((DIGIT+ ('.' DIGIT*)?) | ('.' DIGIT+) )'}') | ('\'')+;
 fragment DIGIT: [0-9];

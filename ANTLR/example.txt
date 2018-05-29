@@ -25,3 +25,20 @@ instrument [] band = piano and guitar and bass and drums ;
 play twinkle on piano;
 //ou definindo a performance e a sequencia implicitamente
 play [CC GG AA G{2} FF EE D D C{2} ] on piano ;
+
+// criar um array com 3 performances
+performance [] p = [
+	[D{1.5} D{0.5} E D G F#{2}] on piano ,
+	[D{1.5} D{0.5} E D A G{2}] on bass ,
+	[D{1.5} D{0.5} D5 B G F# E] on guitar] ;
+
+// definir arrrays a partir de outros arrays
+instrument [] new_band = band and violin ;
+instrument [] left_over_band = band except bass;
+
+// aceder ao primeiro elemento
+performance intro = p[0] ;
+	
+	
+	
+	
