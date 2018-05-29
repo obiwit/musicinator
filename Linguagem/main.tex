@@ -20,7 +20,7 @@
     stringstyle=\color{codepurple},
     basicstyle=\footnotesize,
     language=C,
-    morekeywords={*, sequence, instrument, time, performance, in, on, play, always, at, and, except, after, sequentially, times, loop},
+    morekeywords={*, sequence, instrument, time, performance, in, on, play, always, at, and, except, after, sequentially, times, loop, number},
     breakatwhitespace=false,         
     breaklines=true,                 
     captionpos=t,                    
@@ -128,10 +128,10 @@ sequence intro = [R{4} C{4} G{4} C5{3.5} E|G|C5{.5} Eb|G|C5{8} C{4} G{4}]; // St
 time endIntro = start + duration(intro);
 \end{lstlisting}
 
-\subsection{Inteiros}
-Inteiros são também suportados:
+\subsection{Números}
+Números (inteiros ou reais) são também suportados:
 \begin{lstlisting} 
-int octave = 4;
+number num = 4;
 \end{lstlisting}
 
 \subsection{Instrumentos}
@@ -142,13 +142,6 @@ sequence twinkle =  [CC GG AA G{2} FF EE DD C{2}];
 
 // utilizando performances
 performance p = twinkle on piano;
-play p;
-
-// ou, alternativamente, definindo a performance implicitamente
-play twinkle on piano;
-
-// ou definindo a performance e a sequencia implicitamente
-play [CC GG AA G{2} FF EE DD C{2}] on piano;
 \end{lstlisting}
 
 Vários instrumentos podem ser usados para tocar uma dada sequência. No entanto, nem todos suportam o mesmo registo (por exemplo, um piano suporta uma gama maior de notas que um violino). Se a um instrumento é dada uma sequência que este não suporta, as notas não suportadas são substituídas pela nota mais próxima que é suportada. % doable?
@@ -169,7 +162,7 @@ Um array é uma coleção de várias instâncias da mesma estrutura de dados. Su
 
 Um array pode ser definido de duas formas distintas:
 \begin{lstlisting} 
-// criar um array com 4 intrumentos - e necessario usar a palavra chave instrument para indicar que e um array de instrumentos
+// criar um array com 4 instrumentos - e necessario usar a palavra chave instrument para indicar que e um array de instrumentos
 instrument[] band = [piano, guitar, bass, drums];
 
 // outra forma de definir o mesmo array
@@ -192,7 +185,7 @@ instrument[] new_band = band and violin;
 instrument[] left_over_band = band except bass;
 \end{lstlisting} 
 
-Para se aceder a um instrumento, a notação de parêntises retos, começando a contar no 0, é usada. A notação de intervalo, com dois pontos (\texttt{:}) é também suportada.
+Para se aceder a um instrumento, a notação de parênteses retos, começando a contar no 0, é usada. A notação de intervalo, com dois pontos (\texttt{:}) é também suportada.
 \begin{lstlisting} 
 performance[] p = [
     [D{1.5} D{0.5}   E  D G F#{2}] on piano, 
@@ -208,6 +201,22 @@ performance[] q = p[0:1] and [C5{1.5} C5{0.5} B G A G{3}] on violin and p[2:];
 
 
 \section{Geração de aúdio} \label{audio}
+\subsection{Reprodução}
+Para reproduzir uma performance, utiliza-se a palavra chave \texttt{play}:
+\begin{lstlisting} 
+// definir uma performance
+sequence twinkle =  [CC GG AA G{2} FF EE DD C{2}];
+performance p = twinkle on piano;
+
+// reproduzir a performance
+play p;
+
+// alternativamente, definir a performance implicitamente
+play twinkle on piano;
+
+// ou definir a performance e a sequencia implicitamente
+play [CC GG AA G{2} FF EE DD C{2}] on piano;
+\end{lstlisting} 
 \subsection{Modos de reprodução}
 No exemplo anterior, não foi especificado quando começar a tocar a sequência. Por omissão, a sequência começa a ser tocada no início da peça (por outras palavras, no tempo 0). Este tempo também pode ser obtido através da palavra chave \texttt{start}.
 
@@ -280,10 +289,9 @@ A palavra chave \texttt{at} específica um Marco de Tempo específico no qual a 
 performance verse = [CC E{2} GG B{2} C5C5 GG C{4}] on violin;
 performance chorus = [GAGA ABBA GEGE EBBE] on violin;
 
-time chorusStart = start + 2*duration(verse);
+time chorusStart = start + duration(verse);
 
 // tocar performances
-play verse;
 play verse;
 at chorusStart play chorus;
 \end{lstlisting}
@@ -496,7 +504,7 @@ for time t in start_times:
     at t play [C1 E1 G1 E1] on piano;
 \end{lstlisting}
 
-Caso se pretenda iterar sobre algum código um dado número de vezes, sem haver correspondência direta entre esse número e o conteúdo de um dado array, pode usar-se inteiros num dado intervalo, usando a função \texttt{range(a,b)}, que devolve um array de inteiros de tipo \texttt{[a, a+1, ..., b-2, b-1]}:
+Caso se pretenda iterar sobre algum código um dado número de vezes, sem haver correspondência direta entre esse número e o conteúdo de um dado array, pode usar-se números num dado intervalo, usando a função \texttt{range(a,b)}, que devolve um array de inteiros de tipo \texttt{[a, a+1, ..., b-2, b-1]}:
 \begin{lstlisting} 
 instrument[] band = [piano, guitar, bass, drums];
 sequence[] sequences = [
@@ -506,7 +514,7 @@ sequence[] sequences = [
     [C5{1.5} C5{0.5} B  G A G{3}]];
 
 time t = start;
-for int i in range(0:4):
+for number i in range(0:4):
     at t play sequences[i] on band[i];
     t = t + duration(sequences[i]);
 \end{lstlisting}
