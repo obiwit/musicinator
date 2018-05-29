@@ -1,0 +1,44 @@
+sequence first1_sequence =[C#8{2} A Cb Db{3.1} B# C8 D{3} C#5'  E#{4} F5{3} F4'''' ] ;
+// aegfwrgvfsddgverfsdxz
+/*avnrwoibvpr */
+sequence intro = [C|E|G];
+
+play tomas;
+
+sequence twinkle = [CC GG AA G{2} FF EE DD C{2}];
+performance p = twinkle on guitar ;
+
+sequence intro = [R{4}C{4}G{4} C5{3.5}E|G#'|C5{.5}Eb|G'''|C5{8}C{4}G{4}];
+
+// ou , alternativamente, definindo a sequencia implicitamente
+performance pp = [C''C GG A'A' G{2} FF EE DD C{2} ] on guitar ;
+
+// criar um array com 4 instrumentos − e necessario usar a palavra 
+// chave instrument para indicar que e um array de instrumentos
+instrument [] band = [ piano , guitar, bass, drums];
+instrument [] band = [ ];
+
+// outra forma de definiro mesmo array
+instrument [] band = piano and guitar and bass and drums ;
+
+//ou , alternativamente , definindo a performance implicitamente
+play twinkle on piano;
+//ou definindo a performance e a sequencia implicitamente
+play [CC GG AA G{2} FF EE D D C{2} ] on piano ;
+
+// criar um array com 3 performances
+performance [] p = [
+	[D{1.5} D{0.5} E D G F#{2}] on piano ,
+	[D{1.5} D{0.5} E D A G{2}] on bass ,
+	[D{1.5} D{0.5} D5 B G F# E] on guitar] ;
+
+// definir arrrays a partir de outros arrays
+instrument [] new_band = band and violin ;
+instrument [] left_over_band = band except bass;
+
+// aceder ao primeiro elemento
+performance intro = p[0] ;
+	
+	
+	
+	
