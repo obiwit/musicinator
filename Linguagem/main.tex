@@ -366,7 +366,7 @@ sequence[] melody_lines = [
     [C5{1.5} C5{0.5} B  G A G{3}]];
 
 // definir array de instrumentos
-intrument[] band = [piano, guitar, bass, drums];
+instrument[] band = [piano, guitar, bass, drums];
 
 play melody_lines/*sequentially*/ on band; // ilegal!!
 \end{lstlisting}
@@ -526,7 +526,7 @@ O formato \textit{midi} suporta 128 instrumentos diferentes\footnote{Para obter 
 É possível criar novos instrumentos associando a uma palavra um número, através da palavra chave \texttt{instrument}. O nome dado ao instrumento deixa de poder ser usado como nome de variável.
 
 \begin{lstlisting} 
-// definir dois novos intrumentos
+// definir dois novos instrumentos
 instrument strings: 49;
 instrument synth1: 81;
 \end{lstlisting}
