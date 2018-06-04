@@ -18,11 +18,13 @@ instructions
 		;
 
 sequence
-		: 'sequence' WORD '='  stringNotes (('+'|'-') sum)* ';'
+		: 'sequence' WORD '=' a ';'
 		;
 
+a:  a ('*'|'/') sum | a ('+'|'-') sum | stringNotes | WORD;
+
 performance
-		: 'performance' WORD '=' ( ((WORD | stringNotes)  ('on' WORD))| (WORD '[' numberINT ']') )';'
+		: 'performance' WORD '=' ( ((WORD | stringNotes)  ('on' WORD))| (WORD '[' INT ']') )';'
 		;
 
 play
@@ -30,11 +32,11 @@ play
 		;
 
 time
-		: 'time' WORD '=' ('-')? (WORD | '|' WORD '|' | numberINT+ ) (('+'|'-') (WORD | '|' WORD '|' | numberINT+ ))*';'
+		: 'time' WORD '=' ('-')? (WORD | '|' WORD '|' | INT+ ) (('+'|'-') (WORD | '|' WORD '|' | INT+ ))*';'
 		;
 
 number
-		: 'number' WORD '=' numberINT ';'
+		: 'number' WORD '=' INT ';'
 		;
 
 instrumentsArray
@@ -61,7 +63,7 @@ condition
 		;
 expr
 		: '|' WORD '|'
-		| numberINT
+		| INT
 		;
 
 sum
@@ -74,9 +76,6 @@ stringNotes
 		;
 		
 //INSTRUMENTS: 'piano' | 'guitar' | 'violin' | 'cello' | 'bass' | 'drums' ;
-
-numberINT
-		: INT ;
 	
 //LEXER RULES
 
@@ -93,4 +92,4 @@ WORD: 			[_a-z] ([_a-zA-Z] | DIGIT)*;
 NEWLINE : 		'\r'? '\n' -> skip;
 LINE_COMMENT: 	'//' .*? NEWLINE -> skip;
 BLOCK_COMMENT: 	'/*' .*? '*/' -> skip;
-WS: 			[ \r\t\n]+ -> skip ;
+WS: 			[ \r\n]+ -> skip ;
