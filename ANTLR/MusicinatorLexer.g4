@@ -2,8 +2,8 @@ lexer grammar MusicinatorLexer;
 	
 //LEXER RULES
 
-SOUND: 			(((NOTE OCTAVE?) | 'R' ) DURATION?) ('|' SOUND)*;
-NOTE: 			LETTER ('#'|'b')* ;
+SOUND: 			((NOTE | 'R' ) DURATION?) ('|' SOUND)*;
+NOTE: 			LETTER ('#'|'b')* OCTAVE?;
 LETTER: 		[A-G];
 
 INT:			DIGIT+ ;
@@ -40,7 +40,7 @@ SEMICOLON: ';';
 IF: 'if';
 ELSE: 'else';
 ELIF: ELSE ' ' IF;
-FOR: 'for;
+FOR: 'for';
 
 
 INST_LIT: 'instrument';
@@ -53,6 +53,9 @@ CLOSE_SB: ']';
 OPEN_BR: '{';
 CLOSE_BR: '}';
 
+
+BPM: 'BPM';
+ARROW: '->';
 
 WORD: 			[_a-z] ([_a-zA-Z] | DIGIT)*;
 NEWLINE : 		'\r'? '\n' -> skip;
