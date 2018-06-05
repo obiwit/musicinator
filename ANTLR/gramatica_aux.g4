@@ -5,10 +5,10 @@ bpm: 'BPM' '=' INT ';';
 instAssign: 'instrument' WORD ':' instrumentDef ';';
 
 instrumentDef: noteMapList
-	     | instrumentInheritanceList
-	     | WORD
-	     |INT 
-	     ;
+		     | instrumentInheritanceList
+		     | WORD
+		     | INT 
+		     ;
 
 noteMap: WORD '=' NOTE;
 noteMapList: noteMap (',' noteMap)*;
@@ -24,6 +24,6 @@ fragment OCTAVE: (('-'[1-2])|[0-8]);
 WORD: [a-zA-Z] [_a-zA-Z0-9]*;
 INT: [0-9]+;
 
-LINE_COMMENT: '//' .*? NEWLINE ;
-BLOCK_COMMENT: '/*' .*? '*/';
-WS: [ \t\r\n]+ -> skip ;
+LINE_COMMENT: '//' .*? NEWLINE -> skip;
+BLOCK_COMMENT: '/*' .*? '*/' -> skip;
+WS: [ \t\r\n]+ -> skip;
