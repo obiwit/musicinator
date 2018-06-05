@@ -35,10 +35,10 @@ forstatment	:FOR arrayTypes WORD IN WORD OPEN_BR instructions* CLOSE_BR
 		;
 
 ifstatment
-		: IF condition COLON body (ELIF condition COLON body)* (ELSE COLON body)?
+		: IF condition OPEN_BR body CLOSE_BR (ELIF condition OPEN_BR body CLOSE_BR)* (ELSE OPEN_BR body CLOSE_BR)?
 		;
 body
-		: TAB play //problemas com os \t sendo que estão "skipados" 
+		: instructions
 		;
 
 

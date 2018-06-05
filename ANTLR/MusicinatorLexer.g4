@@ -40,7 +40,7 @@ SEMICOLON: ';';
 IF: 'if';
 ELSE: 'else';
 ELIF: ELSE ' ' IF;
-FOR: 'for;
+FOR: 'for' ;
 
 
 INST_LIT: 'instrument';
@@ -54,9 +54,8 @@ OPEN_BR: '{';
 CLOSE_BR: '}';
 
 
-WORD: 			[_a-z] ([_a-zA-Z] | DIGIT)*;
-NEWLINE : 		'\r'? '\n' -> skip;
+WORD: 		[_a-z] ([_a-zA-Z] | DIGIT)*;
+NEWLINE : 	'\r'? '\n' -> skip;
 LINE_COMMENT: 	'//' .*? NEWLINE -> skip;
 BLOCK_COMMENT: 	'/*' .*? '*/' -> skip;
-WS: 			[ \r\n]+ -> skip ;
-TAB: '\t';
+WS: 	    	[ \t\r\n]+ -> skip ;

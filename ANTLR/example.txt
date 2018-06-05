@@ -1,10 +1,14 @@
 sequence first1_sequence = [C#8{2} A Cb Db{3.12} B# C8 D{3} C#5'  E#{4} F5{3} F4'''' ] + 40 -20 +12 ;
 
-if |s| > 10:
+if |s| > 10 { 
 	play s;
-else:
+}
+else if |s| < 5{
+	play t on guitar;
+}
+else{
 	play t on piano;
-
+}
 time timer = |first1_sequence| + start;
 number non = 20 ;
 
@@ -49,5 +53,6 @@ performance intro = p[0] ;
 for instrument inst in band {
 	play [ABCDCBA] on inst ;
 }
+
 
 
