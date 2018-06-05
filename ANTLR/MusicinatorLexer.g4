@@ -11,7 +11,7 @@ DURATION:		('{' DOUBLE '}') | ('\'')+;
 DOUBLE: 		(DIGIT+ ('.' DIGIT*)?) | ('.' DIGIT+);
 fragment DIGIT:	[0-9];
 fragment OCTAVE:('-'[1-2] | [0-8]);
-WORD: 			[_a-z] ([_a-zA-Z] | DIGIT)*;
+
 
 ADD: '+';
 SUB: '-';
@@ -28,6 +28,7 @@ DIFS: '!=';
 
 OR: '|';
 ON: 'on';
+IN: 'in';
 AND: 'and';
 COMMA: ',';
 COLON: ':';
@@ -39,16 +40,21 @@ SEMICOLON: ';';
 IF: 'if';
 ELSE: 'else';
 ELIF: ELSE ' ' IF;
+FOR: 'for;
+
 
 INST_LIT: 'instrument';
 PF_LIT: 'performance';
 SQ_LIT: 'sequence';
 NUM_LIT: 'number';
-T_LIT: 'time';
 
-OPEN_BR: '[';
-CLOSE_BR: ']';
+OPEN_SB: '[';
+CLOSE_SB: ']';
+OPEN_BR: '{';
+CLOSE_BR: '}';
 
+
+WORD: 			[_a-z] ([_a-zA-Z] | DIGIT)*;
 NEWLINE : 		'\r'? '\n' -> skip;
 LINE_COMMENT: 	'//' .*? NEWLINE -> skip;
 BLOCK_COMMENT: 	'/*' .*? '*/' -> skip;

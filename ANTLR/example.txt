@@ -45,3 +45,9 @@ instrument [] left_over_band = band except bass;
 
 // aceder ao primeiro elemento
 performance intro = p[0] ;
+
+for instrument inst in band {
+	play [ABCDCBA] on inst ;
+}
+
+

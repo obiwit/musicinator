@@ -11,18 +11,19 @@ instructions
 		: assignment
 		| play
 		| ifstatment
+		| forstatment
 		;
 
 assignment
-		: SQ_LIT WORD EQUAL sequence SEMICOLON 			#sequenceAssign
-		| PF_LIT WORD EQUAL performance SEMICOLON 		#perfomanceAssign
-		| NUM_LIT WORD EQUAL numericExpr SEMICOLON 		#numberAssign
-//		| T_LIT WORD EQUAL numericExpr SEMICOLON		#timeAssign
+		: SQ_LIT WORD EQUAL sequence SEMICOLON 					#sequenceAssign
+		| PF_LIT WORD EQUAL performance SEMICOLON 				#perfomanceAssign
+		| NUM_LIT WORD EQUAL numericExpr SEMICOLON 				#numberAssign
+//		| T_LIT WORD EQUAL numericExpr SEMICOLON				#timeAssign
 
-		| SQ_LIT OPEN_BR CLOSE_BR WORD EQUAL sequenceArray SEMICOLON 		#sequenceArrayAssign
-		| PF_LIT OPEN_BR CLOSE_BR WORD EQUAL performanceArray SEMICOLON 	#perfomancArrayeAssign
-		| INST_LIT OPEN_BR CLOSE_BR WORD EQUAL instrumentArray SEMICOLON	#intrumentArrayAssign
-		| NUM_LIT OPEN_BR CLOSE_BR WORD EQUAL numberArray SEMICOLON			#numberArrayAssign
+		| SQ_LIT OPEN_SB CLOSE_SB WORD EQUAL sequenceArray SEMICOLON 		#sequenceArrayAssign
+		| PF_LIT OPEN_SB CLOSE_SB WORD EQUAL performanceArray SEMICOLON 	#perfomancArrayeAssign
+		| INST_LIT OPEN_SB CLOSE_SB WORD EQUAL instrumentArray SEMICOLON	#intrumentArrayAssign
+		| NUM_LIT OPEN_SB CLOSE_SB WORD EQUAL numberArray SEMICOLON		#numberArrayAssign
 		;
 
 // TODO (play)
@@ -30,9 +31,12 @@ play
 		: PLAY (WORD | stringNotes)  (ON WORD)? SEMICOLON
 		;
 
+forstatment	:FOR arrayTypes WORD IN WORD OPEN_BR instructions* CLOSE_BR
+		;
 
 ifstatment
-		: IF condition COLON body (ELIF condition COLON body)* (ELSE COLON body)?;
+		: IF condition COLON body (ELIF condition COLON body)* (ELSE COLON body)?
+		;
 body
 		: TAB play //problemas com os \t sendo que estão "skipados" 
 		;
@@ -54,35 +58,45 @@ performance
 		;
 
 sequenceArray
-		: OPEN_BR sequenceList CLOSE_BR
+		: OPEN_SB sequenceList CLOSE_SB
 		| WORD
 		;
+
 sequenceList: sequence (COMMA sequence)*;
 
 performanceArray
-		: OPEN_BR performanceList CLOSE_BR
+		: OPEN_SB performanceList CLOSE_SB
 		| WORD
 		;
+
 performanceList: performance (COMMA performance)*;
 
 instrumentArray
-		: OPEN_BR wordList CLOSE_BR
+		: OPEN_SB wordList CLOSE_SB
 		| instrumentArray op=(AND|EXCEPT) WORD
 		| WORD 
 		;
+
 wordList: WORD (COMMA WORD)*;
 
 numberArray
-		: OPEN_BR numberList CLOSE_BR
+		: OPEN_SB numberList CLOSE_SB
 		| WORD
 		;
+
 numberList: numericExpr (COMMA numericExpr)*;
 
 
 
 // ADDONS/HELPERS
+
+
+arrayTypes
+		: SQ_LIT | PF_LIT | NUM_LIT | INST_LIT
+		;
+
 condition
-		:	numericExpr op=(BIGR|BIGE|SMLR|SMLE|EQLS|DIFS) numericExpr
+		: numericExpr op=(BIGR|BIGE|SMLR|SMLE|EQLS|DIFS) numericExpr
 		;
 
 numericExpr
@@ -94,10 +108,10 @@ numericExpr
 		;
 
 variable
-		: WORD OPEN_BR INT CLOSE_BR
+		: WORD OPEN_SB INT CLOSE_BR
 		| WORD
 		;
 
 stringNotes
-		: OPEN_BR (SOUND)* CLOSE_BR
+		: OPEN_SB (SOUND)* CLOSE_BR
 		;
