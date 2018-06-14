@@ -2,13 +2,13 @@ lexer grammar MusicinatorLexer;
 	
 //LEXER RULES
 
-SOUND: 			(((NOTE OCTAVE?) | 'R' ) DURATION?) ('|' SOUND)*;
-NOTE: 			LETTER ('#'|'b')* ;
+SOUND: 			((NOTE | 'R' ) DURATION?) ('|' SOUND)*;
+NOTE: 			LETTER ('#'|'b')* OCTAVE?;
 LETTER: 		[A-G];
 
 INT:			DIGIT+ ;
 DURATION:		('{' DOUBLE '}') | ('\'')+;
-DOUBLE: 		(DIGIT+ ('.' DIGIT*)?) | ('.' DIGIT+);
+DOUBLE: 		(INT ('.' INT*)?) | ('.' INT);
 fragment DIGIT:	[0-9];
 fragment OCTAVE:('-'[1-2] | [0-8]);
 
@@ -40,7 +40,7 @@ SEMICOLON: ';';
 IF: 'if';
 ELSE: 'else';
 ELIF: ELSE ' ' IF;
-FOR: 'for' ;
+FOR: 'for';
 
 
 INST_LIT: 'instrument';
@@ -54,8 +54,11 @@ OPEN_BR: '{';
 CLOSE_BR: '}';
 
 
-WORD: 		[_a-z] ([_a-zA-Z] | DIGIT)*;
-NEWLINE : 	'\r'? '\n' -> skip;
+BPM: 'BPM';
+ARROW: '->';
+
+WORD: 			[_a-z] ([_a-zA-Z] | DIGIT)*;
+NEWLINE : 		'\r'? '\n' -> skip;
 LINE_COMMENT: 	'//' .*? NEWLINE -> skip;
 BLOCK_COMMENT: 	'/*' .*? '*/' -> skip;
-WS: 	    	[ \t\r\n]+ -> skip ;
+WS: 			[ \t\r\n]+ -> skip ;

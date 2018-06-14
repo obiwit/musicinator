@@ -4,8 +4,9 @@ options {tokenVocab = MusicinatorLexer;}
 //PARSER RULES
 
 main:	instructions* EOF ;
-// Exucute this command to compile grammar
-// antlr4-build && antlr4-test gramatica main -gui < example.txt  && antlr4-clean
+// Exucute this command to compile grammar: Musicinator
+// antlr4-build && antlr4-test Musicinator main -gui < example.txt
+// antlr4-clean
 
 instructions
 		: assignment
@@ -18,7 +19,6 @@ assignment
 		: SQ_LIT WORD EQUAL sequence SEMICOLON 					#sequenceAssign
 		| PF_LIT WORD EQUAL performance SEMICOLON 				#perfomanceAssign
 		| NUM_LIT WORD EQUAL numericExpr SEMICOLON 				#numberAssign
-//		| T_LIT WORD EQUAL numericExpr SEMICOLON				#timeAssign
 
 		| SQ_LIT OPEN_SB CLOSE_SB WORD EQUAL sequenceArray SEMICOLON 		#sequenceArrayAssign
 		| PF_LIT OPEN_SB CLOSE_SB WORD EQUAL performanceArray SEMICOLON 	#perfomancArrayeAssign
@@ -26,12 +26,31 @@ assignment
 		| NUM_LIT OPEN_SB CLOSE_SB WORD EQUAL numberArray SEMICOLON		#numberArrayAssign
 		;
 
-// TODO (play)
+/* V2 - seria mais adequado uma tatica do tipo abaixo?
+
+assignment:
+		types WORD EQUAL expr SEMICOLON
+		| arrayTypes OPEN_SB CLOSE_SB WORD EQUAL arrayExpr SEMICOLON
+		;
+
+expr: sequence
+	| performance
+	| numericExpr
+	;
+
+types: SQ_LIT | PF_LIT | NUM_LIT;
+arrayTypes: types | INST_LIT;
+
+// arrayExpr mais em baixo, em comentario tambem
+
+*/
+
 play
 		: PLAY (WORD | stringNotes)  (ON WORD)? SEMICOLON
 		;
 
-forstatment	:FOR arrayTypes WORD IN WORD OPEN_BR instructions* CLOSE_BR
+forstatment
+		: FOR arrayTypes WORD IN WORD OPEN_BR instructions* CLOSE_BR
 		;
 
 ifstatment
@@ -44,56 +63,71 @@ body
 
 // DEFINITIONS
 sequence
-		: sequence op=(MUL|DIV) numericExpr 
-		| sequence op=(ADD|SUB) numericExpr 
+		: sequence op=(MUL|DIV) numericVariable 
+		| sequence op=(ADD|SUB) numericVariable 
 		| stringNotes 
 		| variable
 		;
 
 performance
-		: performance op=(MUL|DIV) numericExpr 
-		| performance op=(ADD|SUB) numericExpr 
+		: performance op=(MUL|DIV) numericVariable 
+		| performance op=(ADD|SUB) numericVariable 
 		| sequence ON WORD 
 		| variable
 		;
 
 sequenceArray
-		: OPEN_SB sequenceList CLOSE_SB
+		: OPEN_SB sequenceList? CLOSE_SB
 		| WORD
 		;
 
-sequenceList: sequence (COMMA sequence)*;
+sequenceList
+		: sequence (COMMA sequence)*
+		;
 
 performanceArray
-		: OPEN_SB performanceList CLOSE_SB
+		: OPEN_SB performanceList? CLOSE_SB
 		| WORD
 		;
 
 performanceList: performance (COMMA performance)*;
 
 instrumentArray
-		: OPEN_SB wordList CLOSE_SB
+		: OPEN_SB wordList? CLOSE_SB
 		| instrumentArray op=(AND|EXCEPT) WORD
 		| WORD 
 		;
 
-wordList: WORD (COMMA WORD)*;
+wordList
+		: WORD (COMMA WORD)*
+		;
 
 numberArray
-		: OPEN_SB numberList CLOSE_SB
+		: OPEN_SB numberList? CLOSE_SB
 		| WORD
 		;
 
-numberList: numericExpr (COMMA numericExpr)*;
+numberList
+		: numericExpr (COMMA numericExpr)*
+		;
 
+/* V2 (cont.) - seria mais adequado uma tatica do tipo abaixo?
 
+arrayExpr
+		: OPEN_SB list? CLOSE_SB
+		| WORD
+		;
+
+list 	: sequenceList
+		| performanceList
+		| numberList
+		;
+*/
 
 // ADDONS/HELPERS
 
-
-arrayTypes
-		: SQ_LIT | PF_LIT | NUM_LIT | INST_LIT
-		;
+types: SQ_LIT | PF_LIT | NUM_LIT;
+arrayTypes: types | INST_LIT;
 
 condition
 		: numericExpr op=(BIGR|BIGE|SMLR|SMLE|EQLS|DIFS) numericExpr
@@ -102,16 +136,21 @@ condition
 numericExpr
 		: numericExpr op=(MUL|DIV|REM) numericExpr
 		| numericExpr op=(ADD|SUB) numericExpr
-		| variable
+		| numericVariable
+		;
+
+numericVariable
+		: variable
 		| OR WORD OR
 		| DOUBLE
+		| INT
 		;
 
 variable
-		: WORD OPEN_SB INT CLOSE_BR
+		: WORD OPEN_SB INT CLOSE_SB
 		| WORD
 		;
 
 stringNotes
-		: OPEN_SB (SOUND)* CLOSE_BR
+		: OPEN_SB (SOUND)* CLOSE_SB
 		;
