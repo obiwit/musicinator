@@ -46,7 +46,7 @@ arrayTypes: types | INST_LIT;
 */
 
 play
-		: PLAY (WORD | stringNotes)  (ON WORD)? SEMICOLON
+		: PLAY sequence  (ON WORD)? SEMICOLON
 		;
 
 forstatment
@@ -65,8 +65,9 @@ body
 sequence
 		: sequence op=(MUL|DIV) numericVariable 
 		| sequence op=(ADD|SUB) numericVariable 
-		| stringNotes 
+		| OPEN_SB sequence* CLOSE_SB 
 		| variable
+		| SOUND
 		;
 
 performance
@@ -149,8 +150,4 @@ numericVariable
 variable
 		: WORD OPEN_SB INT CLOSE_SB
 		| WORD
-		;
-
-stringNotes
-		: OPEN_SB (SOUND)* CLOSE_SB
 		;

@@ -1,7 +1,6 @@
 lexer grammar MusicinatorLexer;
-	
-//LEXER RULES
 
+//LEXER RULES
 SOUND: 			((NOTE | 'R' ) DURATION?) ('|' SOUND)*;
 NOTE: 			LETTER ('#'|'b')* OCTAVE?;
 LETTER: 		[A-G];
@@ -11,7 +10,6 @@ DURATION:		('{' DOUBLE '}') | ('\'')+;
 DOUBLE: 		(INT ('.' INT*)?) | ('.' INT);
 fragment DIGIT:	[0-9];
 fragment OCTAVE:('-'[1-2] | [0-8]);
-
 
 ADD: '+';
 SUB: '-';
@@ -25,6 +23,7 @@ SMLR: '<';
 SMLE: '<=';
 EQLS: '==';
 DIFS: '!=';
+ARROW: '->';
 
 OR: '|';
 ON: 'on';
@@ -54,11 +53,9 @@ OPEN_BR: '{';
 CLOSE_BR: '}';
 
 
-BPM: 'BPM';
-ARROW: '->';
-
 WORD: 			[_a-z] ([_a-zA-Z] | DIGIT)*;
-NEWLINE : 		'\r'? '\n' -> skip;
-LINE_COMMENT: 	'//' .*? NEWLINE -> skip;
+
+LINE_COMMENT: 	'//' ~[\r\n]* -> skip;
 BLOCK_COMMENT: 	'/*' .*? '*/' -> skip;
+
 WS: 			[ \t\r\n]+ -> skip ;

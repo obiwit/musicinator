@@ -1,6 +1,6 @@
 parser grammar AuxinatorParser;
 
-options {tokenVocab = MusicinatorLexer;}
+options {tokenVocab = AuxinatorLexer;}
 
 main: bpm instAssign* EOF;
 
