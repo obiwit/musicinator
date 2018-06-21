@@ -2,20 +2,18 @@ parser grammar AuxinatorParser;
 
 options {tokenVocab = AuxinatorLexer;}
 
-main: bpm instAssign* EOF;
+main: bpm (noteMap | instAssign)* EOF;
 
 bpm: BPM EQUAL INT SEMICOLON;
 
 instAssign: INST_LIT WORD COLON instrumentDef SEMICOLON;
 
-instrumentDef: noteMapList
-		     | instrumentInheritanceList
+instrumentDef: instrumentInheritanceList
 		     | WORD
 		     | INT 
 		     ;
 
-noteMap: WORD EQUAL NOTE;
-noteMapList: noteMap (COMMA noteMap)*;
+noteMap: WORD EQUAL NOTE SEMICOLON;
 
 instrumentInheritance: (NOTE|noteRange) ARROW WORD;
 instrumentInheritanceList: instrumentInheritance (COMMA instrumentInheritance)*;

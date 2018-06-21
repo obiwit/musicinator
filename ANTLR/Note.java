@@ -1,11 +1,9 @@
 public class Note {
-	private String notation;
 	private int value;
 	private double duration;
 
 	public Note(String note) {
 		duration = 1;
-		notation = note;
 		
 		value = getBaseValue(note.charAt(0));
 
@@ -32,6 +30,13 @@ public class Note {
 		}
 	}
 
+	public int value() {
+		return value;
+	}
+	public double duration() {
+		return duration;
+	}
+
 	private int getBaseValue(char symbol) {
 		
 		switch (symbol) {
@@ -52,10 +57,5 @@ public class Note {
 		}
 
 		return -1;
-	}
-
-	@Override
-	public String toString() {
-		return "Note [notation=" + notation + ", value=" + value + ", duration=" + duration + "]";
 	}
 }

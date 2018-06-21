@@ -75,7 +75,7 @@ A letra \texttt{R} é usada para silêncios (derivada de \textit{Rests}).
 
 Um cardinal (\texttt{\#}) a seguir à letra sobe a respetiva nota por meio tom; um b minúsculo (\texttt{b}) a seguir à letra desce a respetiva nota por meio tom. Mais que um \texttt{\#} ou \texttt{b} podem ser aplicados a uma nota (por exemplo, \texttt{C\#\#}).
 
-Pode, depois do tom, aparecer um número, entre -2 e 8. Este especifica a oitava a usar, sendo -2 a mais grave e 8 a mais aguda. Por omissão, a quarta oitava é usada.
+Pode, depois do tom, aparecer um número, entre 0 e 8. Este especifica a oitava a usar, sendo 0 a mais grave e 8 a mais aguda. Por omissão, a quarta oitava é usada.
 
 Assim, a sequência já apresentada podia reescrita da seguinte forma:
 \begin{lstlisting} 
@@ -534,29 +534,33 @@ instrument synth1: 81;
 
 Os instrumentos já definidos estão associados aos seguintes códigos: 1(\texttt{piano}), 25(\texttt{guitar}), 41(\texttt{violin}), 43(\texttt{cello}), 44(\texttt{bass}), e 119(\texttt{drums}). 
 
-É também possível definir novos instrumentos à custa de instrumentos já existentes, e associar nomes aos tons de um instrumento.
+É também possível definir novos instrumentos à custa de instrumentos já existentes, e associar nomes a tons.
 
 \begin{lstlisting} 
 // duplicar um instrumento ja existente
 instrument percussion: drums;
 
-// mapear os tons do instrumento (associar nomes aos tons de um instrumento)
-instrument percussion: AcousticBassDrum = B0,
-                       BassDrum1 = C1,
-                       SideStick = C#1,
-                       AcousticSnare = D1,
-                       HandClap = D#1,
-                       ElectricSnare = E1,
-                       LowFloorTom = F1,
-                       ClosedHiHat = F#1,
-                       HighFloorTom = G1,
-                       PedalHiHat = G#1,
-                       LowTom = A1,
-                       OpenHiHat = A#1,
-                       LowMidTom = B1,
-                       HiMidTom = C2,
-                       // ... (podem adicionar-se mais)
-                     ;	 
+// mapear tons (associar nomes a tons)
+AcousticBassDrum = B0;
+BassDrum1 = C1;
+SideStick = C#1;
+AcousticSnare = D1;
+HandClap = D#1;
+ElectricSnare = E1;
+LowFloorTom = F1;
+ClosedHiHat = F#1;
+HighFloorTom = G1;
+PedalHiHat = G#1;
+LowTom = A1;
+OpenHiHat = A#1;
+LowMidTom = B1;
+HiMidTom = C2;
+
+// a um tom podem ser associados varios nomes
+// (mas a um tom nao podem ser associadas mais que uma nota)
+LongWhistle = C4;
+MiddleC = C4;
+                     	 
 \end{lstlisting}	 
 É ainda possível criar um instrumento juntando vários instrumentos já existentes. Associa-se a uma nota (ou a um conjunto de notas, sendo o intervalo representado por \texttt{NotaInicial - NotaFinal}, incluindo os extremos) o instrumento que deve ser utilizado para a tocar, utilizando o operador \texttt{->}.
 

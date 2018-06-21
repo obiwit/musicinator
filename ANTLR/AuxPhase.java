@@ -4,13 +4,11 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-/**
- * This class provides an empty implementation of {@link AuxinatorParserListener},
- * which can be extended to create a listener which only needs to handle a subset
- * of the available methods.
- */
+import java.util.*;
+
 public class AuxPhase extends AuxinatorParserBaseListener {
 	Music music;
+	Map<String, Note> noteMap;
 
 	// @Override public void enterMain(AuxinatorParser.MainContext ctx) { }
 	@Override public void exitMain(AuxinatorParser.MainContext ctx) { }
@@ -26,9 +24,6 @@ public class AuxPhase extends AuxinatorParserBaseListener {
 
 	// @Override public void enterNoteMap(AuxinatorParser.NoteMapContext ctx) { }
 	@Override public void exitNoteMap(AuxinatorParser.NoteMapContext ctx) { }
-
-	// @Override public void enterNoteMapList(AuxinatorParser.NoteMapListContext ctx) { }
-	@Override public void exitNoteMapList(AuxinatorParser.NoteMapListContext ctx) { }
 
 	// @Override public void enterInstrumentInheritance(AuxinatorParser.InstrumentInheritanceContext ctx) { }
 	@Override public void exitInstrumentInheritance(AuxinatorParser.InstrumentInheritanceContext ctx) { }
