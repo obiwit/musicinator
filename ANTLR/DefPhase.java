@@ -6,15 +6,18 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
-import java.util.ArrayList;
+import java.util.*;
 
-/**
- * This class provides an empty implementation of {@link MusicinatorParserListener},
- * which can be extended to create a listener which only needs to handle a subset
- * of the available methods.
- */
 public class DefPhase extends MusicinatorParserBaseListener {
 	ParseTreeProperty<ArrayList<String>> scope = new ParseTreeProperty<>();
+	Map<String, Object> variables = new HashMap<>();
+	Map<String, Note> noteMap;
+
+	//public DefPhase() {} // uncomment to compile atm
+	public DefPhase(Map<String, Note> noteMap) {
+		// noteMap contains defined non-standard notes and their standard conterparts
+		this.noteMap = noteMap;
+	}
 
 	// @Override public void enterMain(MusicinatorParser.MainContext ctx) { }
 	@Override public void exitMain(MusicinatorParser.MainContext ctx) { }

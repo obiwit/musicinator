@@ -9,7 +9,7 @@ INT:			DIGIT+ ;
 DURATION:		('{' DOUBLE '}') | ('\'')+;
 DOUBLE: 		(INT ('.' INT*)?) | ('.' INT);
 fragment DIGIT:	[0-9];
-fragment OCTAVE:('-'[1-2] | [0-8]);
+fragment OCTAVE: [0-8];
 
 ADD: '+';
 SUB: '-';
