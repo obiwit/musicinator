@@ -13,7 +13,7 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	Map<String, Object> variables = new HashMap<>();
 	Map<String, Note> noteMap;
 
-	//public DefPhase() {} // uncomment to compile atm
+	public DefPhase() {} // uncomment to compile atm
 	public DefPhase(Map<String, Note> noteMap) {
 		// noteMap contains defined non-standard notes and their standard conterparts
 		this.noteMap = noteMap;

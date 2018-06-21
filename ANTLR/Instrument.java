@@ -3,7 +3,7 @@ public class Instrument {
 	private int NOTERANGE = 108;
 	private int value[];
 
-	public Instrument(int value) {
+	public Instrument(int v) {
 		value = new int[NOTERANGE];
 		for (int i = 0; i < NOTERANGE; i++)
 			value[i] = v;
