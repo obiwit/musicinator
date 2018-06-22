@@ -15,6 +15,10 @@ public class MusicinatorMain {
          System.err.println("ERROR: reading aux file!"); 
          System.exit(1);
       }
+      catch(ArrayIndexOutOfBoundsException e) {
+         System.err.println("ERROR! Usage: java MusicinatorMain <aux file> <main file>"); 
+         System.exit(1);
+      }
       try {
          main_in = new FileInputStream(new File(args[1]));
       }
@@ -22,6 +26,11 @@ public class MusicinatorMain {
          System.err.println("ERROR: reading main file!"); 
          System.exit(1);
       }
+      catch(ArrayIndexOutOfBoundsException e) {
+         System.err.println("ERROR! Usage: java MusicinatorMain <aux file> <main file>"); 
+         System.exit(1);
+      }
+
 
       // create a parser from the aux file
       CharStream aux_input = CharStreams.fromStream(aux_in);

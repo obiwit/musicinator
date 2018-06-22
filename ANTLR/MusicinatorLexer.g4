@@ -2,8 +2,7 @@ lexer grammar MusicinatorLexer;
 
 //LEXER RULES
 SOUND: 			((NOTE | 'R' ) DURATION?) ('|' SOUND)*;
-NOTE: 			LETTER ('#'|'b')* OCTAVE?;
-LETTER: 		[A-G];
+fragment NOTE: [A-G] ('#'|'b')* OCTAVE?;
 
 INT:			DIGIT+ ;
 DURATION:		('{' DOUBLE '}') | ('\'')+;

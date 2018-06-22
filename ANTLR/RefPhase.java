@@ -5,92 +5,95 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
-
-import java.util.ArrayList;
+import java.util.*;
 
 /**
- * This class provides an empty implementation of {@link MusicinatorParserListener},
- * which can be extended to create a listener which only needs to handle a subset
- * of the available methods.
+ * 
  */
 public class RefPhase extends MusicinatorParserBaseListener {
 
 	Music music;
-	ParseTreeProperty<ArrayList<String>> scopes;
+	ParseTreeProperty<Map<String, Object>> scopes;
 
-	public RefPhase(Music music, ParseTreeProperty<ArrayList<String>> scopes) {
+	public RefPhase(Music music, ParseTreeProperty<Map<String, Object>> scopes) {
 		this.music = music;
 		this.scopes = scopes;
 	}
-
-	// @Override public void enterMain(MusicinatorParser.MainContext ctx) { }
-	@Override public void exitMain(MusicinatorParser.MainContext ctx) { }
-
-	// @Override public void enterInstructions(MusicinatorParser.InstructionsContext ctx) { }
-	@Override public void exitInstructions(MusicinatorParser.InstructionsContext ctx) { }
-	
-	// @Override public void enterSequenceAssign(MusicinatorParser.SequenceAssignContext ctx) { }
-	@Override public void exitSequenceAssign(MusicinatorParser.SequenceAssignContext ctx) { }
-	
-	// @Override public void enterPerfomanceAssign(MusicinatorParser.PerfomanceAssignContext ctx) { }
-	@Override public void exitPerfomanceAssign(MusicinatorParser.PerfomanceAssignContext ctx) { }
-	
-	// @Override public void enterNumberAssign(MusicinatorParser.NumberAssignContext ctx) { }
-	@Override public void exitNumberAssign(MusicinatorParser.NumberAssignContext ctx) { }
-	
-	// @Override public void enterSequenceArrayAssign(MusicinatorParser.SequenceArrayAssignContext ctx) { }
-	@Override public void exitSequenceArrayAssign(MusicinatorParser.SequenceArrayAssignContext ctx) { }
-	
-	// @Override public void enterPerfomancArrayeAssign(MusicinatorParser.PerfomancArrayeAssignContext ctx) { }
-	@Override public void exitPerfomancArrayeAssign(MusicinatorParser.PerfomancArrayeAssignContext ctx) { }
-	
-	// @Override public void enterIntrumentArrayAssign(MusicinatorParser.IntrumentArrayAssignContext ctx) { }
-	@Override public void exitIntrumentArrayAssign(MusicinatorParser.IntrumentArrayAssignContext ctx) { }
-	
-	// @Override public void enterNumberArrayAssign(MusicinatorParser.NumberArrayAssignContext ctx) { }
-	@Override public void exitNumberArrayAssign(MusicinatorParser.NumberArrayAssignContext ctx) { }
 	
 	// @Override public void enterPlay(MusicinatorParser.PlayContext ctx) { }
 	@Override public void exitPlay(MusicinatorParser.PlayContext ctx) { }
 	
-	// @Override public void enterForstatment(MusicinatorParser.ForstatmentContext ctx) { }
-	@Override public void exitForstatment(MusicinatorParser.ForstatmentContext ctx) { }
+	// @Override public void enterForStat(MusicinatorParser.ForStatContext ctx) { }
+	@Override public void exitForStat(MusicinatorParser.ForStatContext ctx) { }
 	
-	// @Override public void enterIfstatment(MusicinatorParser.IfstatmentContext ctx) { }
-	@Override public void exitIfstatment(MusicinatorParser.IfstatmentContext ctx) { }
+	// @Override public void enterIfStat(MusicinatorParser.IfStatContext ctx) { }
+	@Override public void exitIfStat(MusicinatorParser.IfStatContext ctx) { }
 	
-	// @Override public void enterBody(MusicinatorParser.BodyContext ctx) { }
-	@Override public void exitBody(MusicinatorParser.BodyContext ctx) { }
+	// @Override public void enterArrayExpr(MusicinatorParser.ArrayExprContext ctx) { }
+	@Override public void exitArrayExpr(MusicinatorParser.ArrayExprContext ctx) { }
 	
-	// @Override public void enterSequence(MusicinatorParser.SequenceContext ctx) { }
-	@Override public void exitSequence(MusicinatorParser.SequenceContext ctx) { }
+	// @Override public void enterList(MusicinatorParser.ListContext ctx) { }
+	@Override public void exitList(MusicinatorParser.ListContext ctx) { }
 	
-	// @Override public void enterPerformance(MusicinatorParser.PerformanceContext ctx) { }
-	@Override public void exitPerformance(MusicinatorParser.PerformanceContext ctx) { }
+	// @Override public void enterVarExpr(MusicinatorParser.VarExprContext ctx) { }
+	@Override public void exitVarExpr(MusicinatorParser.VarExprContext ctx) { }
 	
-	// @Override public void enterSequenceArray(MusicinatorParser.SequenceArrayContext ctx) { }
-	@Override public void exitSequenceArray(MusicinatorParser.SequenceArrayContext ctx) { }
+	// @Override public void enterPerExpr(MusicinatorParser.PerExprContext ctx) { }
+	@Override public void exitPerExpr(MusicinatorParser.PerExprContext ctx) { }
 	
-	// @Override public void enterSequenceList(MusicinatorParser.SequenceListContext ctx) { }
-	@Override public void exitSequenceList(MusicinatorParser.SequenceListContext ctx) { }
+	// @Override public void enterSeqExpr(MusicinatorParser.SeqExprContext ctx) { }
+	@Override public void exitSeqExpr(MusicinatorParser.SeqExprContext ctx) { }
 	
-	// @Override public void enterPerformanceArray(MusicinatorParser.PerformanceArrayContext ctx) { }
-	@Override public void exitPerformanceArray(MusicinatorParser.PerformanceArrayContext ctx) { }
+	// @Override public void enterNumExpr(MusicinatorParser.NumExprContext ctx) { }
+	@Override public void exitNumExpr(MusicinatorParser.NumExprContext ctx) { }
 	
-	// @Override public void enterPerformanceList(MusicinatorParser.PerformanceListContext ctx) { }
-	@Override public void exitPerformanceList(MusicinatorParser.PerformanceListContext ctx) { }
+	// @Override public void enterSeqSpeedMod(MusicinatorParser.SeqSpeedModContext ctx) { }
+	@Override public void exitSeqSpeedMod(MusicinatorParser.SeqSpeedModContext ctx) { }
 	
-	// @Override public void enterInstrumentArray(MusicinatorParser.InstrumentArrayContext ctx) { }
-	@Override public void exitInstrumentArray(MusicinatorParser.InstrumentArrayContext ctx) { }
+	// @Override public void enterSeqVar(MusicinatorParser.SeqVarContext ctx) { }
+	@Override public void exitSeqVar(MusicinatorParser.SeqVarContext ctx) { }
 	
-	// @Override public void enterWordList(MusicinatorParser.WordListContext ctx) { }
-	@Override public void exitWordList(MusicinatorParser.WordListContext ctx) { }
+	// @Override public void enterSeqLiteral(MusicinatorParser.SeqLiteralContext ctx) { }
+	@Override public void exitSeqLiteral(MusicinatorParser.SeqLiteralContext ctx) { }
 	
-	// @Override public void enterNumberArray(MusicinatorParser.NumberArrayContext ctx) { }
-	@Override public void exitNumberArray(MusicinatorParser.NumberArrayContext ctx) { }
+	// @Override public void enterSeqPitchMod(MusicinatorParser.SeqPitchModContext ctx) { }
+	@Override public void exitSeqPitchMod(MusicinatorParser.SeqPitchModContext ctx) { }
 	
-	// @Override public void enterNumberList(MusicinatorParser.NumberListContext ctx) { }
-	@Override public void exitNumberList(MusicinatorParser.NumberListContext ctx) { }
+	// @Override public void enterSeqList(MusicinatorParser.SeqListContext ctx) { }
+	@Override public void exitSeqList(MusicinatorParser.SeqListContext ctx) { }
+	
+	// @Override public void enterPerVar(MusicinatorParser.PerVarContext ctx) { }
+	@Override public void exitPerVar(MusicinatorParser.PerVarContext ctx) { }
+	
+	// @Override public void enterPerFromSeq(MusicinatorParser.PerFromSeqContext ctx) { }
+	@Override public void exitPerFromSeq(MusicinatorParser.PerFromSeqContext ctx) { }
+	
+	// @Override public void enterPerSpeedMod(MusicinatorParser.PerSpeedModContext ctx) { }
+	@Override public void exitPerSpeedMod(MusicinatorParser.PerSpeedModContext ctx) { }
+	
+	// @Override public void enterPerPitchMod(MusicinatorParser.PerPitchModContext ctx) { }
+	@Override public void exitPerPitchMod(MusicinatorParser.PerPitchModContext ctx) { }
+	
+	// @Override public void enterNumInt(MusicinatorParser.NumIntContext ctx) { }
+	@Override public void exitNumInt(MusicinatorParser.NumIntContext ctx) { }
+	
+	// @Override public void enterNumDouble(MusicinatorParser.NumDoubleContext ctx) { }
+	@Override public void exitNumDouble(MusicinatorParser.NumDoubleContext ctx) { }
+	
+	// @Override public void enterNumMulDiv(MusicinatorParser.NumMulDivContext ctx) { }
+	@Override public void exitNumMulDiv(MusicinatorParser.NumMulDivContext ctx) { }
+	
+	// @Override public void enterNumAddSub(MusicinatorParser.NumAddSubContext ctx) { }
+	@Override public void exitNumAddSub(MusicinatorParser.NumAddSubContext ctx) { }
+	
+	// @Override public void enterNumVar(MusicinatorParser.NumVarContext ctx) { }
+	@Override public void exitNumVar(MusicinatorParser.NumVarContext ctx) { }
+	
+	// @Override public void enterNumDuration(MusicinatorParser.NumDurationContext ctx) { }
+	@Override public void exitNumDuration(MusicinatorParser.NumDurationContext ctx) { }
+	
+	// @Override public void enterVariable(MusicinatorParser.VariableContext ctx) { }
+	@Override public void exitVariable(MusicinatorParser.VariableContext ctx) { }
 	
 	// @Override public void enterTypes(MusicinatorParser.TypesContext ctx) { }
 	@Override public void exitTypes(MusicinatorParser.TypesContext ctx) { }
@@ -100,14 +103,9 @@ public class RefPhase extends MusicinatorParserBaseListener {
 	
 	// @Override public void enterCondition(MusicinatorParser.ConditionContext ctx) { }
 	@Override public void exitCondition(MusicinatorParser.ConditionContext ctx) { }
-	
-	// @Override public void enterNumericExpr(MusicinatorParser.NumericExprContext ctx) { }
-	@Override public void exitNumericExpr(MusicinatorParser.NumericExprContext ctx) { }
-	
-	// @Override public void enterNumericVariable(MusicinatorParser.NumericVariableContext ctx) { }
-	@Override public void exitNumericVariable(MusicinatorParser.NumericVariableContext ctx) { }
-	
-	// @Override public void enterVariable(MusicinatorParser.VariableContext ctx) { }
-	@Override public void exitVariable(MusicinatorParser.VariableContext ctx) { }
 
+	// @Override public void enterEveryRule(ParserRuleContext ctx) { }
+	// @Override public void exitEveryRule(ParserRuleContext ctx) { }
+	// @Override public void visitTerminal(TerminalNode node) { }
+	// @Override public void visitErrorNode(ErrorNode node) { }
 }
