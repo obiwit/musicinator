@@ -35,4 +35,12 @@ public class Music {
 		assert instruments.containsKey(name);
 		return instruments.get(name);
 	}
+
+	public boolean isInstrument(String name) {
+		return 	instruments.containsKey(name);
+	}
+
+	public Map getMap(){
+		return instruments;
+	}
 }

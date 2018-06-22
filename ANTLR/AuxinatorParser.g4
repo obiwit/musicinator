@@ -8,14 +8,14 @@ bpm: BPM EQUAL INT SEMICOLON;
 
 instAssign: INST_LIT WORD COLON instrumentDef SEMICOLON;
 
-instrumentDef: instrumentInheritanceList
-		     | WORD
-		     | INT 
+instrumentDef: instrumentInheritanceList		#defInheritance
+		     | WORD								#defWord
+		     | INT 								#defInt
 		     ;
 
 noteMap: WORD EQUAL NOTE SEMICOLON;
 
-instrumentInheritance: (NOTE|noteRange) ARROW WORD;
 instrumentInheritanceList: instrumentInheritance (COMMA instrumentInheritance)*;
+instrumentInheritance: (NOTE|noteRange) ARROW WORD;
 
 noteRange: NOTE SUB NOTE;
