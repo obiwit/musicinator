@@ -55,4 +55,42 @@ with open("<name>", 'wb') as file:
     print("MIDI File Written")
 >>
 
+getInt() ::= <<
+def getInt(varstr):
+    while True:
+        try:
+            a = int(input(varstr))
+        except ValueError:
+            print("Please input a valid number")
+            continue
+        else:
+            break
+    return a
+
+>>
+
+u_getint(str, varname) ::= <<
+<varname> = getInt("<str>")
+>>
+
+forloop(begin, end, code, indent) ::= <<
+for <begin> in <end>:
+    <indent><code>
+>>
+
+ifstat(codition, code, indent) ::= <<
+if <condition>:
+    <indent><code>
+>>
+
+elseif(condition, code,indent) ::= <<
+elif <condition>:
+    <indent><code>
+>>
+
+fornumbers(first, last, code, indent) ::= <<
+for i in range(<first>, <last>+1):
+    <indent><code>
+>>
+
 
