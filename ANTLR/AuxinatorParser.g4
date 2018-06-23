@@ -6,15 +6,14 @@ main: bpm (noteMap | instAssign)* EOF;
 
 bpm: BPM EQUAL INT SEMICOLON;
 
+noteMap: WORD EQUAL NOTE SEMICOLON;
+
 instAssign: INST_LIT WORD COLON instrumentDef SEMICOLON;
 
 instrumentDef: instrumentInheritanceList		#defInheritance
 		     | WORD								#defWord
 		     | INT 								#defInt
 		     ;
-
-noteMap: WORD EQUAL NOTE SEMICOLON;
-
 instrumentInheritanceList: instrumentInheritance (COMMA instrumentInheritance)*;
 instrumentInheritance: (NOTE|noteRange) ARROW WORD;
 

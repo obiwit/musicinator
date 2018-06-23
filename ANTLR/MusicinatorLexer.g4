@@ -2,13 +2,14 @@ lexer grammar MusicinatorLexer;
 
 //LEXER RULES
 SOUND: 			((NOTE | 'R' ) DURATION?) ('|' SOUND)*;
-fragment NOTE: [A-G] ('#'|'b')* OCTAVE?;
+fragment NOTE: 	LETTER ('#'|'b')* OCTAVE?;
+fragment LETTER:[A-G];
 
 INT:			DIGIT+ ;
 DURATION:		('{' DOUBLE '}') | ('\'')+;
 DOUBLE: 		(INT ('.' INT*)?) | ('.' INT);
 fragment DIGIT:	[0-9];
-fragment OCTAVE: [0-8];
+fragment OCTAVE:('-1'| [0-8]);
 
 ADD: '+';
 SUB: '-';
@@ -24,15 +25,19 @@ EQLS: '==';
 DIFS: '!=';
 ARROW: '->';
 
-OR: '|';
 ON: 'on';
 IN: 'in';
+AT: 'at';
+BAR: '|';
 AND: 'and';
 COMMA: ',';
 COLON: ':';
 EQUAL: '=';
+LOOP: 'loop';
 PLAY: 'play';
-EXCEPT: 'except';
+TIMES: 'times';
+AFTER: 'after';
+ALWAYS: 'always';
 SEMICOLON: ';';
 
 IF: 'if';

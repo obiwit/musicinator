@@ -17,7 +17,10 @@ assignment
 		| arrayTypes OPEN_SB CLOSE_SB WORD EQUAL arrayExpr SEMICOLON 	#arrayAssign
 		;
 
-play 	: PLAY performance SEMICOLON
+play 	: PLAY performance SEMICOLON 					#simplePlay
+		| (AT number | AFTER performance ALWAYS?) play	#timedPlay
+		| play number TIMES								#repeatPlay
+		| LOOP performance								#loopPlay
 		;
 
 forStat	: FOR arrayTypes WORD IN WORD OPEN_BR instructions* CLOSE_BR
@@ -34,6 +37,7 @@ ifStat	: IF condition
 arrayExpr
 		: OPEN_SB list? CLOSE_SB
 		| expr (AND expr)*
+		| number ARROW number
 		;
 
 list 	: expr (COMMA expr)*
@@ -44,29 +48,7 @@ expr 	: variable 			#varExpr // detects instruments without entering another "ty
 		| sequence 			#seqExpr
 		| number 			#numExpr
 		;
-
-
-/* V1
-list 	: sequenceList
-		| performanceList
-		| numberList
-		;
-
-sequenceList
-		: sequence ((COMMA|AND) sequence)*
-		;
-
-performanceList
-		: performance ((COMMA|AND) performance)*;
-
-wordList
-		: WORD ((COMMA|AND) WORD)*
-		;
-
-numberList
-		: number ((COMMA|AND) number)*
-		;
-*/
+		
 
 // "lower level" definitions - types, expressions and conditions
 sequence
@@ -85,9 +67,9 @@ performance
 		;
 
 number
-		: number op=(MUL|DIV|REM) number		#numMulDiv
+		: number op=(MUL|DIV) number			#numMulDiv
 		| number op=(ADD|SUB) number			#numAddSub
-		| OR WORD OR 							#numDuration
+		| BAR WORD BAR 							#numDuration
 		| DOUBLE 								#numDouble
 		| INT 									#numInt
 		| variable								#numVar

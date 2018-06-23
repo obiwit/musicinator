@@ -2,7 +2,8 @@ public class Note {
 	private int value;
 	private double duration;
 
-	public Note(int v, int d) {
+	// constructors
+	public Note(int v, double d) {
 		duration = d;
 		value = v;
 	}
@@ -16,11 +17,18 @@ public class Note {
 		if (note.contains("{")) {
 			duration = Double.parseDouble(note.substring(note.indexOf("{") + 1, note.indexOf("}")));
 			noDuration = note.substring(0, note.indexOf("{"));
+		} else if (note.contains("'")) {
+			while(note.contains("'")) {
+				duration /= 2;
+				note = note.substring(0, note.length()-1);
+			}
+			noDuration = note;
 		}
 
 		value = noteToPitch(noDuration);
 	}
 
+	// getters
 	public int value() {
 		return value;
 	}
@@ -28,15 +36,24 @@ public class Note {
 		return duration;
 	}
 
+	// other methods
+	// @Override public String toString() {
+	// 	return "("+value+"-"+duration+")";
+	// }
+
+	// static functions
 	public static int noteToPitch(String note) {
 
 		int value = getBaseValue(note.charAt(0));
 		
 		if(note.matches(".*[0-8].*")) {
 			int octave = Character.getNumericValue(note.charAt(note.length() - 1));
-			value += 12*octave;
+			if (note.contains("-")) 
+				octave *= -1;
+
+			value += 12*(octave+1); // base value starts from octave -1
 		} else {
-			value += 48; // 48 = 12 * 4, 4 is the octave by default
+			value += 60; // 48 = 12 * 5, 4(=-1+5) is the octave by default
 		}
 
 		String[] splitted = note.split("");
@@ -55,19 +72,19 @@ public class Note {
 		
 		switch (symbol) {
 			case 'C':
-				return 12;
+				return 0;
 			case 'D':
-				return 14;
+				return 2;
 			case 'E':
-				return 16;
+				return 4;
 			case 'F':
-				return 17;
+				return 5;
 			case 'G':
-				return 19;
+				return 7;
 			case 'A':
-				return 21;
+				return 9;
 			case 'B':
-				return 23;
+				return 11;
 		}
 
 		return -1;

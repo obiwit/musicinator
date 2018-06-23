@@ -63,10 +63,8 @@ public class MusicinatorMain {
 
          // walk main file's tree
          ParseTreeWalker main_walker = new ParseTreeWalker();
-         DefPhase def = new DefPhase(aux.noteMap);
+         DefPhase def = new DefPhase(aux.music, aux.noteMap);
          main_walker.walk(def, main_tree);
-         RefPhase ref = new RefPhase(aux.music, def.scopes);
-         main_walker.walk(ref, main_tree);
       }
    }
 }

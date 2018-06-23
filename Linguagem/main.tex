@@ -51,7 +51,7 @@
 \maketitle
 
 \tableofcontents
-\vspace{2cm} %Add a 2cm space
+\clearpage
 
 \section{Estruturas de dados (e tipos de variáveis)} \label{variables}
 \subsection{Sequências}
@@ -175,15 +175,15 @@ performance[] p = [
     [D{1.5} D{0.5}   D5 B G F# E] on guitar];
 \end{lstlisting} 
 
-Pode usar-se um array para criar outro. A palavra chave \texttt{and} anexa ao fim do array já existente o elemento ou elementos dados.  A palavra chave \texttt{except} retira o elemento ou elementos dados do array, se lá estiverem presentes.
+Pode usar-se um array para criar outro. A palavra chave \texttt{and} anexa ao fim do array já existente o elemento ou elementos dados.  %A palavra chave \texttt{except} retira o elemento ou elementos dados do array, se lá estiverem presentes.
 
 \begin{lstlisting} 
 instrument[] band = [piano, guitar, bass, drums];
 
 // definir arrrays a partir de outros arrays
 instrument[] new_band = band and violin;
-instrument[] left_over_band = band except bass;
 \end{lstlisting} 
+%instrument[] left_over_band = band except bass;
 
 Para arrays de números, o operador \texttt{a->b}, que devolve um array de inteiros de tipo \texttt{[a, a+1, ..., b-1, b]} pode também ser utilizado para gerar um array.
 \begin{lstlisting}
@@ -324,7 +324,7 @@ performance bass = [G|B|D{4} A|D|F#{4} G|B|D{4} A|D|F#{4}] on bass;
 number chorusStart = 2*|verse|;
 
 // tocar performances
-play verse 2 times on piano;
+play verse on piano 2 times;
 at chorusStart play chorus;
 
 loop bass; // repete ate ao fim da musica
@@ -541,23 +541,23 @@ Os instrumentos já definidos estão associados aos seguintes códigos: 1(\textt
 instrument percussion: drums;
 
 // mapear tons (associar nomes a tons)
-AcousticBassDrum = B0;
-BassDrum1 = C1;
-SideStick = C#1;
-AcousticSnare = D1;
-HandClap = D#1;
-ElectricSnare = E1;
-LowFloorTom = F1;
-ClosedHiHat = F#1;
-HighFloorTom = G1;
-PedalHiHat = G#1;
-LowTom = A1;
-OpenHiHat = A#1;
-LowMidTom = B1;
-HiMidTom = C2;
+acousticBassDrum = B0;
+bassDrum1 = C1;
+sideStick = C#1;
+acousticSnare = D1;
+handClap = D#1;
+electricSnare = E1;
+lowFloorTom = F1;
+closedHiHat = F#1;
+highFloorTom = G1;
+pedalHiHat = G#1;
+lowTom = A1;
+openHiHat = A#1;
+lowMidTom = B1;
+hiMidTom = C2;
 
 // a um tom podem ser associados varios nomes
-// (mas a um tom nao podem ser associadas mais que uma nota)
+// (mas a um nome nao podem ser associadas mais que um tom)
 LongWhistle = C4;
 MiddleC = C4;
                      	 
@@ -606,7 +606,7 @@ instrument thing: B0-C4 -> drums,
 % 80	Ab4	Mute Triangle
 % 81	A4	Open Triangle	
 
-
+\clearpage
 \section{Exemplos (TODO)} \label{example}
 \subsection{Parabéns}
 \begin{lstlisting}[caption=parabens.auxiliar]
@@ -626,7 +626,7 @@ sequence[] melody_lines = [
     [C5{1.5} C5{0.5} B  G A G{3}]];
 
 // perform
-play melody_lines sequentially repeat_times times on piano;
+play melody_lines sequentially on piano repeat_times times;
 \end{lstlisting}
 
 \subsection{Looping machine like thingy?}

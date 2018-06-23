@@ -37,7 +37,7 @@ public class Music {
 	}
 
 	public boolean isInstrument(String name) {
-		return 	instruments.containsKey(name);
+		return instruments.containsKey(name);
 	}
 
 	public Map getMap(){
