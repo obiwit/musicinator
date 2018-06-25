@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class Instrument {	
 	private int NOTERANGE = 108;
 	private int value[];
@@ -28,5 +30,10 @@ public class Instrument {
 
 	public int baseValue() {
 		return baseValue;
+	}
+
+	@Override
+	public String toString() {
+		return Arrays.toString(value);
 	}
 }

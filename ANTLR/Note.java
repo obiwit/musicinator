@@ -27,6 +27,17 @@ public class Note {
 
 		value = noteToPitch(noDuration);
 	}
+	
+	//setters
+	
+	public void duration(double duration) {
+		assert duration > 0;
+		this.duration = duration;
+	}
+	
+	public void value(int pitchChange) {
+		this.value = this.value + pitchChange;
+	}
 
 	// getters
 	public int value() {
@@ -88,5 +99,9 @@ public class Note {
 		}
 
 		return -109; // guarantees rests ('R') are negative
+	}
+	@Override
+	public String toString() {
+		return "[" + value + ", " + duration + "]";
 	}
 }

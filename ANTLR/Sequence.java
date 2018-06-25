@@ -1,47 +1,51 @@
 public class Sequence {
 	private double duration;
-	private Note[] notes;
+	private Chord[] chords;
 
 	// constructors
-	public Sequence(Note[] n) {
+	public Sequence(Chord[] n) {
 		duration = 0;
-		notes = new Note[n.length]; 	// (if notes was not its own array, it'd be a shallow copy of n)
+		chords = new Chord[n.length]; 	// (if notes was not its own array, it'd be a shallow copy of n)
 
 		for (int i = 0; i < n.length; i++) {
 			duration += n[i].duration();
-			notes[i] = n[i];
+			chords[i] = n[i];
 		}
 	}
 	//copy constructor
     public Sequence(Sequence s) {
-        this(s.notes);
+        this(s.chords);
     }
 
 	// getters
 	public double duration() {
 		return duration;
 	}
+	
+	public Chord[] chords() {
+		return chords;
+	}
 
 
 	// other methods
 	public Sequence modulatePitch(int pitchChange) {
-		Sequence s = new Sequence(notes);
-
-		for (int i = 0; i < notes.length; i++) {
-			s.notes[i] = new Note(s.notes[i].value() + pitchChange, s.notes[i].duration());
+		Sequence s = new Sequence(chords);
+		
+		for (int i = 0; i < chords.length; i++) {
+			s.chords[i] = new Chord(s.chords[i].modulatePitch(pitchChange), s.chords[i].duration());
 		}
 
 		return s;
 	}
 
 	public Sequence modulateTempo(double tempoChange) {
-		Sequence s = new Sequence(notes);
+		Sequence s = new Sequence(chords);
 
-		for (int i = 0; i < notes.length; i++) {
-			s.notes[i] = new Note(
-				s.notes[i].value(), 
-				(tempoChange > 0)? s.notes[i].duration() * tempoChange 
-								 : s.notes[i].duration() / tempoChange
+		for (int i = 0; i < chords.length; i++) {
+			s.chords[i] = new Chord(
+				s.chords[i].notes(), 
+				(tempoChange > 0)? s.chords[i].duration() * tempoChange 
+								 : s.chords[i].duration() / tempoChange
 				);
 		}
 		
@@ -53,23 +57,26 @@ public class Sequence {
 		duration += s.duration;
 
 		// create new note array
-		Note[] n = new Note[notes.length + s.notes.length];
+		Chord[] c = new Chord[chords.length + s.chords.length];
 
 		// fill new note array
-		for (int i = 0; i < notes.length; i++) {
-			n[i] = notes[i];
+		for (int i = 0; i < chords.length; i++) {
+			c[i] = chords[i];
 		}
-		for (int i = 0; i < s.notes.length; i++) {
-			n[notes.length+i] = s.notes[i];
+		for (int i = 0; i < s.chords.length; i++) {
+			c[chords.length+i] = s.chords[i];
 		}
 
-		notes = n;
+		chords = c;
 	}
 
 	@Override public String toString() {
 		String s = "[ ";
-		for (int i = 0; i < notes.length; i++) 
-			s += notes[i].value() + " ";
+		for (int i = 0; i < chords.length; i++) {
+			for(Note n : chords[i].notes()) {
+				s += "[" + n.value() + ", " + n.duration() + "] ,";
+			}
+		}
 		return s + "]";
 	}
 }

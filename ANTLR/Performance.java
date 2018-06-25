@@ -28,7 +28,7 @@ public class Performance {
 
     //Função para converter um double num Array de double's
     private static double[] startToArray(double start){
-    	double[] tmpArray = new double[0];
+    	double[] tmpArray = new double[1];
 		tmpArray[0] = start;
     	return tmpArray;
     }
@@ -44,12 +44,11 @@ public class Performance {
 	public int repeatTimes() {
 		return repeatTimes;
 	}
-	// TODO!! 2 functions bellow + startTime() which should return more than 1 value, if applicable
-	// repeats (2+ equal start times) must be supported!
+	
 	public void changeStartTime(double toReplace, double newStart) {
 		assert newStart > 0 && (new ArrayList<>(Arrays.asList(startTime))).contains(toReplace);
 
-		System.out.println("Linha 55 Performance: " + (new ArrayList<>(Arrays.asList(startTime))).contains(toReplace));
+		//System.out.println("Linha 55 Performance: " + (new ArrayList<>(Arrays.asList(startTime))).contains(toReplace));
 
 		for(int i = 0; i < startTime.length; i++){
 			if(startTime[i] == toReplace){
@@ -88,7 +87,22 @@ public class Performance {
 		return new Performance(startTime, sequence, instrument, repeats);
 	}
 
-	//@Override public String toString() {
-		// [[], (,,), ..., (,,), INT]
-	//}
+	@Override public String toString() {
+//			 print rests?
+//			 [[startTimes], (pitch, duration, instrument, insertionTime), ..., (,,), repeatTimes]
+		
+		String tmp = "";
+		double insertionTime = 0;
+		
+		for(Chord tmpChord : sequence.chords()) {
+			for(Note tmpNotes : tmpChord.notes()) {
+				//note.duration() === chords.duration()
+				tmp += "(" + tmpNotes.value() + ", " + tmpNotes.duration() + ", " + instrument.value(tmpNotes.value()) + ", " + insertionTime + "), ";				
+			}
+			insertionTime += tmpChord.duration();
+		}
+		
+		return "[" + Arrays.toString(startTime) + ", " + tmp + repeatTimes + "]";
+		
+		}
 }
