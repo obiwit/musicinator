@@ -91,4 +91,7 @@ public class Performance {
 		return new Performance(startTime, sequence, instrument, repeats);
 	}
 
+	//@Override public String toString() {
+		// [[], (,,), ..., (,,), INT]
+	//}
 }

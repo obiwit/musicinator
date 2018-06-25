@@ -20,12 +20,16 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	Map<String, Integer> noteMap;
 	Music music;
 	private String currentIndentation;
-	//private StringBuilder pythonCode;// TODO!!
+	//private StringBuilder pythonCode; // TODO!!
+
+	private int numberNums; // number of number variables
 
 	public DefPhase(Music music, Map<String, Integer> noteMap) {
 		this.music = music;
 		this.noteMap = noteMap;
 		currentIndentation = "";
+
+		numberNums = 0;
 	}
 	
 	/*
@@ -83,6 +87,8 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	// @Override public void enterVarAssign(MusicinatorParser.VarAssignContext ctx) { }
 	@Override public void exitVarAssign(MusicinatorParser.VarAssignContext ctx) {
 		// TODO!! Verify type!!
+
+		// var declaration if type == number
 
 		// add variable to the scope
 		Map<String, Object> currentScope = getCurrentScope(ctx.getParent().getParent());
@@ -143,15 +149,18 @@ public class DefPhase extends MusicinatorParserBaseListener {
 		// adjust performance(s) start times if they are to be played sequentially 
 		// TODO!! bellow correct?
 		if(ctx.SEQUENTIALLY() != null) {
-			// if play is 
+			// if play is contained inside a timedPlay, then timedPlay will change the
+			// start times of pers so they are sequential, while offsetting them as needed
 			if (ctx.getParent().getRuleContext() instanceof MusicinatorParser.TimedPlayContext) {
 				for (int i = 1; i < pers.length; i++) {
-					pers[i] = pers[i].addStartTime(0);
+					pers[i].addStartTime(0);
 				}
 			} else {
+				// if play is not contained inside a timedPlay, it changes the start times
+				// so they are sequential, with an offset of 0 (= default start time)
 				double currentTime = 0;
 				for (int i = 1; i < pers.length; i++) {
-					pers[i] = pers[i].addStartTime(currentTime);
+					pers[i].addStartTime(currentTime);
 					currentTime += pers[i].duration();
 				}
 			}
@@ -242,15 +251,15 @@ public class DefPhase extends MusicinatorParserBaseListener {
 						(MusicinatorParser.SimplePlayContext)ctx.play().getRuleContext();
 					if (perCtx.SEQUENTIALLY() != null) {
 						// adjust times to play array items sequentially
-						pers[0].changeStartTime(0, pers[j].startTime()+newStartTime);
+						pers[0].changeStartTime(0, pers[0].startTime() + newStartTime);
 						for (int j = 1; j < pers.length; j++) {
 							// replace 0 value placed by simplePlay
-							pers[j].changeStartTime(0, pers[j-1].startTime()+pers[j-1].duration());
+							pers[j].changeStartTime(0, pers[j-1].startTime() + pers[j-1].duration());
 						}
 					} else {
 						for (int j = 0; j < pers.length; j++) {
 							// replace 0 value placed by simplePlay
-							pers[j].changeStartTime(0ge, newStartTime);
+							pers[j].changeStartTime(0, newStartTime);
 						}
 					}
 
@@ -258,7 +267,27 @@ public class DefPhase extends MusicinatorParserBaseListener {
 			}
 		} else { // AT
 			// check number > 0
+			/*
+			if (ctx.variable() != null) {
 
+				double[] startTimes;
+
+				if(values.get(ctx.variable().getText()) instanceof double) {
+				//	startTimes = new double[]
+				} else if(values.get(ctx.variable().getText()) instanceof double[]) {
+
+				} else {
+					error("Variable \"" + ctx.variable().getText() 
+						  + "\" is neither a number nor a number array!");
+				}
+
+
+			} else if (ctx.number() != null) {
+				//double startTime
+
+			} else { //arrayExpr
+
+			}*/
 		}
 
 
@@ -355,6 +384,8 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	// @Override public void enterArrayExpr(MusicinatorParser.ArrayExprContext ctx) { }
 	@Override public void exitArrayExpr(MusicinatorParser.ArrayExprContext ctx) {
 		if (ctx.ARROW() != null) {
+			//a->b = [a, ..., b] = range(a, b+1)
+			// TODO!! change this into range (actual Python)
 			// array of consecutive numbers, from number(0) to number(1)
 			int start = (int)(double)values.get(ctx.number(0));
 			int end = (int)(double)values.get(ctx.number(1));
@@ -649,13 +680,20 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	.||   \||.  `|..'|. .||    ||. .||..|' `|...  .||.   `...' 
 	                                                           
 */	
+
+/*
+Numbers are strings.
+*/
+
 	// @Override public void enterNumDouble(MusicinatorParser.NumDoubleContext ctx) { }
 	@Override public void exitNumDouble(MusicinatorParser.NumDoubleContext ctx) {
+		// TODO!! (numberNums++)
 		values.put(ctx, (Object)(Double.parseDouble(ctx.getText())));
 	}
 	
 	// @Override public void enterNumMulDiv(MusicinatorParser.NumMulDivContext ctx) { }
 	@Override public void exitNumMulDiv(MusicinatorParser.NumMulDivContext ctx) {
+		// TODO!! (numberNums++)
 		if(ctx.op.equals("*"))
 			values.put(ctx, (Object)((double)values.get(ctx.number(0)) * (double)values.get(ctx.number(1))));
 		else
@@ -664,6 +702,7 @@ public class DefPhase extends MusicinatorParserBaseListener {
 
 	// @Override public void enterNumAddSub(MusicinatorParser.NumAddSubContext ctx) { }
 	@Override public void exitNumAddSub(MusicinatorParser.NumAddSubContext ctx) {
+		// TODO!! (numberNums++)
 		if(ctx.op.equals("+"))
 			values.put(ctx, (Object)((double)values.get(ctx.number(0)) + (double)values.get(ctx.number(1))));
 		else
@@ -672,22 +711,27 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	
 	// @Override public void enterNumVar(MusicinatorParser.NumVarContext ctx) { }
 	@Override public void exitNumVar(MusicinatorParser.NumVarContext ctx) {
+		// TODO!! (numberNums++)
 		values.put(ctx, values.get(ctx.variable()));
 	}
 
 	// @Override public void enterNumInt(MusicinatorParser.NumIntContext ctx) { }
 	@Override public void exitNumInt(MusicinatorParser.NumIntContext ctx) {
+		// TODO!! (numberNums++)
 		values.put(ctx, (Object)(Double.parseDouble(ctx.getText())));
 	}
 
 	// @Override public void enterNumGetInt(MusicinatorParser.NumGetIntContext ctx) { }
 	@Override public void exitNumGetInt(MusicinatorParser.NumGetIntContext ctx) {
+		// TODO!! (numberNums++)
 		// TODO!!
 		// also Python - String Builder
 	}
 	
 	// @Override public void enterNumDuration(MusicinatorParser.NumDurationContext ctx) { }
 	@Override public void exitNumDuration(MusicinatorParser.NumDurationContext ctx) {
+		// TODO!! (numberNums++)
+
 		Map<String, Object> currentScope = getCurrentScope(ctx.getParent().getParent());
 		
 		// get sequence
@@ -711,7 +755,6 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	@Override public void exitVariable(MusicinatorParser.VariableContext ctx) {
 		// get current scope
 		Map<String, Object> currentScope =  getCurrentScope(ctx.getParent().getParent());
-		
 
 		// check variable exists
 		String var = ctx.WORD().getText();

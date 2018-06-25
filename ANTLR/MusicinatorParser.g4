@@ -17,9 +17,9 @@ assignment
 		| arrayTypes OPEN_SB CLOSE_SB WORD EQUAL arrayExpr SEMICOLON 	#arrayAssign
 		;
 
-play 	: PLAY performance SEQUENTIALLY? (number TIMES)? SEMICOLON 		#simplePlay
-		| (AT (number|arrayExpr) | AFTER variable ALWAYS?) play			#timedPlay
-		| LOOP performance												#loopPlay
+play 	: PLAY performance SEQUENTIALLY? (number TIMES)? SEMICOLON 			#simplePlay
+		| (AT (variable|number|arrayExpr) | AFTER variable ALWAYS?) play	#timedPlay
+		| LOOP performance													#loopPlay
 		;
 
 forStat	: FOR arrayTypes WORD IN WORD OPEN_BR instructions* CLOSE_BR
