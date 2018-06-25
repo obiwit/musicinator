@@ -5,6 +5,9 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import java.util.*;
 import java.lang.reflect.*;
+import java.io.*;
+import org.stringtemplate.v4.*;
+import java.lang.StringBuilder;
 
 /**
  * A listerner that walks the main file's tree.
@@ -20,16 +23,21 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	Map<String, Integer> noteMap;
 	Music music;
 	private String currentIndentation;
-	//private StringBuilder pythonCode; // TODO!!
+	final STGroup group;
+	StringBuilder towrite;
+	PrintWriter printer;
+	ST gen;
 
-	private int numberNums; // number of number variables
 
 	public DefPhase(Music music, Map<String, Integer> noteMap) {
 		this.music = music;
 		this.noteMap = noteMap;
 		currentIndentation = "";
-
-		numberNums = 0;
+		group = new STGroupFile("generator.stg");
+		towrite = new StringBuilder();
+		printer = new PrintWriter(new FileOutputStream(
+    		new File("temp.py"), 
+    		true)); 
 	}
 	
 	/*
@@ -58,15 +66,25 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	
 	@Override public void enterMain(MusicinatorParser.MainContext ctx) {
 		scopes.put(ctx, new HashMap<String, Object>());
-		// TODO!!
-
-		// TODO - Python - generate start of python file, with BPM info, to StringBuilder
+		int maxtracks = 0;
+		String temp = ctx.getText();
+		maxtracks = ctx.instructions().size();
+		towrite.append(group.getInstanceOf("header").render()+"\n"); //Python imports
+		//////////
+		gen = group.getInstanceOf("createmidi");
+		gen.add("varbpm", music.bpm());				//Initializing Midi
+		gen.add("vartrack", maxtracks);
+		//////////
+		towrite.append(gen.render()+"\n");
+		towrite.append(group.getInstanceOf("body").render()+"\n"); // def addnotes()
+		
 	}
 	@Override public void exitMain(MusicinatorParser.MainContext ctx) {
 		System.out.println(scopes.get(ctx));
-		// write from StringBuilder to python
-		// TODO!!
+		printer.append(towrite);
+		
 	}
+	
 	
 	// @Override public void enterInstructions(MusicinatorParser.InstructionsContext ctx) { }
 	// @Override public void exitInstructions(MusicinatorParser.InstructionsContext ctx) {
