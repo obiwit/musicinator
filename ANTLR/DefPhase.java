@@ -18,26 +18,27 @@ import java.lang.StringBuilder;
  */
 
 public class DefPhase extends MusicinatorParserBaseListener {
-	ParseTreeProperty<Map<String, Object>> scopes = new ParseTreeProperty<>();
-	ParseTreeProperty<Object> values = new ParseTreeProperty<>();
-	Map<String, Integer> noteMap;
-	Music music;
+	private ParseTreeProperty<Map<String, Object>> scopes = new ParseTreeProperty<>();
+	private ParseTreeProperty<Object> values = new ParseTreeProperty<>();
+	private Map<String, Integer> noteMap;
+	private Music music;
+	private int numberNums;
+	
 	private String currentIndentation;
 	final STGroup group;
-	StringBuilder towrite;
-	PrintWriter printer;
-	ST gen;
-	private int NumberNums;
+	private StringBuilder towrite;
+	private PrintWriter printer;
+	private ST gen;
 
-
+	// constructor
 	public DefPhase(Music music, Map<String, Integer> noteMap, String filename) {
-		NumberNums = 0;
 		this.music = music;
 		this.noteMap = noteMap;
 		currentIndentation = "";
+		numberNums = 0;
 
 		group = new STGroupFile("generator.stg");
-			
+
 		try {
 			towrite = new StringBuilder();
 			printer = new PrintWriter(new FileOutputStream(
@@ -83,6 +84,9 @@ public class DefPhase extends MusicinatorParserBaseListener {
 		gen.add("varbpm", music.bpm());				//Initializing Midi
 		gen.add("vartrack", maxtracks);
 		//////////
+
+		// TODO!! add instruments as arrays using vardecl
+
 		towrite.append(gen.render()+"\n");
 		towrite.append(group.getInstanceOf("body").render()+"\n"); // def addnotes()
 		
@@ -110,7 +114,9 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	                          `..|' 
 */
 	
-	// @Override public void enterVarAssign(MusicinatorParser.VarAssignContext ctx) { }
+	@Override public void enterVarAssign(MusicinatorParser.VarAssignContext ctx) {
+		// TODO!! Verify name
+	}
 	@Override public void exitVarAssign(MusicinatorParser.VarAssignContext ctx) {
 		// TODO!! Verify type!!
 
@@ -123,7 +129,9 @@ public class DefPhase extends MusicinatorParserBaseListener {
 			currentScope.put(ctx.WORD().getText(), values.get(ctx.performance()));
 	}
 	
-	// @Override public void enterArrayAssign(MusicinatorParser.ArrayAssignContext ctx) { }
+	@Override public void enterArrayAssign(MusicinatorParser.ArrayAssignContext ctx) {
+		// TODO!! Verify name
+	}
 	@Override public void exitArrayAssign(MusicinatorParser.ArrayAssignContext ctx) {
 		// add variable to the scope
 		Map<String, Object> currentScope = getCurrentScope(ctx.getParent().getParent());
@@ -161,24 +169,19 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	}
 	// @Override public void enterSimplePlay(MusicinatorParser.SimplePlayContext ctx) { }
 	@Override public void exitSimplePlay(MusicinatorParser.SimplePlayContext ctx) {
-		// TODO!! if getParent is not timedPlay, write to String Builder
-
 		// get performance(s)
 		if (!(values.get(ctx.performance()) instanceof Performance[])) {
 			error("Variable \"" + ctx.performance().getText() + "\" is not a performance!");
 		}
 		Performance[] pers = (Performance[])values.get(ctx.performance());
 
-		// adjust performance(s) start times if they are to be played sequentially 
-		// TODO!! bellow correct?
-		if(ctx.SEQUENTIALLY() != null) {
-			// if play is contained inside a timedPlay, then timedPlay will change the
-			// start times of pers so they are sequential, while offsetting them as needed
-			if (ctx.getParent().getRuleContext() instanceof MusicinatorParser.TimedPlayContext) {
-				for (int i = 1; i < pers.length; i++) {
-					pers[i].addStartTime(0);
-				}
-			} else {
+		// if play is contained inside a timedPlay, then there is no need to set start times:
+		// timedPlay itself will set the start times of the performances
+		if (!(ctx.getParent().getRuleContext() instanceof MusicinatorParser.TimedPlayContext)) {
+			
+			// adjust performance(s) start times if they are to be played sequentially
+			if(ctx.SEQUENTIALLY() != null) {
+				 
 				// if play is not contained inside a timedPlay, it changes the start times
 				// so they are sequential, with an offset of 0 (= default start time)
 				double currentTime = 0;
@@ -186,7 +189,14 @@ public class DefPhase extends MusicinatorParserBaseListener {
 					pers[i].addStartTime(currentTime);
 					currentTime += pers[i].duration();
 				}
-			}
+			} else {
+				for (int i = 1; i < pers.length; i++) {
+					pers[i].addStartTime(0);
+				}
+			}	
+
+			// update longestPerformanceDuration, if it is the case, using the last start time as reference
+			updateLongestPerformanceDuration(pers);
 		}
 
 		if(ctx.TIMES() != null) { // repeat instruction		
@@ -196,15 +206,7 @@ public class DefPhase extends MusicinatorParserBaseListener {
 			}
 		}
 
-		// update longestPerformanceDuration, if it is the case, using the last start time as reference
-		for (int i = 0; i < pers.length; i++) {
-			double[] perStartTimes =  pers[i].startTime();
-			double totalDuration = perStartTimes[perStartTimes.length - 1] 
-									+ pers[i].duration()*pers[i].repeatTimes();
-			if (music.longestPerformanceDuration() < totalDuration) {
-				music.longestPerformanceDuration(totalDuration);
-			}
-		}
+		// TODO!! if getParent is not timedPlay, write to String Builder
 
 		// pass performance "up"
 		values.put(ctx, (Object)pers);
@@ -231,13 +233,9 @@ public class DefPhase extends MusicinatorParserBaseListener {
 			
 			// get reference performance (via variable)
 			Performance[] refs;
-			if (!currentScope.containsKey(ctx.variable().WORD().getText())) {
-				error("Variable \"" + ctx.variable().WORD() + "\" does not exist!");
-			} 	
 			if (!(currentScope.get(ctx.variable().WORD().getText()) instanceof Performance[])) {
 				error("Variable \"" + ctx.variable().WORD().getText() + "\" is not a performance!");
 			}
-
 			refs = (Performance[])currentScope.get(ctx.variable().WORD().getText());
 			if (refs.length == 0) {
 				error("Variable \"" + ctx.variable().WORD().getText() + "\" is an empty performance array!");
@@ -267,52 +265,64 @@ public class DefPhase extends MusicinatorParserBaseListener {
 				} else {
 					// use only first start
 					double newStartTime = refs[i].startTime()[0] + refs[i].duration(); 
-					// TODO!! replace refs[i].startTime() by refs[i].startTime()[0] or equiv
-
-					// TODO!! the fors bellow will also need to be corrected - if more than 1 refs,
-					// bellow fors don't work (because only one set of 0s)
 
 					MusicinatorParser.SimplePlayContext perCtx = 
 						(MusicinatorParser.SimplePlayContext)ctx.play().getRuleContext();
+
 					if (perCtx.SEQUENTIALLY() != null) {
+
 						// adjust times to play array items sequentially
-						for (int j = 0; j < pers.length; j++) {
-							// replace 0 value placed by simplePlay with new start time
-							pers[j].changeStartTime(0, newStartTime);
+						newStartTime += pers[i].duration();
+
+						// add other start times, if any
+						for (int j = 1; j < pers.length; j++) {
+							pers[j].addStartTime(newStartTime);
 							newStartTime += pers[i].duration();
 						}
+
 					} else {
+
+						// start times, if any
 						for (int j = 0; j < pers.length; j++) {
-							// replace 0 value placed by simplePlay
-							pers[j].changeStartTime(0, newStartTime);
+							pers[j].addStartTime(newStartTime);
 						}
 					}
 
 				}
 			}
 		} else { // AT
-			// check number > 0
-			/*
+
+			String numbers = "";
 			if (ctx.variable() != null) {
 
-				double[] startTimes;
-
-				if(values.get(ctx.variable().getText()) instanceof double) {
-				//	startTimes = new double[]
-				} else if(values.get(ctx.variable().getText()) instanceof double[]) {
-
+				if(values.get(ctx.variable()) instanceof String) {
+					numbers = (String)values.get(ctx.variable());
 				} else {
 					error("Variable \"" + ctx.variable().getText() 
 						  + "\" is neither a number nor a number array!");
 				}
 
 
-			} else if (ctx.number() != null) {
-				//double startTime
+			} 
+			if (numbers.contains("_v") || ctx.number() != null) {
+				if(!numbers.contains("_v"))
+					numbers = (String)values.get(ctx.number());
 
-			} else { //arrayExpr
+					// add other start times, if any
+					for (int j = 1; j < pers.length; j++) {
+						//pers[j].addStartTime(0, newStartTime);
+					}
 
-			}*/
+			} else { 
+				if(!numbers.contains("_a"))
+					numbers = (String)values.get(ctx.arrayExpr());
+
+					// add other start times, if any
+					for (int j = 1; j < pers.length; j++) {
+						//pers[j].addStartTime(0, newStartTime);
+					}
+
+			}
 		}
 
 
@@ -409,26 +419,16 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	// @Override public void enterArrayExpr(MusicinatorParser.ArrayExprContext ctx) { }
 	@Override public void exitArrayExpr(MusicinatorParser.ArrayExprContext ctx) {
 		if (ctx.ARROW() != null) {
-			//a->b = [a, ..., b] = range(a, b+1)
-			// TODO!! change this into range (actual Python)
-			// array of consecutive numbers, from number(0) to number(1)
-			int start = (int)(double)values.get(ctx.number(0));
-			int end = (int)(double)values.get(ctx.number(1));
 
-			int range = end - start + 1;
+			// a->b = [a, ..., b] = range(a, b+1)
+			String arrayName = "_a" + numberNums++;
 
-			if (range > 0) {
-				double[] array = new double[range];
+			gen = group.getInstanceOf("vardec");
+	        gen.add("name", arrayName);
+	        gen.add("value", "range(" + values.get(ctx.number(0)) + ", " 
+	        				 + values.get(ctx.number(1)) + "+1)");
 
-				for(int i = 0; i < range; i++) {
-					array[i] = i+start;
-				}
-
-				values.put(ctx, (Object)array);
-			} else {
-				error("Can't create number array " + start + "->" + end + "! "
-					  + start + " is bigger than " + end + "!");
-			}
+			values.put(ctx, (Object)arrayName);
 
 		} else if (ctx.expr(0) != null) {
 			// get type of array
@@ -444,14 +444,20 @@ public class DefPhase extends MusicinatorParserBaseListener {
 			try {
 
 				if (type.equals("Number")) {
-					// build array of numbers
-					double[] array = new double[size];
-
+					// build explicit array of numbers in python
+					String arrayBody = "[";
 					for (int i = 0; i < size; i++) {
-						array[i] = (double)values.get(ctx.expr(i));
+						arrayBody += (String)values.get(ctx.expr(i)) + ",";
 					}
+					arrayBody = arrayBody.substring(0, arrayBody.length()-1) + "]";
 
-					values.put(ctx, (Object)array);
+					String arrayName = "_a" + numberNums++;
+
+					gen = group.getInstanceOf("vardec");
+			        gen.add("name", arrayName);
+			        gen.add("value", arrayBody);
+
+					values.put(ctx, (Object)arrayName);
 
 				} else {
 					Class<?> clazz = Class.forName(type);
@@ -526,17 +532,16 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	
 	// @Override public void enterSeqNote(MusicinatorParser.SeqNoteContext ctx) { }
 	@Override public void exitSeqNote(MusicinatorParser.SeqNoteContext ctx) {
-		Note[] n = new Note[1];
-		n[0] = new Note(ctx.SOUND().getText());
-		values.put(ctx, new Sequence(n));
+		Note[] n = { new Note(ctx.SOUND().getText()) };
+		Chord[] c = { new Chord(n, n[0].duration()) };
+		values.put(ctx, new Sequence(c));
 	}
 	
 	// @Override public void enterSeqChord(MusicinatorParser.SeqChordContext ctx) { }
 	@Override public void exitSeqChord(MusicinatorParser.SeqChordContext ctx) {
 		// TODO!! CLASS CHORD, etc.
-		Note[] n = new Note[1];
-		n[0] = new Note(ctx.CHORD().getText());
-		values.put(ctx, new Sequence(n));
+		Chord[] c = { new Chord(ctx.CHORD().getText()) };
+		values.put(ctx, new Sequence(c));
 	}
 	
 	// @Override public void enterSeqPitchMod(MusicinatorParser.SeqPitchModContext ctx) { }
@@ -576,7 +581,7 @@ public class DefPhase extends MusicinatorParserBaseListener {
 			}
 
 		} else {
-			seq = new Sequence(new Note[0]);
+			seq = new Sequence(new Chord[0]);
 		}
 
 		values.put(ctx, (Object)seq);
@@ -707,13 +712,14 @@ public class DefPhase extends MusicinatorParserBaseListener {
 */	
 
 /*
-Numbers are strings.
+	Numbers are strings. In python, they will be variables started by 'v'.
+	Number arrays are strings. In python, they will be variable started by 'a'.
 */
 
 	// @Override public void enterNumDouble(MusicinatorParser.NumDoubleContext ctx) { }
 	@Override public void exitNumDouble(MusicinatorParser.NumDoubleContext ctx) {
 		// TODO!! (numberNums++)
-		String varName = "_v"+NumberNums++;
+		String varName = "_v" + numberNums++;
 		// varName + " = "+ctx.INT().getText()+"\n";
 		gen = group.getInstanceOf("vardec");
 		gen.add("name", varName);
@@ -727,7 +733,7 @@ Numbers are strings.
 	@Override public void exitNumMulDiv(MusicinatorParser.NumMulDivContext ctx) {
 		// TODO!! (numberNums++)
 		gen = group.getInstanceOf("vardec");
-		String varName = "_v"+NumberNums++;
+		String varName = "_v" + numberNums++;
 		if(ctx.op.equals("*")){
 			String toadd = values.get(ctx.number(0)) + "*" + values.get(ctx.number(1)) + "\n";
 			values.put(ctx, (Object)(varName));
@@ -747,7 +753,7 @@ Numbers are strings.
 	@Override public void exitNumAddSub(MusicinatorParser.NumAddSubContext ctx) {
 		// TODO!! (numberNums++)
 		gen = group.getInstanceOf("vardec");
-		String varName = "_v"+NumberNums++;
+		String varName = "_v" + numberNums++;
 		if(ctx.op.equals("+")){
 			String toadd = values.get(ctx.number(0)) + "+" + values.get(ctx.number(1)) + "\n";
 			values.put(ctx, (Object)(varName));
@@ -766,7 +772,7 @@ Numbers are strings.
 	// @Override public void enterNumVar(MusicinatorParser.NumVarContext ctx) { }
 	@Override public void exitNumVar(MusicinatorParser.NumVarContext ctx) {
 		gen = group.getInstanceOf("vardec");
-		String varName = "_v"+NumberNums++;
+		String varName = "_v" + numberNums++;
 		if(!(values.get(ctx.variable()) instanceof String)){
 			error("Variable \"" + ctx.variable().getText() + "\" is not a number");
 		}else{
@@ -780,7 +786,7 @@ Numbers are strings.
 	// @Override public void enterNumInt(MusicinatorParser.NumIntContext ctx) { }
 	@Override public void exitNumInt(MusicinatorParser.NumIntContext ctx) {
 		gen = group.getInstanceOf("vardec");
-		String varName = "_v"+NumberNums++;
+		String varName = "_v" + numberNums++;
 		gen.add("name", varName);
 		gen.add("value", ctx.getText());
 		values.put(ctx, (Object)(varName));
@@ -790,7 +796,7 @@ Numbers are strings.
 	// @Override public void enterNumGetInt(MusicinatorParser.NumGetIntContext ctx) { }
 	@Override public void exitNumGetInt(MusicinatorParser.NumGetIntContext ctx) {
 		gen = group.getInstanceOf("u_getint");
-		String varName = "_v"+NumberNums++;
+		String varName = "_v" + numberNums++;
 		gen.add("str", ctx.STRING().getText());
 		gen.add("varname", varName);
 		values.put(ctx, (Object)(varName));
@@ -800,7 +806,7 @@ Numbers are strings.
 	// @Override public void enterNumDuration(MusicinatorParser.NumDurationContext ctx) { }
 	@Override public void exitNumDuration(MusicinatorParser.NumDurationContext ctx) {
 		gen = group.getInstanceOf("vardec");
-		String varName = "_v"+NumberNums++;
+		String varName = "_v" + numberNums++;
 
 		Map<String, Object> currentScope = getCurrentScope(ctx.getParent().getParent());
 		
@@ -876,14 +882,26 @@ Numbers are strings.
                                    
 */
 
+
+	private void error(String details) {
+		System.err.println("ERROR! " + details);
+		System.exit(1);
+	}
+
 	private Map<String, Object> getCurrentScope(ParserRuleContext scopeCtx) {
 		while (scopes.get(scopeCtx) == null) scopeCtx = scopeCtx.getParent();
 		return scopes.get(scopeCtx);
 	}
 
-	private void error(String details) {
-		System.err.println("ERROR! " + details);
-		System.exit(1);
+	private void updateLongestPerformanceDuration(Performance[] pers) {
+		for (int i = 0; i < pers.length; i++) {
+			double[] perStartTimes =  pers[i].startTime();
+			double totalDuration = perStartTimes[perStartTimes.length - 1] 
+									+ pers[i].duration()*pers[i].repeatTimes();
+			if (music.longestPerformanceDuration() < totalDuration) {
+				music.longestPerformanceDuration(totalDuration);
+			}
+		}
 	}
 	
 	// @Override public void enterTypes(MusicinatorParser.TypesContext ctx) { }

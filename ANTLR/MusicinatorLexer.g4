@@ -2,7 +2,7 @@ lexer grammar MusicinatorLexer;
 
 //LEXER RULES
 CHORD:			NOTE ('|' NOTE)+ DURATION?;
-SOUND: 			(NOTE | 'R' ) ('|' NOTE)* DURATION?; // remove ('|' NOTE)*
+SOUND: 			(NOTE | 'R' ) DURATION?;
 fragment NOTE: 	LETTER ('#'|'b')* OCTAVE?;
 fragment LETTER:[A-G];
 
@@ -60,8 +60,8 @@ CLOSE_PR: ')';
 CLOSE_SB: ']';
 CLOSE_BR: '}';
 
-WORD: 			[_a-z] ([_a-zA-Z] | DIGIT)*;
-STRING: '"' .*? '"';
+WORD: 		[a-z] ([_a-zA-Z] | DIGIT)*;
+STRING: 	'"' .*? '"';
 
 LINE_COMMENT: 	'//' ~[\r\n]* -> skip;
 BLOCK_COMMENT: 	'/*' .*? '*/' -> skip;
