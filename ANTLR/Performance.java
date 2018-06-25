@@ -23,7 +23,7 @@ public class Performance {
 	public double duration() {
 		return sequence.duration();
 	}
-	public double startTime() {
+	public double[] startTime() {
 		return startTime;
 	}
 	public int repeatTimes() {
