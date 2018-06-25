@@ -54,12 +54,14 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	
 	@Override public void enterMain(MusicinatorParser.MainContext ctx) {
 		scopes.put(ctx, new HashMap<String, Object>());
+		// TODO!!
 
 		// TODO - Python - generate start of python file, with BPM info, to StringBuilder
 	}
 	@Override public void exitMain(MusicinatorParser.MainContext ctx) {
 		System.out.println(scopes.get(ctx));
 		// write from StringBuilder to python
+		// TODO!!
 	}
 	
 	// @Override public void enterInstructions(MusicinatorParser.InstructionsContext ctx) { }
@@ -80,19 +82,21 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	
 	// @Override public void enterVarAssign(MusicinatorParser.VarAssignContext ctx) { }
 	@Override public void exitVarAssign(MusicinatorParser.VarAssignContext ctx) {
-		//System.out.println("Var Assigned: "+ ctx.WORD() + " of type " + ctx.types().getText());
+		// TODO!! Verify type!!
 
 		// add variable to the scope
-		Map<String, Object> currentScope = scopes.get(ctx.getParent().getParent());
-		currentScope.put(ctx.WORD().getText(), values.get(ctx.expr()));
+		Map<String, Object> currentScope = getCurrentScope(ctx.getParent().getParent());
+		
+		if(ctx.expr() != null)
+			currentScope.put(ctx.WORD().getText(), values.get(ctx.expr()));
+		else
+			currentScope.put(ctx.WORD().getText(), values.get(ctx.performance()));
 	}
 	
 	// @Override public void enterArrayAssign(MusicinatorParser.ArrayAssignContext ctx) { }
 	@Override public void exitArrayAssign(MusicinatorParser.ArrayAssignContext ctx) {
-		//System.out.println("Array Assigned: "+ ctx.WORD() + " of type " + ctx.arrayTypes().getText());	
-
 		// add variable to the scope
-		Map<String, Object> currentScope = scopes.get(ctx.getParent().getParent());
+		Map<String, Object> currentScope = getCurrentScope(ctx.getParent().getParent());
 		currentScope.put(ctx.WORD().getText(), values.get(ctx.arrayExpr()));
 	}
 
@@ -107,15 +111,117 @@ public class DefPhase extends MusicinatorParserBaseListener {
 */	
 	
 	// @Override public void enterLoopPlay(MusicinatorParser.LoopPlayContext ctx) { }
-	@Override public void exitLoopPlay(MusicinatorParser.LoopPlayContext ctx) { }
-	// @Override public void enterRepeatPlay(MusicinatorParser.RepeatPlayContext ctx) { }
-	@Override public void exitRepeatPlay(MusicinatorParser.RepeatPlayContext ctx) { }
+	@Override public void exitLoopPlay(MusicinatorParser.LoopPlayContext ctx) {
+		// TODO!! write to String Builder
+
+		// get performance(s)
+		Performance[] pers = (Performance[])values.get(ctx.performance());
+
+		// change repeatTime for each performance in pers, if necessary
+		for (int i = 0; i < pers.length; i++) {
+
+			double totalDuration = pers[i].startTime() + pers[i].duration();
+
+			// get longestPerformance, change repeatTimes so totalDur (duration*repeats) >= (longest - start)
+			int repeatTimes = (int)((music.longestPerformanceDuration() - pers[i].startTime()) 
+									/ pers[i].duration()) + 1;
+			pers[i].repeatTimes(repeatTimes);
+		}
+
+		values.put(ctx, pers);
+	}
 	// @Override public void enterSimplePlay(MusicinatorParser.SimplePlayContext ctx) { }
-	@Override public void exitSimplePlay(MusicinatorParser.SimplePlayContext ctx) { }
+	@Override public void exitSimplePlay(MusicinatorParser.SimplePlayContext ctx) {
+		// TODO!! if getParent is not timedPlay, write to String Builder
+
+		// get performance(s)
+		if (!(values.get(ctx.performance()) instanceof Performance[])) {
+			error("Variable \"" + ctx.performance().getText() + "\" is not a performance!");
+		}
+		Performance[] pers = (Performance[])values.get(ctx.performance());
+
+		// adjust performance(s) start times if they are to be played sequentially
+		if(ctx.SEQUENTIALLY() != null) {
+			for (int i = 1; i < pers.length; i++) {
+				pers[i] = pers[i].delay(pers[i-1].duration());
+			}
+		}
+
+		if(ctx.TIMES() != null) { // repeat instruction		
+			// update repeatTimes for each performance
+			for (int i = 0; i < pers.length; i++) {
+				pers[i] = pers[i].repeat((int)(double)values.get(ctx.number()));
+			}
+		}
+
+		// update longestPerformanceDuration, if it is the case
+		for (int i = 0; i < pers.length; i++) {
+			double totalDuration = pers[i].startTime() + pers[i].duration()*pers[i].repeatTimes();
+			if (music.longestPerformanceDuration() < totalDuration) {
+				music.longestPerformanceDuration(totalDuration);
+			}
+		}
+
+		// pass performance "up"
+		values.put(ctx, (Object)pers);
+	}
 	// @Override public void enterTimedPlay(MusicinatorParser.TimedPlayContext ctx) { }
 	@Override public void exitTimedPlay(MusicinatorParser.TimedPlayContext ctx) {
-		// check wether AT or AFTER
-		// check wehter ALWAYS
+		// TODO!! write to String Builder
+
+		// get target performance(s)
+		Performance pers[] = (Performance[])values.get(ctx.play());
+
+		// check performance(s) start time is 0, otherwise, rise ERROR,
+		// because it's time has already been altered (two timed play
+		// instructions have been written in the same statement)
+		if(pers[0].startTime() != 0) {
+			error("A performance can't have conflicting start times! Invalid instruction: "
+				  + ctx.getText());
+		}
+
+		// get scope
+		Map<String, Object> currentScope = getCurrentScope(ctx.getParent().getParent());
+
+		// check whether AT or AFTER
+		if (ctx.AFTER() != null) {
+			
+			// get reference performance (via variable)
+			Performance[] refs;
+			if (!currentScope.containsKey(ctx.variable().WORD().getText())) {
+				error("Variable \"" + ctx.variable().WORD() + "\" does not exist!");
+			} 	
+			if (!(currentScope.get(ctx.variable().WORD().getText()) instanceof Performance[])) {
+				error("Variable \"" + ctx.variable().WORD().getText() + "\" is not a performance!");
+			}
+			refs = (Performance[])currentScope.get(ctx.variable().WORD().getText());
+
+			Performance temp = null;
+			if (ctx.variable().OPEN_SB() != null) {
+				// variable is an entry of array
+				int index = Integer.parseInt(ctx.variable().INT().getText());
+				if(refs.length <= index) {
+					error("Array index out of bounds (" + index + ") in array \""
+						  + ctx.variable().WORD().getText() + "\"!");
+				}
+				temp = refs[index];
+			}
+
+			// TODO!! continue
+			// ... start(s) & duration have a reason
+			for(int i = 0; i < refs.length; i++)
+				System.out.println(refs[i].startTime());
+
+			// check whether ALWAYS
+			if (ctx.ALWAYS() != null) {
+				// use all starts
+			} else {
+				// use only first start
+			}
+		} else {
+
+		}
+
 	}
 
 /*
@@ -128,14 +234,18 @@ public class DefPhase extends MusicinatorParserBaseListener {
 */
 	
 	@Override public void enterForStat(MusicinatorParser.ForStatContext ctx) {
-		scopes.put(ctx, new HashMap<String, Object>());
-		
+		// TODO!! write to String Builder
+
+		scopes.put(ctx, new HashMap<String, Object>()); // TODO copy old scope (HashMap shallow copy - use .clone() ?) 
+		// TODO!!
+
 		// add python code to iterate the for loop to stringbuilder
 		// if numbers, use for numbers
 		currentIndentation += "\t";
 	}
 	@Override public void exitForStat(MusicinatorParser.ForStatContext ctx) {
 		// end for loop
+		// TODO!!
 
 		// remove trailing '\t'
 		currentIndentation = currentIndentation.substring(0, currentIndentation.length()-1);
@@ -151,13 +261,17 @@ public class DefPhase extends MusicinatorParserBaseListener {
 */
 	
 	@Override public void enterIfStat(MusicinatorParser.IfStatContext ctx) {
-		scopes.put(ctx, new HashMap<String, Object>());
+		// TODO!! write to String Builder
+
+		scopes.put(ctx, new HashMap<String, Object>()); // TODO copy old scope (HashMap shallow copy - use .clone() ?)
+		// TODO!!
 
 		// add python code to iterate the if to stringbuilder
 		currentIndentation += "\t";
 	}
 	@Override public void exitIfStat(MusicinatorParser.IfStatContext ctx) {
 		// end if
+		// TODO!!
 
 		// remove trailing '\t'
 		currentIndentation = currentIndentation.substring(0, currentIndentation.length()-1);
@@ -198,9 +312,7 @@ public class DefPhase extends MusicinatorParserBaseListener {
 
 	// @Override public void enterArrayExpr(MusicinatorParser.ArrayExprContext ctx) { }
 	@Override public void exitArrayExpr(MusicinatorParser.ArrayExprContext ctx) {
-		if(ctx.list() != null) {
-			values.put(ctx, values.get(ctx.list()));
-		} else if (ctx.ARROW() != null) {
+		if (ctx.ARROW() != null) {
 			// array of consecutive numbers, from number(0) to number(1)
 			int start = (int)(double)values.get(ctx.number(0));
 			int end = (int)(double)values.get(ctx.number(1));
@@ -216,8 +328,8 @@ public class DefPhase extends MusicinatorParserBaseListener {
 
 				values.put(ctx, (Object)array);
 			} else {
-				System.err.println("ERROR! Can't create number array "+start+"->"+end+"! "+start+" is bigger than "+end+"!");
-				System.exit(1);
+				error("Can't create number array " + start + "->" + end + "! "
+					  + start + " is bigger than " + end + "!");
 			}
 
 		} else if (ctx.expr(0) != null) {
@@ -255,56 +367,14 @@ public class DefPhase extends MusicinatorParserBaseListener {
 
 
 			} catch(ClassNotFoundException e) {
-				System.out.println("ERROR: array of type " + type + " could not be created!");
-				System.exit(1);
+				error("Array of type " + type + " could not be created!");
 			}
 		} else {
 			// array is empty ("[]")
 			values.put(ctx, (Object)new Object[0]);
 		}
 	}
-	
-	// @Override public void enterList(MusicinatorParser.ListContext ctx) { }
-	@Override public void exitList(MusicinatorParser.ListContext ctx) {
-		// get type of array
-		MusicinatorParser.ArrayAssignContext assignCtx = (MusicinatorParser.ArrayAssignContext)ctx.getParent().getParent().getRuleContext();
-		String type = assignCtx.arrayTypes().getText();
-		type = type.substring(0, 1).toUpperCase() + type.substring(1);
 
-		// get size of array
-		int size = ctx.expr().size();
-
-		// build array
-		try {
-
-			if (type.equals("Number")) {
-				// build array of numbers
-				double[] array = new double[size];
-
-				for (int i = 0; i < size; i++) {
-					array[i] = (double)values.get(ctx.expr(i));
-				}
-
-				values.put(ctx, (Object)array);
-
-			} else {
-				Class<?> clazz = Class.forName(type);
-				Object array = Array.newInstance(clazz, size);
-
-				for (int i = 0; i < size; i++) {
-					Array.set(array, i, values.get(ctx.expr(i)));
-				}
-
-				values.put(ctx, array);
-			}
-
-
-		} catch(ClassNotFoundException e) {
-			System.out.println("ERROR: array of type " + type + " could not be created!");
-			System.exit(1);
-		}
-	}
-	
 	// @Override public void enterVarExpr(MusicinatorParser.VarExprContext ctx) { }
 	@Override public void exitVarExpr(MusicinatorParser.VarExprContext ctx) {
 		values.put(ctx, values.get(ctx.variable()));
@@ -339,8 +409,7 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	@Override public void exitSeqSpeedMod(MusicinatorParser.SeqSpeedModContext ctx) {
 		// get sequence
 		if(!(values.get(ctx.sequence()) instanceof Sequence)) {
-			System.err.println("ERROR! Variable \"" + ctx.sequence().getText() + "\" is not a sequence!");
-			System.exit(1);
+			error("Variable \"" + ctx.sequence().getText() + "\" is not a sequence!");
 		}
 		Sequence seq = (Sequence)values.get(ctx.sequence());
 
@@ -367,8 +436,7 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	@Override public void exitSeqPitchMod(MusicinatorParser.SeqPitchModContext ctx) {
 		// get sequence
 		if(!(values.get(ctx.sequence()) instanceof Sequence)) {
-				System.err.println("ERROR! Variable \"" + ctx.sequence().getText() + "\" is not a sequence!");
-				System.exit(1);
+			error("Variable \"" + ctx.sequence().getText() + "\" is not a sequence!");
 		}
 		Sequence seq = (Sequence)values.get(ctx.sequence());
 
@@ -388,16 +456,14 @@ public class DefPhase extends MusicinatorParserBaseListener {
 		if (seqNum > 0) {
 			// get first sequence
 			if(!(values.get(ctx.sequence(0)) instanceof Sequence)) {
-				System.err.println("ERROR! Variable \"" + ctx.sequence(0).getText() + "\" is not a sequence!");
-				System.exit(1);
+				error("Variable \"" + ctx.sequence(0).getText() + "\" is not a sequence!");
 			}
 			seq = (Sequence)values.get(ctx.sequence(0));
 
 			// join all other sequences to the first one
 			for (int i = 1; i < seqNum; i++) {
 				if(!(values.get(ctx.sequence(i)) instanceof Sequence)) {
-					System.err.println("ERROR! Variable \"" + ctx.sequence(i).getText() + "\" is not a sequence!");
-					System.exit(1);
+					error("Variable \"" + ctx.sequence(i).getText() + "\" is not a sequence!");
 				}
 				seq.absorb((Sequence)values.get(ctx.sequence(i)));
 			}
@@ -424,53 +490,104 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	
 	// @Override public void enterPerFromSeq(MusicinatorParser.PerFromSeqContext ctx) { }
 	@Override public void exitPerFromSeq(MusicinatorParser.PerFromSeqContext ctx) {
-		// get sequence
-		if(!(values.get(ctx.sequence()) instanceof Sequence)) {
-				System.err.println("ERROR! Variable \"" + ctx.sequence().getText() + "\" is not a sequence!");
-				System.exit(1);
-		}
-		Sequence seq = (Sequence)values.get(ctx.sequence());
+		// Since an array can be stored in a variable, there was no sintatic way of guaranteeing
+		// that what is being created is a performance and not a performance array. As such,
+		// this rule was extended and invariably creates a performance array (which can
+		// have only 1 element).
 
-		// get instrument
-		if (!music.isInstrument(ctx.WORD().getText())) {
-			System.err.println("ERROR! Variable \"" + ctx.WORD().getText() + "\" does not exist!");
-			System.exit(1);
-		}
-		Instrument inst = (Instrument)music.getInstrument(ctx.WORD().getText());
+		// get sequence(s)
+		Sequence[] seqs = (Sequence[])values.get(ctx.sequenceList());
 
-		values.put(ctx, (Object)new Performance(seq, inst));
+		// get instrument(s)
+		Instrument[] insts = null;
+		if (music.isInstrument(ctx.WORD().getText())) {
+			insts = new Instrument[1];
+			insts[0] = (Instrument)music.getInstrument(ctx.WORD().getText());
+		} else {
+			Map<String, Object> currentScope = getCurrentScope(ctx.getParent().getParent());
+
+			if(currentScope.containsKey(ctx.WORD().getText()) && 
+			   currentScope.get(ctx.WORD().getText()) instanceof Instrument[]) {
+
+				insts = (Instrument[])currentScope.get(ctx.WORD().getText());
+
+			} else {
+				error("Instrument \"" + ctx.WORD().getText() + "\" does not exist!");
+			}
+		}
+		
+		// create performance array
+		Performance[] pers;
+		if (seqs.length == 1 && insts.length == 1) {
+			// single performance
+			pers = new Performance[1];
+			pers[0] = new Performance(seqs[0], insts[0]);
+		} else {
+			// confirm only sequence or instrument contain an array
+			if (seqs.length > 1 && insts.length > 1) {
+				error("Cannot create a performance array from both a"
+					  + " sequence and instrument arrays! Invalid instruction: "
+					  + ctx.getText());
+			}
+
+			// array has more than 1 element
+			if (seqs.length == 1) {
+				pers = new Performance[insts.length];
+				for (int i = 0; i < insts.length; i++)
+					pers[i] = new Performance(seqs[0], insts[i]);
+			} else {
+				pers = new Performance[seqs.length];
+				for (int i = 0; i < seqs.length; i++)
+					pers[i] = new Performance(seqs[i], insts[0]);
+			}
+		}
+		values.put(ctx, (Object)pers);
 	}
 	
 	// @Override public void enterPerSpeedMod(MusicinatorParser.PerSpeedModContext ctx) { }
 	@Override public void exitPerSpeedMod(MusicinatorParser.PerSpeedModContext ctx) {
 		// get performance
-		if(!(values.get(ctx.performance()) instanceof Performance)) {
-				System.err.println("ERROR! Variable \"" + ctx.performance().getText() + "\" is not a performance!");
-				System.exit(1);
+		if(!(values.get(ctx.performance()) instanceof Performance[])) {
+			error("Variable \"" + ctx.performance().getText() + "\" is not a performance!");
 		}
-		Performance per = (Performance)values.get(ctx.performance());
+		Performance[] pers = (Performance[])values.get(ctx.performance());
 
 		// mod performance
-		if (ctx.op.equals("*"))
-			values.put(ctx, per.modulateTempo((double)values.get(ctx.number())));
-		else
-			values.put(ctx, per.modulateTempo(-1*(double)values.get(ctx.number())));
+		for (int i = 0; i < pers.length; i++) {
+			if (ctx.op.equals("*"))
+				values.put(ctx, pers[i].modulateTempo((double)values.get(ctx.number())));
+			else
+				values.put(ctx, pers[i].modulateTempo(-1*(double)values.get(ctx.number())));
+		}
 	}
 	
 	// @Override public void enterPerPitchMod(MusicinatorParser.PerPitchModContext ctx) { }
 	@Override public void exitPerPitchMod(MusicinatorParser.PerPitchModContext ctx) {
 		// get performance
-		if(!(values.get(ctx.performance()) instanceof Performance)) {
-				System.err.println("ERROR! Variable \"" + ctx.performance().getText() + "\" is not a performance!");
-				System.exit(1);
+		if(!(values.get(ctx.performance()) instanceof Performance[])) {
+			error("Variable \"" + ctx.performance().getText() + "\" is not a performance!");
 		}
-		Performance per = (Performance)values.get(ctx.performance());
+		Performance[] pers = (Performance[])values.get(ctx.performance());
 
 		// mod performance
-		if (ctx.op.equals("+"))
-			values.put(ctx, per.modulatePitch((int)(double)values.get(ctx.number())));
-		else
-			values.put(ctx, per.modulatePitch(-1*(int)(double)values.get(ctx.number())));
+		for (int i = 0; i < pers.length; i++) {
+			if (ctx.op.equals("+"))
+				values.put(ctx, pers[i].modulatePitch((int)(double)values.get(ctx.number())));
+			else
+				values.put(ctx, pers[i].modulatePitch(-1*(int)(double)values.get(ctx.number())));
+		}
+	}
+
+	// @Override public void enterSequenceList(MusicinatorParser.SequenceListContext ctx) { }
+	@Override public void exitSequenceList(MusicinatorParser.SequenceListContext ctx) {
+		// create Sequence[]
+		Sequence[] seqs = new Sequence[ctx.sequence().size()];
+
+		for(int i = 0; i < seqs.length; i++) {
+			seqs[i] = (Sequence)values.get(ctx.sequence(i));
+		}
+
+		values.put(ctx, (Object)seqs);
 	}
 
 /*
@@ -518,8 +635,7 @@ public class DefPhase extends MusicinatorParserBaseListener {
 		
 		// get sequence
 		if(!(currentScope.get(ctx.WORD().getText()) instanceof Sequence)) {
-				System.err.println("ERROR! Variable \"" + ctx.WORD().getText() + "\" is not a sequence!");
-				System.exit(1);
+			error("Variable \"" + ctx.WORD().getText() + "\" is not a sequence!");
 		}
 		Sequence seq = (Sequence)currentScope.get(ctx.WORD().getText());
 
@@ -544,8 +660,7 @@ public class DefPhase extends MusicinatorParserBaseListener {
 		String var = ctx.WORD().getText();
 		if(!currentScope.containsKey(var)) {
 			if (!music.isInstrument(var)) {
-				System.err.println("ERROR! Variable \"" + var + "\" does not exist!");
-				System.exit(1);
+				error("Variable \"" + var + "\" does not exist!");
 			} else {
 				// "variable" is not a variable but an instrument name
 				values.put(ctx, (Object)music.getInstrument(var));
@@ -591,6 +706,11 @@ public class DefPhase extends MusicinatorParserBaseListener {
 		while (scopes.get(scopeCtx) == null) scopeCtx = scopeCtx.getParent();
 		return scopes.get(scopeCtx);
 	}
+
+	private void error(String details) {
+		System.err.println("ERROR! " + details);
+		System.exit(1);
+	}
 	
 	// @Override public void enterTypes(MusicinatorParser.TypesContext ctx) { }
 	// @Override public void exitTypes(MusicinatorParser.TypesContext ctx) { }
@@ -599,7 +719,9 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	// @Override public void exitArrayTypes(MusicinatorParser.ArrayTypesContext ctx) { }
 	
 	// @Override public void enterCondition(MusicinatorParser.ConditionContext ctx) { }
-	// @Override public void exitCondition(MusicinatorParser.ConditionContext ctx) { }
+	// @Override public void exitCondition(MusicinatorParser.ConditionContext ctx) {
+		// TODO!!
+	// }
 
 
 	// @Override public void enterEveryRule(ParserRuleContext ctx) { }

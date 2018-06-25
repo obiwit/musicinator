@@ -1,6 +1,7 @@
 lexer grammar MusicinatorLexer;
 
 //LEXER RULES
+//CHORD:			SOUND ('|' SOUND)+;
 SOUND: 			((NOTE | 'R' ) DURATION?) ('|' SOUND)*;
 fragment NOTE: 	LETTER ('#'|'b')* OCTAVE?;
 fragment LETTER:[A-G];
@@ -37,8 +38,10 @@ LOOP: 'loop';
 PLAY: 'play';
 TIMES: 'times';
 AFTER: 'after';
-ALWAYS: 'always';
 SEMICOLON: ';';
+ALWAYS: 'always';
+SEQUENTIALLY: 'sequentially';
+
 
 IF: 'if';
 ELSE: 'else';

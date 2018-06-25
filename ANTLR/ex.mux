@@ -19,6 +19,12 @@ instrument [] band = piano and guitar and bass and drums;
 number[] n = [1, 2, 3];
 number[] n = 1->3;
 sequence[] s = [[CC GG AA G{2}], [FF EE DD C{2}]];
+
+
+play p;
+after p play pp;
+after pp play intro on piano;
+
 /* 
 
 if |s| > 10 { 

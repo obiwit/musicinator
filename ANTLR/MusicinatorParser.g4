@@ -13,14 +13,13 @@ instructions
 		;
 
 assignment
-		: types WORD EQUAL expr SEMICOLON								#varAssign
+		: types WORD EQUAL (expr|performance) SEMICOLON					#varAssign
 		| arrayTypes OPEN_SB CLOSE_SB WORD EQUAL arrayExpr SEMICOLON 	#arrayAssign
 		;
 
-play 	: PLAY performance SEMICOLON 					#simplePlay
-		| (AT number | AFTER performance ALWAYS?) play	#timedPlay
-		| play number TIMES								#repeatPlay
-		| LOOP performance								#loopPlay
+play 	: PLAY performance SEQUENTIALLY? (number TIMES)? SEMICOLON 		#simplePlay
+		| (AT (number|arrayExpr) | AFTER variable ALWAYS?) play			#timedPlay
+		| LOOP performance												#loopPlay
 		;
 
 forStat	: FOR arrayTypes WORD IN WORD OPEN_BR instructions* CLOSE_BR
@@ -35,12 +34,9 @@ ifStat	: IF condition
 
 // "middle level" definitions - constructs (arrays)
 arrayExpr
-		: OPEN_SB list? CLOSE_SB
+		: OPEN_SB (expr (COMMA expr)*)? CLOSE_SB
 		| expr (AND expr)*
 		| number ARROW number
-		;
-
-list 	: expr (COMMA expr)*
 		;
 
 expr 	: variable 			#varExpr // detects instruments without entering another "type"
@@ -62,8 +58,14 @@ sequence
 performance
 		: performance op=(MUL|DIV) number 		#perSpeedMod
 		| performance op=(ADD|SUB) number 		#perPitchMod
-		| sequence ON WORD 						#perFromSeq
+		| sequenceList ON WORD 					#perFromSeq
 		| variable 								#perVar
+		;
+
+
+sequenceList	// sequenceList is used to prevent mutually left-recursion between arrayExpr, performance, and expr
+		: OPEN_SB (sequence (COMMA sequence)*)? CLOSE_SB
+		| sequence (AND sequence)*
 		;
 
 number

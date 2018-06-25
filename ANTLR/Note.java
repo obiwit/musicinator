@@ -60,7 +60,7 @@ public class Note {
 		for (int i = 1; i < splitted.length - 1; i++) {
 			if(splitted[i].equals("#"))
 				value++;
-			else // equals "b"
+			else if(splitted[i].equals("b"))
 				value--;
 		}
 
@@ -87,6 +87,6 @@ public class Note {
 				return 11;
 		}
 
-		return -1;
+		return -109; // guarantees rests ('R') are negative
 	}
 }

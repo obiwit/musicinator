@@ -3,9 +3,9 @@ import java.util.*;
 public class Music {
 	private int bpm;
 	private Map<String, Instrument> instruments; // contains defined instruments
+	private double longestPerformanceDuration; // used for the loop instruction
 
-	//ArrayList<Performances> performances; // might not store them and just send to python
-
+	// constructors
 	public Music(int bpm) {
 		this.bpm = bpm;
 
@@ -17,16 +17,29 @@ public class Music {
 		instruments.put("cello", new Instrument(43));
 		instruments.put("bass", new Instrument(44));
 		instruments.put("drums", new Instrument(119));
+
+		longestPerformanceDuration = 0;
 	}
 	public Music() {		
 		// creates a new music, with default BPM of 120
 		this(120);
 	}
 
-	public void setBPM(int newBpm) {
+	// getters and setters
+	public int bpm() {
+		return bpm;
+	}
+	public void bpm(int newBpm) {
 		bpm = newBpm;
 	}
+	public void longestPerformanceDuration(double newDuration) {
+		longestPerformanceDuration = newDuration;
+	}
+	public double longestPerformanceDuration() {
+		return longestPerformanceDuration;
+	}
 
+	// other methods
 	public void addInstrument(String name, Instrument i) {
 		instruments.put(name, i);
 	}
@@ -38,9 +51,5 @@ public class Music {
 
 	public boolean isInstrument(String name) {
 		return instruments.containsKey(name);
-	}
-
-	public Map getMap(){
-		return instruments;
 	}
 }
