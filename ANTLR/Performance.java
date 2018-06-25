@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Performance {
@@ -16,6 +15,9 @@ public class Performance {
 	}
 	public Performance(String start, Sequence seq, Instrument inst, String repeat) {
 		this(startToArray(start), seq, inst, repeat);
+	}
+	public Performance(double start, Sequence seq, Instrument inst, int repeat) {
+		this(startToArray(start + ""), seq, inst, repeat + "");
 	}
 	public Performance(Sequence seq, Instrument inst) {
 		this(0 + "", seq, inst, 1 + "");
@@ -45,23 +47,34 @@ public class Performance {
 		return repeatTimes;
 	}
 	
-	
-	public void addStartTime(double start) {
-		assert start > 0;
-		double[] tmp = new double[startTime.length + 1];
+	// adiciona um start 
+	public void addStartTime(String start) {
+		String[] tmp = new String[startTime.length + 1];
 		for(int i = 0; i < startTime.length; i++){
 			tmp[i] = startTime[i];
 		}
-		tmp[startTime.length] = start;
+		tmp[tmp.length - 1] = start;
 		startTime = tmp;
-
-		Arrays.sort(startTime);
 	}
 	
+	//add um array de Start's  ex.: "[0.2, 4, 5,6]"
+	public void addStartTimeArray(String startArray) {
+		
+		String [] tmp1 = startArray.substring(1, startArray.length() - 1).split(",");
+		
+		// tmp1 + startArray 
+		String[] tmp2  = new String[startTime.length + tmp1.length];
+		
+		for(int i = 0; i < startTime.length; i++){
+			tmp2[i] = startTime[i];
+		}
+		for(int i = startTime.length; i < tmp1.length + startTime.length; i++){
+			tmp2[i] = tmp1[i - startTime.length];
+		}
+		
+	}
 	
-	
-	public void repeatTimes(int repeat) {
-		assert repeat > 0;
+	public void repeatTimes(String repeat) {
 		repeatTimes = repeat;
 	}
 
@@ -73,7 +86,7 @@ public class Performance {
 		return new Performance(startTime, sequence.modulateTempo(tempoChange), instrument, repeatTimes);
 	}
 	public Performance repeat(int repeats) {
-		return new Performance(startTime, sequence, instrument, repeats);
+		return new Performance(startTime, sequence, instrument, repeats + "");
 	}
 
 	@Override public String toString() {
