@@ -73,7 +73,7 @@ def getInt(varstr):
 
 >>
 u_getint(str, varname) ::= <<
-<varname> = getInt("<str>")
+<varname> = getInt(<str>)
 >>
 
 vardec(name, value) ::= "<name> = <value>"
