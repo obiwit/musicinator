@@ -27,9 +27,11 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	StringBuilder towrite;
 	PrintWriter printer;
 	ST gen;
+	private int NumberNums;
 
 
 	public DefPhase(Music music, Map<String, Integer> noteMap, String filename) {
+		NumberNums = 0;
 		this.music = music;
 		this.noteMap = noteMap;
 		currentIndentation = "";
@@ -711,49 +713,94 @@ Numbers are strings.
 	// @Override public void enterNumDouble(MusicinatorParser.NumDoubleContext ctx) { }
 	@Override public void exitNumDouble(MusicinatorParser.NumDoubleContext ctx) {
 		// TODO!! (numberNums++)
-		values.put(ctx, (Object)(Double.parseDouble(ctx.getText())));
+		String varName = "_v"+NumberNums++;
+		// varName + " = "+ctx.INT().getText()+"\n";
+		gen = group.getInstanceOf("vardec");
+		gen.add("name", varName);
+		gen.add("value", ctx.DOUBLE().getText()+"\n");
+		towrite.append(gen.render()+"\n");
+
+		values.put(ctx, (Object)varName);
 	}
 	
 	// @Override public void enterNumMulDiv(MusicinatorParser.NumMulDivContext ctx) { }
 	@Override public void exitNumMulDiv(MusicinatorParser.NumMulDivContext ctx) {
 		// TODO!! (numberNums++)
-		if(ctx.op.equals("*"))
-			values.put(ctx, (Object)((double)values.get(ctx.number(0)) * (double)values.get(ctx.number(1))));
-		else
-			values.put(ctx, (Object)((double)values.get(ctx.number(0)) / (double)values.get(ctx.number(1))));
+		gen = group.getInstanceOf("vardec");
+		String varName = "_v"+NumberNums++;
+		if(ctx.op.equals("*")){
+			String toadd = values.get(ctx.number(0)) + "*" + values.get(ctx.number(1)) + "\n";
+			values.put(ctx, (Object)(varName));
+			gen.add("name", varName);
+			gen.add("value", toadd);
+			towrite.append(gen.render());
+		}else{
+			String toadd = values.get(ctx.number(0)) + "/" + values.get(ctx.number(1)) + "\n";
+			values.put(ctx, (Object)(varName));
+			gen.add("name", varName);
+			gen.add("value", toadd);
+			towrite.append(gen.render());
+		}
 	}
 
 	// @Override public void enterNumAddSub(MusicinatorParser.NumAddSubContext ctx) { }
 	@Override public void exitNumAddSub(MusicinatorParser.NumAddSubContext ctx) {
 		// TODO!! (numberNums++)
-		if(ctx.op.equals("+"))
-			values.put(ctx, (Object)((double)values.get(ctx.number(0)) + (double)values.get(ctx.number(1))));
-		else
-			values.put(ctx, (Object)((double)values.get(ctx.number(0)) - (double)values.get(ctx.number(1))));
+		gen = group.getInstanceOf("vardec");
+		String varName = "_v"+NumberNums++;
+		if(ctx.op.equals("+")){
+			String toadd = values.get(ctx.number(0)) + "+" + values.get(ctx.number(1)) + "\n";
+			values.put(ctx, (Object)(varName));
+			gen.add("name", varName);
+			gen.add("value", toadd);
+			towrite.append(gen.render());
+		}else{
+			String toadd = values.get(ctx.number(0)) + "-" + values.get(ctx.number(1)) + "\n";
+			values.put(ctx, (Object)(varName));
+			gen.add("name", varName);
+			gen.add("value", toadd);
+			towrite.append(gen.render());
+		}
 	}
 	
 	// @Override public void enterNumVar(MusicinatorParser.NumVarContext ctx) { }
 	@Override public void exitNumVar(MusicinatorParser.NumVarContext ctx) {
-		// TODO!! (numberNums++)
-		values.put(ctx, values.get(ctx.variable()));
+		gen = group.getInstanceOf("vardec");
+		String varName = "_v"+NumberNums++;
+		if(!(values.get(ctx.variable()) instanceof String)){
+			error("Variable \"" + ctx.variable().getText() + "\" is not a number");
+		}else{
+			values.put(ctx, varName);
+			gen.add("name", varName);
+			gen.add("value", values.get(ctx.variable()));
+		}
+		towrite.append(gen.render()+"\n");
 	}
 
 	// @Override public void enterNumInt(MusicinatorParser.NumIntContext ctx) { }
 	@Override public void exitNumInt(MusicinatorParser.NumIntContext ctx) {
-		// TODO!! (numberNums++)
-		values.put(ctx, (Object)(Double.parseDouble(ctx.getText())));
+		gen = group.getInstanceOf("vardec");
+		String varName = "_v"+NumberNums++;
+		gen.add("name", varName);
+		gen.add("value", ctx.getText());
+		values.put(ctx, (Object)(varName));
+		towrite.append(gen.render()+"\n");
 	}
 
 	// @Override public void enterNumGetInt(MusicinatorParser.NumGetIntContext ctx) { }
 	@Override public void exitNumGetInt(MusicinatorParser.NumGetIntContext ctx) {
-		// TODO!! (numberNums++)
-		// TODO!!
-		// also Python - String Builder
+		gen = group.getInstanceOf("u_getint");
+		String varName = "_v"+NumberNums++;
+		gen.add("str", ctx.STRING().getText());
+		gen.add("varname", varName);
+		values.put(ctx, (Object)(varName));
+		towrite.append(gen.render()+"\n");
 	}
 	
 	// @Override public void enterNumDuration(MusicinatorParser.NumDurationContext ctx) { }
 	@Override public void exitNumDuration(MusicinatorParser.NumDurationContext ctx) {
-		// TODO!! (numberNums++)
+		gen = group.getInstanceOf("vardec");
+		String varName = "_v"+NumberNums++;
 
 		Map<String, Object> currentScope = getCurrentScope(ctx.getParent().getParent());
 		
@@ -763,7 +810,11 @@ Numbers are strings.
 		}
 		Sequence seq = (Sequence)currentScope.get(ctx.WORD().getText());
 
-		values.put(ctx, (Object)seq.duration()); 
+		gen.add("name", varName);
+		gen.add("value", seq.duration());
+
+		values.put(ctx, (Object)varName); 
+		towrite.append(gen.render()+"\n");
 	}
 
 /*
