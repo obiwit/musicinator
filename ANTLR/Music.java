@@ -22,6 +22,7 @@ public class Music {
 		instruments.put("drums", new Instrument(119));
 
 		longestPerformanceDuration = 0;
+		populateReserved();
 	}
 
 	public Music() {
