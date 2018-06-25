@@ -1,8 +1,8 @@
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
-
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
+
 import java.util.*;
 import java.lang.reflect.*;
 import java.io.*;
@@ -29,15 +29,21 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	ST gen;
 
 
-	public DefPhase(Music music, Map<String, Integer> noteMap) {
+	public DefPhase(Music music, Map<String, Integer> noteMap, String filename) {
 		this.music = music;
 		this.noteMap = noteMap;
 		currentIndentation = "";
+
 		group = new STGroupFile("generator.stg");
-		towrite = new StringBuilder();
-		printer = new PrintWriter(new FileOutputStream(
-    		new File("temp.py"), 
-    		true)); 
+			
+		try {
+			towrite = new StringBuilder();
+			printer = new PrintWriter(new FileOutputStream(
+	    		new File(filename), 
+	    		true)); 
+		} catch (FileNotFoundException e) {
+			error("Couldn't write to " + filename + "!");
+		}
 	}
 	
 	/*
@@ -106,8 +112,6 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	@Override public void exitVarAssign(MusicinatorParser.VarAssignContext ctx) {
 		// TODO!! Verify type!!
 
-		// var declaration if type == number
-
 		// add variable to the scope
 		Map<String, Object> currentScope = getCurrentScope(ctx.getParent().getParent());
 		
@@ -144,11 +148,10 @@ public class DefPhase extends MusicinatorParserBaseListener {
 		// change repeatTime for each performance in pers, if necessary
 		for (int i = 0; i < pers.length; i++) {
 
-			double totalDuration = pers[i].startTime() + pers[i].duration();
+			double totalDuration = pers[i].duration();
 
 			// get longestPerformance, change repeatTimes so totalDur (duration*repeats) >= (longest - start)
-			int repeatTimes = (int)((music.longestPerformanceDuration() - pers[i].startTime()) 
-									/ pers[i].duration()) + 1;
+			int repeatTimes = (int)((music.longestPerformanceDuration()) / pers[i].duration()) + 1;
 			pers[i].repeatTimes(repeatTimes);
 		}
 
@@ -191,9 +194,11 @@ public class DefPhase extends MusicinatorParserBaseListener {
 			}
 		}
 
-		// update longestPerformanceDuration, if it is the case
+		// update longestPerformanceDuration, if it is the case, using the last start time as reference
 		for (int i = 0; i < pers.length; i++) {
-			double totalDuration = pers[i].startTime() + pers[i].duration()*pers[i].repeatTimes();
+			double[] perStartTimes =  pers[i].startTime();
+			double totalDuration = perStartTimes[perStartTimes.length - 1] 
+									+ pers[i].duration()*pers[i].repeatTimes();
 			if (music.longestPerformanceDuration() < totalDuration) {
 				music.longestPerformanceDuration(totalDuration);
 			}
@@ -259,7 +264,7 @@ public class DefPhase extends MusicinatorParserBaseListener {
 
 				} else {
 					// use only first start
-					double newStartTime = refs[i].startTime() + refs[i].duration(); 
+					double newStartTime = refs[i].startTime()[0] + refs[i].duration(); 
 					// TODO!! replace refs[i].startTime() by refs[i].startTime()[0] or equiv
 
 					// TODO!! the fors bellow will also need to be corrected - if more than 1 refs,
@@ -269,10 +274,10 @@ public class DefPhase extends MusicinatorParserBaseListener {
 						(MusicinatorParser.SimplePlayContext)ctx.play().getRuleContext();
 					if (perCtx.SEQUENTIALLY() != null) {
 						// adjust times to play array items sequentially
-						pers[0].changeStartTime(0, pers[0].startTime() + newStartTime);
-						for (int j = 1; j < pers.length; j++) {
-							// replace 0 value placed by simplePlay
-							pers[j].changeStartTime(0, pers[j-1].startTime() + pers[j-1].duration());
+						for (int j = 0; j < pers.length; j++) {
+							// replace 0 value placed by simplePlay with new start time
+							pers[j].changeStartTime(0, newStartTime);
+							newStartTime += pers[i].duration();
 						}
 					} else {
 						for (int j = 0; j < pers.length; j++) {

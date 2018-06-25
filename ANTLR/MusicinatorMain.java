@@ -31,6 +31,10 @@ public class MusicinatorMain {
          System.exit(1);
       }
 
+      // generate output filename
+      String filename =  args[1].split("\\.")[0] + ".py";
+      if (args.length > 2)
+         filename = args[2] + ".py";
 
       // create a parser from the aux file
       CharStream aux_input = CharStreams.fromStream(aux_in);
@@ -63,7 +67,7 @@ public class MusicinatorMain {
 
          // walk main file's tree
          ParseTreeWalker main_walker = new ParseTreeWalker();
-         DefPhase def = new DefPhase(aux.music, aux.noteMap);
+         DefPhase def = new DefPhase(aux.music, aux.noteMap, filename);
          main_walker.walk(def, main_tree);
       }
    }

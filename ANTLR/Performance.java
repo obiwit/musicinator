@@ -15,10 +15,7 @@ public class Performance {
 		repeatTimes = repeat;
 	}
 	public Performance(double start, Sequence seq, Instrument inst, int repeat) {
-		startTime = startToArray(start);
-		sequence = seq;
-		instrument = inst;
-		repeatTimes = repeat;
+		this(startToArray(start), seq, inst, repeat);
 	}
 	public Performance(Sequence seq, Instrument inst) {
 		this(0, seq, inst, 1);
@@ -30,7 +27,7 @@ public class Performance {
 
 
     //Função para converter um double num Array de double's
-    private double[] startToArray(double start){
+    private static double[] startToArray(double start){
     	double[] tmpArray = new double[0];
 		tmpArray[0] = start;
     	return tmpArray;
