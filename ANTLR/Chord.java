@@ -8,10 +8,10 @@ public class Chord {
 	public Chord(Note[] notes, double duration) {
 		this.notes = notes;
 		this.duration = duration;
-		enforceduration();
+		enforceDuration();
 	}
 
-	private enforceduration(){
+	private void enforceDuration(){
 		for (int i = 0; i < notes.length; i++) {
 			notes[i].duration(duration);
 		}
