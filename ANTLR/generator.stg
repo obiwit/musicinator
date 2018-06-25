@@ -26,8 +26,8 @@ def addnotes(notes):
                 try:
                     note = notes[i][0] #getting the note
                     duration = notes[i][1] #duration of the note
-                    if note < 0:
-                        currtime+=duration
+                    if note == -1:
+			currtime = currtime + duration
                         continue
 
                 except:
