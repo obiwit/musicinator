@@ -1,16 +1,22 @@
-header() ::= <<
 from midiutil import MIDIFile
+from itertools import repeat
 import sys
->>
 
-createmidi(varbpm, vartrack) ::= <<
-bpm = <varbpm>
-midi = MIDIFile(numTracks=<vartrack>, file_format=1)
-midi.addTempo(0,0,bpm)
-currtrack = 0
->>
 
-body() ::= <<
+bpm = 60 #to be defined by user
+vartrack = 2 #to be defined by user
+
+
+####
+toadd = [[1,10,15,25,36],(64,0.5,2),(62,0.25,25),1]
+
+midi = MIDIFile(numTracks=1500, file_format=1) #it takes the number of tracks as a parameter
+midi.addTempo(0,0,bpm) #adding tempo
+currtrack = 999 #what track are we writting on
+
+
+
+
 def addnotes(notes):
     time = notes[0] #When the sequence will start time wise
     temp = 1 #default instrument
@@ -44,59 +50,15 @@ def addnotes(notes):
                 
                 midi.addNote(currtrack,0,note,currtime,duration,100)
 
-                print("Added note {}, with instument {} with a duration of {} on time {} , on channel {}".format(note, instrument, duration, currtime, currtrack))
+                print("Added note {}, with instument {} with a duration of {} on time {}, on channel {}".format(note, instrument, duration, currtime, currtrack))
                 currtime += duration
         currtrack += 1
->>
 
 
-createperformance(name, notes) ::= "<name> = <notes>"
+addnotes(toadd)
 
-addperformance(name) ::= "addnotes(<name>)"
 
-exportfile(name) ::= <<
-with open("<name>", 'wb') as file:
-    midi.writeFile(file) #Writting the file
-    print("MIDI File Written")
->>
-
-getInt() ::= <<
-def getInt(varstr):
-    while True:
-        try:
-            a = int(input(varstr))
-        except ValueError:
-            print("Please input a valid number")
-            continue
-        else:
-            break
-    return a
-
->>
-u_getint(str, varname) ::= <<
-<varname> = getInt("<str>")
->>
-
-vardec(name, value) ::= "<name> = <value>"
-
-forloop(begin, end, code, indent) ::= <<
-<indent>for <begin> in <end>:
-    <indent><code>
->>
-
-ifstat(codition, code, indent) ::= <<
-<indent>if <condition>:
-    <indent><code>
->>
-
-elseif(condition, code,indent) ::= <<
-<indent>elif <condition>:
-    <indent><code>
->>
-
-fornumbers(first, last, code, indent) ::= <<
-<indent>for i in range(<first>, <last>+1):
-    <indent><code>
->>
-
+with open("test.mid", 'wb') as file: #writting binary file
+	midi.writeFile(file)
+	print("written")    
 
