@@ -140,10 +140,20 @@ public class DefPhase extends MusicinatorParserBaseListener {
 		}
 		Performance[] pers = (Performance[])values.get(ctx.performance());
 
-		// adjust performance(s) start times if they are to be played sequentially
+		// adjust performance(s) start times if they are to be played sequentially 
+		// TODO!! bellow correct?
 		if(ctx.SEQUENTIALLY() != null) {
-			for (int i = 1; i < pers.length; i++) {
-				pers[i] = pers[i].delay(pers[i-1].duration());
+			// if play is 
+			if (ctx.getParent().getRuleContext() instanceof MusicinatorParser.TimedPlayContext) {
+				for (int i = 1; i < pers.length; i++) {
+					pers[i] = pers[i].addStartTime(0);
+				}
+			} else {
+				double currentTime = 0;
+				for (int i = 1; i < pers.length; i++) {
+					pers[i] = pers[i].addStartTime(currentTime);
+					currentTime += pers[i].duration();
+				}
 			}
 		}
 
@@ -172,12 +182,11 @@ public class DefPhase extends MusicinatorParserBaseListener {
 		// get target performance(s)
 		Performance pers[] = (Performance[])values.get(ctx.play());
 
-		// check performance(s) start time is 0, otherwise, rise ERROR,
-		// because it's time has already been altered (two timed play
-		// instructions have been written in the same statement)
-		if(pers[0].startTime() != 0) {
+		// check no timedPlay instruction is contained in itself, since it would create
+		// a contradiction
+		if(ctx.getParent().getRuleContext() instanceof MusicinatorParser.TimedPlayContext) {
 			error("A performance can't have conflicting start times! Invalid instruction: "
-				  + ctx.getText());
+				  + ctx.getParent().getText());
 		}
 
 		// get scope
@@ -194,9 +203,12 @@ public class DefPhase extends MusicinatorParserBaseListener {
 			if (!(currentScope.get(ctx.variable().WORD().getText()) instanceof Performance[])) {
 				error("Variable \"" + ctx.variable().WORD().getText() + "\" is not a performance!");
 			}
-			refs = (Performance[])currentScope.get(ctx.variable().WORD().getText());
 
-			Performance temp = null;
+			refs = (Performance[])currentScope.get(ctx.variable().WORD().getText());
+			if (refs.length == 0) {
+				error("Variable \"" + ctx.variable().WORD().getText() + "\" is an empty performance array!");
+			}
+
 			if (ctx.variable().OPEN_SB() != null) {
 				// variable is an entry of array
 				int index = Integer.parseInt(ctx.variable().INT().getText());
@@ -204,23 +216,53 @@ public class DefPhase extends MusicinatorParserBaseListener {
 					error("Array index out of bounds (" + index + ") in array \""
 						  + ctx.variable().WORD().getText() + "\"!");
 				}
-				temp = refs[index];
+				Performance[] temp = new Performance[1];
+				temp[0] = refs[index];
+				refs = temp;
 			}
 
-			// TODO!! continue
-			// ... start(s) & duration have a reason
-			for(int i = 0; i < refs.length; i++)
-				System.out.println(refs[i].startTime());
+			
+			// change starting time for each of the performances in pers
+			for (int i = 0; i < refs.length; i++) {
 
-			// check whether ALWAYS
-			if (ctx.ALWAYS() != null) {
-				// use all starts
-			} else {
-				// use only first start
+				// check whether ALWAYS
+				if (ctx.ALWAYS() != null) {
+					// use all starts
+					// TODO!!
+
+				} else {
+					// use only first start
+					double newStartTime = refs[i].startTime() + refs[i].duration(); 
+					// TODO!! replace refs[i].startTime() by refs[i].startTime()[0] or equiv
+
+					// TODO!! the fors bellow will also need to be corrected - if more than 1 refs,
+					// bellow fors don't work (because only one set of 0s)
+
+					MusicinatorParser.SimplePlayContext perCtx = 
+						(MusicinatorParser.SimplePlayContext)ctx.play().getRuleContext();
+					if (perCtx.SEQUENTIALLY() != null) {
+						// adjust times to play array items sequentially
+						pers[0].changeStartTime(0, pers[j].startTime()+newStartTime);
+						for (int j = 1; j < pers.length; j++) {
+							// replace 0 value placed by simplePlay
+							pers[j].changeStartTime(0, pers[j-1].startTime()+pers[j-1].duration());
+						}
+					} else {
+						for (int j = 0; j < pers.length; j++) {
+							// replace 0 value placed by simplePlay
+							pers[j].changeStartTime(0ge, newStartTime);
+						}
+					}
+
+				}
 			}
-		} else {
+		} else { // AT
+			// check number > 0
 
 		}
+
+
+		// update target performance on current scope so it has the correct start times
 
 	}
 
@@ -334,7 +376,8 @@ public class DefPhase extends MusicinatorParserBaseListener {
 
 		} else if (ctx.expr(0) != null) {
 			// get type of array
-			MusicinatorParser.ArrayAssignContext assignCtx = (MusicinatorParser.ArrayAssignContext)ctx.getParent().getRuleContext();
+			MusicinatorParser.ArrayAssignContext assignCtx = 
+				(MusicinatorParser.ArrayAssignContext)ctx.getParent().getRuleContext();
 			String type = assignCtx.arrayTypes().getText();
 			type = type.substring(0, 1).toUpperCase() + type.substring(1);
 
@@ -425,10 +468,18 @@ public class DefPhase extends MusicinatorParserBaseListener {
 		values.put(ctx, values.get(ctx.variable()));
 	}
 	
-	// @Override public void enterSeqLiteral(MusicinatorParser.SeqLiteralContext ctx) { }
-	@Override public void exitSeqLiteral(MusicinatorParser.SeqLiteralContext ctx) {
+	// @Override public void enterSeqNote(MusicinatorParser.SeqNoteContext ctx) { }
+	@Override public void exitSeqNote(MusicinatorParser.SeqNoteContext ctx) {
 		Note[] n = new Note[1];
 		n[0] = new Note(ctx.SOUND().getText());
+		values.put(ctx, new Sequence(n));
+	}
+	
+	// @Override public void enterSeqChord(MusicinatorParser.SeqChordContext ctx) { }
+	@Override public void exitSeqChord(MusicinatorParser.SeqChordContext ctx) {
+		// TODO!! CLASS CHORD, etc.
+		Note[] n = new Note[1];
+		n[0] = new Note(ctx.CHORD().getText());
 		values.put(ctx, new Sequence(n));
 	}
 	
@@ -627,6 +678,12 @@ public class DefPhase extends MusicinatorParserBaseListener {
 	// @Override public void enterNumInt(MusicinatorParser.NumIntContext ctx) { }
 	@Override public void exitNumInt(MusicinatorParser.NumIntContext ctx) {
 		values.put(ctx, (Object)(Double.parseDouble(ctx.getText())));
+	}
+
+	// @Override public void enterNumGetInt(MusicinatorParser.NumGetIntContext ctx) { }
+	@Override public void exitNumGetInt(MusicinatorParser.NumGetIntContext ctx) {
+		// TODO!!
+		// also Python - String Builder
 	}
 	
 	// @Override public void enterNumDuration(MusicinatorParser.NumDurationContext ctx) { }

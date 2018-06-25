@@ -1,8 +1,8 @@
 lexer grammar MusicinatorLexer;
 
 //LEXER RULES
-//CHORD:			SOUND ('|' SOUND)+;
-SOUND: 			((NOTE | 'R' ) DURATION?) ('|' SOUND)*;
+CHORD:			NOTE ('|' NOTE)+ DURATION?;
+SOUND: 			(NOTE | 'R' ) ('|' NOTE)* DURATION?; // remove ('|' NOTE)*
 fragment NOTE: 	LETTER ('#'|'b')* OCTAVE?;
 fragment LETTER:[A-G];
 
@@ -40,27 +40,28 @@ TIMES: 'times';
 AFTER: 'after';
 SEMICOLON: ';';
 ALWAYS: 'always';
+GETINT: 'getInt';
 SEQUENTIALLY: 'sequentially';
-
 
 IF: 'if';
 ELSE: 'else';
 ELIF: ELSE ' ' IF;
 FOR: 'for';
 
-
-INST_LIT: 'instrument';
-PF_LIT: 'performance';
-SQ_LIT: 'sequence';
 NUM_LIT: 'number';
+SQ_LIT: 'sequence';
+PF_LIT: 'performance';
+INST_LIT: 'instrument';
 
+OPEN_PR: '(';
 OPEN_SB: '[';
-CLOSE_SB: ']';
 OPEN_BR: '{';
+CLOSE_PR: ')';
+CLOSE_SB: ']';
 CLOSE_BR: '}';
 
-
 WORD: 			[_a-z] ([_a-zA-Z] | DIGIT)*;
+STRING: '"' .*? '"';
 
 LINE_COMMENT: 	'//' ~[\r\n]* -> skip;
 BLOCK_COMMENT: 	'/*' .*? '*/' -> skip;

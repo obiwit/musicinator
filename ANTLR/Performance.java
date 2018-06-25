@@ -29,9 +29,16 @@ public class Performance {
 	public int repeatTimes() {
 		return repeatTimes;
 	}
-	public void startTime(double start) {
+	// TODO!! 2 functions bellow + startTime() which should return more than 1 value, if applicable
+	// repeats (2+ equal start times) must be supported!
+	public void changeStartTime(double toReplace, double newStart) {
+		assert newStart > 0;
+		//startTime = start;
+		startTime = newStart;
+	}
+	public void addStartTime(double start) {
 		assert start > 0;
-		startTime = start;
+		//startTime = start;
 	}
 	public void repeatTimes(int repeat) {
 		assert repeat > 0;

@@ -51,7 +51,8 @@ sequence
 		: sequence op=(MUL|DIV) number 			#seqSpeedMod
 		| sequence op=(ADD|SUB) number 			#seqPitchMod
 		| OPEN_SB sequence* CLOSE_SB 			#seqList
-		| SOUND									#seqLiteral
+		| SOUND									#seqNote
+		| CHORD									#seqChord	
 		| variable								#seqVar
 		;
 
@@ -74,6 +75,7 @@ number
 		| BAR WORD BAR 							#numDuration
 		| DOUBLE 								#numDouble
 		| INT 									#numInt
+		| GETINT OPEN_PR STRING? CLOSE_PR 		#numGetInt
 		| variable								#numVar
 		;
 
