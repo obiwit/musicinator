@@ -140,6 +140,12 @@ def createseq(seq):
         newseq = extendseq(newseq,seq[i])
     return newseq
 
+def add(varIn1,varIn2):
+    if varIn1.isnumeric():
+        return varIn1+varIn2
+    else:
+        return modPitch(varIn1,varIn2)
+
 
 addnotes(toadd)
 print("DURATION////////////////////////////////")
@@ -152,6 +158,7 @@ print(modTempo(toadd3, 1/2))
 print("/////////////////////////////////////////")
 print(modPitch(toadd3, 12))
 print(modPitch(toadd2, 24))
+print(add(1,2))
 
 
 with open("test.mid", 'wb') as file: #writting binary file
