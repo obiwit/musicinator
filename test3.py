@@ -125,7 +125,14 @@ def extendseq(original, toextend):
             modded.append(newtup)
         return modded
 
-
+def setinstrument(seq,nome):
+    if len(seq)==0:
+        return seq
+    newseq = []
+    for tup in seq:
+        new = (tup[0],tup[1],nome[tup[0]],tup[3])
+        newseq.append(new)
+    return newseq
 
 
 addnotes(toadd)
