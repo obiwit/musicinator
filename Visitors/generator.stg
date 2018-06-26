@@ -27,7 +27,7 @@ def addnotes(notes):
                     note = notes[1][i][0] #getting the note
                     duration = notes[1][i][1] #duration of the note
                     toInsert = notes[1][i][3] + initialTime
-                    if note == -1:
+                    if note \< 0:
                         continue
 
                 except:
@@ -71,12 +71,24 @@ def modPitch(toMod, ModNumber):
     if type(toMod[0]) is tuple:
         for tup in toMod:
             newPitch = tup[0] + ModNumber
+            try:
+                if newPitch \< 0:
+                    raise ValueError
+            except ValueError:
+                print("Modulated note below 0, expect silence")
+                pass
             newtup = (newPitch, tup[1],tup[2],tup[3])
             modded.append(newtup)
         return modded
     else:
         for tup in toMod[1]:
             newPitch = tup[0] + ModNumber
+            try:
+                if newPitch \< 0:
+                    raise ValueError
+            except ValueError:
+                print("Modulated note below 0, expect silence")
+                pass
             newtup = (newPitch, tup[1],tup[2],tup[3])
             modded.append(newtup)
         toMod[1] = modded
@@ -102,7 +114,7 @@ def modTempo(toMod, ModNumber):
 >>
 
 u_modPitch(var, performance, modnumber) ::= <<
-<var> = modPitch(<performace>, <modnumber)
+<var> = modPitch(<performace>, <modnumber>)
 >>
 
 u_modTempo(var, performance, modnumber) ::= <<
