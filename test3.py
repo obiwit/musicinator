@@ -30,7 +30,7 @@ def addnotes(notes):
     for x in range(len(time)):
         initialTime = time[x]
         for _ in range(repeat_times):
-            for i in range(1, len(notes)-1):
+            for i in range(0, len(notes[1])):
                 try:
                     note = notes[1][i][0] #getting the note
                     duration = notes[1][i][1] #duration of the note
@@ -52,7 +52,7 @@ def addnotes(notes):
                 
                 midi.addNote(currtrack,0,note,toInsert,duration,100)
 
-                print("Added note {}, with instument {} with a duration of {} on time {}, on channel {}".format(note, instrument, duration, toInsert, currtrack))
+                print("Added note {}, with instument {} with a duration of {} on time {}, on channel {}".format(note, instrument, duration, (toInsert*(85/bpm)), currtrack))
         currtrack += 1
 
 def duration(toCheck):
