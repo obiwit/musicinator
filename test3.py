@@ -35,7 +35,7 @@ def addnotes(notes):
                     note = notes[1][i][0] #getting the note
                     duration = notes[1][i][1] #duration of the note
                     toInsert = notes[1][i][3] + initialTime
-                    if note == -1:
+                    if note < 0:
                         continue
 
                 except:
@@ -63,9 +63,82 @@ def duration(toCheck):
         size = len(toCheck[1]) - 1
         return toCheck[1][0][3] + toCheck[1][size][3] + toCheck[1][size][1]
 
+def modPitch(toMod, ModNumber):
+    modded = []
+    if type(toMod[0]) is tuple:
+        for tup in toMod:
+            newPitch = tup[0] + ModNumber
+            try:
+                if newPitch < 0:
+                    raise ValueError
+            except ValueError:
+                print("Modulated note below 0, expect silence")
+                pass
+            newtup = (newPitch, tup[1],tup[2],tup[3])
+            modded.append(newtup)
+        return modded
+    else:
+        for tup in toMod[1]:
+            newPitch = tup[0] + ModNumber
+            try:
+                if newPitch < 0:
+                    raise ValueError
+            except ValueError:
+                print("Modulated note below 0, expect silence")
+                pass
+            newtup = (newPitch, tup[1],tup[2],tup[3])
+            modded.append(newtup)
+        toMod[1] = modded
+        return toMod
+
+
+def modTempo(toMod, ModNumber):
+    modded = []
+    if type(toMod[0]) is tuple:
+        for tup in toMod:
+            newTempo = tup[1] * ModNumber
+            newtup = (tup[0], newTempo,tup[2],tup[3])
+            modded.append(newtup)
+        return modded
+    else:
+        for tup in toMod[1]:
+            newTempo = tup[1] * ModNumber
+            newtup = (tup[0], newTempo,tup[2],tup[3])
+            modded.append(newtup)
+        toMod[1] = modded
+        return toMod
+
+
+def extendseq(original, toextend):
+    modded = []
+    if len(original) == 0:
+        for tup in toextend:
+            newtup = (tup[0], tup[1], tup[2], 0)
+            modded.append(newtup)
+        return modded
+    else:
+        for tup in original:
+            modded.append(tup)
+        time = duration(original)
+        for tup in toextend:
+            newtup = (tup[0], tup[1], tup[2], time)
+            modded.append(newtup)
+        return modded
+
+
+
+
 addnotes(toadd)
+print("DURATION////////////////////////////////")
 print(duration(toadd2))
 print(duration(toadd3))
+print("/////////////////////////////////////////")
+print("MODTEMPO////////////////////////////////")
+print(modTempo(toadd2, 2))
+print(modTempo(toadd3, 1/2))
+print("/////////////////////////////////////////")
+print(modPitch(toadd3, 12))
+print(modPitch(toadd2, 24))
 
 
 with open("test.mid", 'wb') as file: #writting binary file
