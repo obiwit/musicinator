@@ -22,7 +22,7 @@ public class Scope {
 	// variable related methods
 	public Variable getVariable(String key) {
 		assert isVariable(key);
-
+		
 		return getVarScope(key).scopeMap.get(key);
 	}
 	public void setVariable(String key, Variable var) {

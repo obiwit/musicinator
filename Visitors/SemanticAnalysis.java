@@ -48,7 +48,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		if (ctx.OPEN_SB() != null) declaredVarType += "_array";
 
 		// compare declared and written types
-		if(!declaredVarType.equals( varType.name().toLowerCase() )) {
+		if(!declaredVarType.equalsIgnoreCase(varType.name())) {
 			error(declaredVarType.replace("_", " ") + " \"" +  ctx.expr().getText() 
 				  + "\" is not of type " + varType.name().toLowerCase().replace("_", " ")
 				  + "!", ctx);
@@ -61,7 +61,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 
 //		System.out.println("["+ctx.start.getLine()+"] Set variable \""+varName+"\" of type "+varType.name());
 
-		currentScope.setVariable(varName, new Variable(varName, varType, ctx));
+		currentScope.setVariable(varName, new Variable(varName, varType));
 		return varType; 
 	}
 	
@@ -79,7 +79,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		// add variable defined in the for declaration to current scope
 		String varName = ctx.newVar.getText();
 		currentScope.setVariable(varName, 
-				new Variable(varName, Type.toSimpleType(arrayType), ctx));
+				new Variable(varName, Type.toSimpleType(arrayType)));
 
 		// visit children
 		Type t =  visitChildren(ctx); 
@@ -124,6 +124,12 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	}
 	
 	@Override public Type visitMulDivExpr(MusicinatorParser.MulDivExprContext ctx) { 
+		// guarantee first operand is Type.NUMBER, Type.SEQUENCE or Type.PERFORMANCE
+		Type e1Type = visit(ctx.e1);
+		if (e1Type != Type.NUMBER && e1Type != Type.SEQUENCE && e1Type != Type.PERFORMANCE)
+			error("Variable \"" + ctx.e1.getText() + "\" is not a number, sequence"
+				  +" or performance!", ctx);
+
 		// guarantee second operand is Type.NUMBER
 		if (visit(ctx.e2) != Type.NUMBER)
 			error("Variable \"" + ctx.e2.getText() + "\" is not a number!", ctx);
@@ -132,6 +138,12 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	}
 	
 	@Override public Type visitAddSubExpr(MusicinatorParser.AddSubExprContext ctx) { 
+		// guarantee first operand is Type.NUMBER, Type.SEQUENCE or Type.PERFORMANCE
+		Type e1Type = visit(ctx.e1);
+		if (e1Type != Type.NUMBER && e1Type != Type.SEQUENCE && e1Type != Type.PERFORMANCE)
+			error("Variable \"" + ctx.e1.getText() + "\" is not a number, sequence"
+				  +" or performance!", ctx);
+
 		// guarantee second operand is Type.NUMBER
 		if (visit(ctx.e2) != Type.NUMBER)
 			error("Variable \"" + ctx.e2.getText() + "\" is not a number!", ctx);

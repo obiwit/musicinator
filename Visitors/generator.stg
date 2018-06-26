@@ -129,8 +129,8 @@ def extendseq(original, toextend):
 
 def createseq(seq):
     newseq = []
-    for i in len(seq):
-        newseq = extendseq(newseq,seq[i])
+    for s in seq:
+        newseq = extendseq(newseq, s)
     return newseq
 
 def setinstrument(seq,nome):
@@ -190,8 +190,8 @@ u_setinstrument(varname, seq, instrument) ::= <<
 <varname> = setinstrument(<seq>, <instrument>)
 >>
 
-forloop(begin, end, code) ::= <<
-for <begin> in <end>:
+forloop(instance, array, code) ::= <<
+for <instance> in <array>:
     <code>
 >>
 

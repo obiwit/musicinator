@@ -16,7 +16,7 @@ assignment
 		: types (OPEN_SB CLOSE_SB)? WORD EQUAL expr SEMICOLON
 		;
 
-play 	: PLAY expr SEQUENTIALLY? (expr TIMES)? SEMICOLON 			#simplePlay
+play 	: PLAY per=expr SEQUENTIALLY? (rep=expr TIMES)? SEMICOLON 	#simplePlay
 		| (AT expr | AFTER variable ALWAYS?) play					#timedPlay
 		| LOOP performance											#loopPlay
 		;

@@ -1,8 +1,7 @@
 sequence first1_sequence = ( [C#8{2} A Cb Db{3.12} B# C8 D{3} C#5'  E#{4} F5{3} F4'''' ] + 40 -20) +12 ;
 
-number t = |first1_sequence|;
+//number t = |first1_sequence|;
 number non = 20 ;
-
 sequence intro = [C|E|G];
 
 sequence twinkle1 = [C];
@@ -22,11 +21,12 @@ sequence s = [CC GG AA G{2} FF EE DD C{2}];
 
 
 play p;
-after p play pp;
-after pp play intro on piano;
+at non play pp;
+at n play pp;
 
 
 
+/*
 if |s| > 10 { 
 	play s;
 }
@@ -36,7 +36,7 @@ else if |s| < 5 {
 else{
 	play s on piano;
 }
-
+*/
 
 
 //ou , alternativamente , definindo a performance implicitamente
@@ -61,5 +61,6 @@ performance intro3 = p_a[0];
 for instrument inst in band {
 	play twinkle on inst ;
 }
+
 
 
