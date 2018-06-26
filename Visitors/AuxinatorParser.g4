@@ -10,11 +10,8 @@ noteMap: WORD EQUAL NOTE SEMICOLON;
 
 instAssign: INST_LIT WORD COLON instrumentDef SEMICOLON;
 
-instrumentDef: instrumentInheritanceList		#defInheritance
-		     | WORD								#defWord
-		     | INT 								#defInt
+instrumentDef: instrumentInheritance (COMMA instrumentInheritance)*		#defInheritance
+		     | WORD									#defWord
+		     | INT 									#defInt
 		     ;
-instrumentInheritanceList: instrumentInheritance (COMMA instrumentInheritance)*;
-instrumentInheritance: (NOTE|noteRange) ARROW WORD;
-
-noteRange: NOTE SUB NOTE;
+instrumentInheritance: (n=NOTE|(n1=NOTE SUB n2=NOTE)) ARROW WORD;
