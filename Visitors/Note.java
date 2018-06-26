@@ -104,6 +104,6 @@ public class Note {
 	}
 	@Override
 	public String toString() {
-		return "[" + value + ", " + duration + "]";
+		return "("+this.value()+","+this.duration()+",-1,-1)";
 	}
 }
