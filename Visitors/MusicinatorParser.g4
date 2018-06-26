@@ -41,7 +41,7 @@ expr 	: variable 									#varExpr
 		| e1=expr op=(MUL|DIV) e2=expr				#mulDivExpr
 		| e1=expr op=(ADD|SUB) e2=expr				#addSubExpr
 
-		| OPEN_SB (expr (COMMA expr)*)? CLOSE_SB 	#bracketArray
+		| OPEN_SB expr (COMMA expr)* CLOSE_SB 		#bracketArray
 		| expr (AND expr)+							#andArray
 		| e1=expr ARROW e2=expr 					#numRangeArray
 		;

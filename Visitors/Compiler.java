@@ -3,6 +3,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.stringtemplate.v4.*;
 
+import java.io.*;
+import java.util.*;
 /**
  * This class provides an empty implementation of {@link MusicinatorParserVisitor},
  * which can be extended to create a visitor which only needs to handle a subset
@@ -11,52 +13,96 @@ import org.stringtemplate.v4.*;
  * @param <T> The return type of the visit operation. Use {@link Void} for
  * operations with no return type.
  */
-public class Compiler extends MusicinatorParserBaseVisitor<ST> {
+public class Compiler extends MusicinatorParserBaseVisitor<String> {
 	Scope globalScope;
 	Scope currentScope;
 	Music music;
 
-	Compiler(Music m, Scope s) {
+	final STGroup group;
+	private PrintWriter printer;
+	//private ST gen;
+
+	private int varNum;
+
+	Compiler(Music m, Scope s, String dstFile) {
 		music = m;
 		globalScope = s;
 		currentScope = globalScope;
+
+		varNum = 0;
+
+		group = new STGroupFile("generator.stg");
+
+		try {
+			printer = new PrintWriter(new FileOutputStream(new File(dstFile))); 
+		} catch (FileNotFoundException e) {
+			System.out.println("Couldn't write to \"" + dstFile + "\"!");
+			System.exit(1);
+		}
 	}
 
 	
-	@Override public ST visitMain(MusicinatorParser.MainContext ctx) {
-		System.out.println("Started Compilation"); 
-		return visitChildren(ctx);// return visitChildren(ctx); 
+	@Override public String visitMain(MusicinatorParser.MainContext ctx) {
+System.out.println("Started Compilation (๑˃̵ᴗ˂̵)و"); 
+
+		int maxtracks = ctx.instructions().size();
+		printer.println(group.getInstanceOf("header").render()+"\n"); //Python imports
+
+		//////////
+		ST gen = group.getInstanceOf("createmidi");
+		gen.add("varbpm", music.bpm());				//Initializing Midi
+		gen.add("vartrack", maxtracks);
+		//////////
+
+		// TODO!! add instruments as arrays using vardecl
+
+		printer.println(gen.render()+"\n");
+		printer.println(group.getInstanceOf("body").render()+"\n"); // def addnotes()
+
+		String s = visitChildren(ctx);
+		printer.flush();
+		return s;
+
 	}
 	
-	@Override public ST visitInstructions(MusicinatorParser.InstructionsContext ctx) {
-		return visitChildren(ctx);// return visitChildren(ctx); 
-	}
-	
-	// ASSIGN
-	@Override public ST visitAssignment(MusicinatorParser.AssignmentContext ctx) { 
+	@Override public String visitInstructions(MusicinatorParser.InstructionsContext ctx) {
+printer.println("############################ LINE = "+ctx.start.getLine());		
 		return visitChildren(ctx);
 	}
 	
+	// ASSIGN
+	@Override public String visitAssignment(MusicinatorParser.AssignmentContext ctx) { 
+
+		String varName = ctx.WORD().getText();
+
+		ST gen = group.getInstanceOf("vardec");
+		gen.add("name", varName);
+		gen.add("value", visit(ctx.expr()));
+		printer.println(gen.render());
+
+		return varName;
+	}
+	
 	// PLAY
-	@Override public ST visitSimplePlay(MusicinatorParser.SimplePlayContext ctx) { 
+	@Override public String visitSimplePlay(MusicinatorParser.SimplePlayContext ctx) { 
 		return visitChildren(ctx);// return visitChildren(ctx); 
 	}
 	
-	@Override public ST visitTimedPlay(MusicinatorParser.TimedPlayContext ctx) { 
+	@Override public String visitTimedPlay(MusicinatorParser.TimedPlayContext ctx) { 
 		return visitChildren(ctx);// return visitChildren(ctx); 
 	}
 	
-	@Override public ST visitLoopPlay(MusicinatorParser.LoopPlayContext ctx) { 
+	@Override public String visitLoopPlay(MusicinatorParser.LoopPlayContext ctx) { 
 		return visitChildren(ctx);// return visitChildren(ctx); 
 	}
 	
 	// FOR
-	@Override public ST visitForStat(MusicinatorParser.ForStatContext ctx) { 
+	@Override public String visitForStat(MusicinatorParser.ForStatContext ctx) { 
 		// TODO
 
 		// create new scope child
 		currentScope = currentScope.getNextChildScope();
-		ST t =  visitChildren(ctx); 
+		String t =  visitChildren(ctx); 
 
 		// return to parent scope
 		currentScope = currentScope.getParentScope();
@@ -65,12 +111,12 @@ public class Compiler extends MusicinatorParserBaseVisitor<ST> {
 	}
 	
 	// IF
-	@Override public ST visitIfStat(MusicinatorParser.IfStatContext ctx) { 
+	@Override public String visitIfStat(MusicinatorParser.IfStatContext ctx) { 
 		// TODO 
 
 		// create new scope child
 		currentScope = currentScope.getNextChildScope();
-		ST t =  visitChildren(ctx); 
+		String t =  visitChildren(ctx); 
 
 		// return to parent scope
 		currentScope = currentScope.getParentScope();
@@ -79,27 +125,27 @@ public class Compiler extends MusicinatorParserBaseVisitor<ST> {
 	}
 	
 	// EXPR (SIMPLE TYPES)
-	@Override public ST visitVarExpr(MusicinatorParser.VarExprContext ctx) { 
+	@Override public String visitVarExpr(MusicinatorParser.VarExprContext ctx) { 
 		return visitChildren(ctx);// return visit(ctx.variable()); 
 	}
 	
-	@Override public ST visitPerExpr(MusicinatorParser.PerExprContext ctx) { 
+	@Override public String visitPerExpr(MusicinatorParser.PerExprContext ctx) { 
 		return visitChildren(ctx);// return visit(ctx.performance()); 
 	}
 	
-	@Override public ST visitSeqExpr(MusicinatorParser.SeqExprContext ctx) { 
+	@Override public String visitSeqExpr(MusicinatorParser.SeqExprContext ctx) { 
 		return visitChildren(ctx);// return visit(ctx.sequence()); 
 	}
 	
-	@Override public ST visitNumExpr(MusicinatorParser.NumExprContext ctx) { 
+	@Override public String visitNumExpr(MusicinatorParser.NumExprContext ctx) { 
 		return visitChildren(ctx);// return visit(ctx.number()); 
 	}
 	
-	@Override public ST visitParensExpr(MusicinatorParser.ParensExprContext ctx) { 
+	@Override public String visitParensExpr(MusicinatorParser.ParensExprContext ctx) { 
 		return visitChildren(ctx);// return visit(ctx.expr()); 
 	}
 	
-	@Override public ST visitMulDivExpr(MusicinatorParser.MulDivExprContext ctx) { 
+	@Override public String visitMulDivExpr(MusicinatorParser.MulDivExprContext ctx) { 
 		// // guarantee second operand is Type.NUMBER
 		// if (visit(ctx.e2) != Type.NUMBER)
 		// 	error("Variable \"" + ctx.e2.getText() + "is not a number!", ctx);
@@ -107,7 +153,7 @@ public class Compiler extends MusicinatorParserBaseVisitor<ST> {
 		return visitChildren(ctx);// return visit(ctx.e1); 
 	}
 	
-	@Override public ST visitAddSubExpr(MusicinatorParser.AddSubExprContext ctx) { 
+	@Override public String visitAddSubExpr(MusicinatorParser.AddSubExprContext ctx) { 
 		// // guarantee second operand is Type.NUMBER
 		// if (visit(ctx.e2) != Type.NUMBER)
 		// 	error("Variable \"" + ctx.e2.getText() + "is not a number!", ctx);
@@ -116,8 +162,8 @@ public class Compiler extends MusicinatorParserBaseVisitor<ST> {
 	}
 	
 	// EXPR (ARRAYS)
-	@Override public ST visitBracketArray(MusicinatorParser.BracketArrayContext ctx) { 
-		// // get and check ST of first child
+	@Override public String visitBracketArray(MusicinatorParser.BracketArrayContext ctx) { 
+		// // get and check String of first child
 		// Type firstType = visit(ctx.expr(0));
 		// if(!Type.isSimpleType(firstType)) {
 		// 	error("Invalid array type! Items must be of type number,"
@@ -137,8 +183,8 @@ public class Compiler extends MusicinatorParserBaseVisitor<ST> {
 		return visitChildren(ctx);// return Type.toArrayType(firstType); 
 	}
 	// TODO!! Fix awful repetition
-	@Override public ST visitAndArray(MusicinatorParser.AndArrayContext ctx) { 
-		// // get and check ST of array
+	@Override public String visitAndArray(MusicinatorParser.AndArrayContext ctx) { 
+		// // get and check String of array
 		// Type arrayType = Type.toSimpleType(visit(ctx.expr(0)));
 
 		// // iterate over all other children and check same type
@@ -155,7 +201,7 @@ public class Compiler extends MusicinatorParserBaseVisitor<ST> {
 		return visitChildren(ctx);// return Type.toArrayType(arrayType); 
 	}
 
-	@Override public ST visitNumRangeArray(MusicinatorParser.NumRangeArrayContext ctx) { 
+	@Override public String visitNumRangeArray(MusicinatorParser.NumRangeArrayContext ctx) { 
 		// // guarantee exprs are Type.NUMBER
 		// if (visit(ctx.e1) != Type.NUMBER)
 		// 	error("Variable \"" + ctx.e1.getText() + "is not a number!", ctx);
@@ -166,28 +212,52 @@ public class Compiler extends MusicinatorParserBaseVisitor<ST> {
 	}
 	
 	// SEQUENCE
-	@Override public ST visitSeqNote(MusicinatorParser.SeqNoteContext ctx) { 
-		return visitChildren(ctx);// return Type.SEQUENCE; 
+	@Override public String visitSeqNote(MusicinatorParser.SeqNoteContext ctx) { 
+		String varName = "_" + varNum++; // descartable variable
+
+		ST gen = group.getInstanceOf("vardec");
+		gen.add("name", varName);
+		gen.add("value", new Note(ctx.SOUND().getText()));
+		printer.println(gen.render());
+
+		return varName;
 	}
 
-	@Override public ST visitSeqChord(MusicinatorParser.SeqChordContext ctx) { 
-		return visitChildren(ctx);// return Type.SEQUENCE; 
+	@Override public String visitSeqChord(MusicinatorParser.SeqChordContext ctx) { 
+		String varName = "_" + varNum++; // descartable variable
+
+		ST gen = group.getInstanceOf("vardec");
+		gen.add("name", varName);
+		gen.add("value", new Note(ctx.CHORD().getText()));
+		printer.println(gen.render());
+
+		return varName;
 	}
 
-	@Override public ST visitSeqList(MusicinatorParser.SeqListContext ctx) { 
-		// iterate over all children, and confirm they are all Type.SEQUENCE
-		// int sequencesNum = ctx.sequence().size();
+	@Override public String visitSeqList(MusicinatorParser.SeqListContext ctx) { 
 
-		// for (int i = 0; i < sequencesNum; i++) {
-		// 	if (visit(ctx.sequence(i)) != Type.SEQUENCE)
-		// 		error("Variable \"" + ctx.sequence(i) + "\" is not a sequence!", ctx);
-		// }
+		String varName = "_" + varNum++; // descartable variable
 
-		return visitChildren(ctx);// return Type.SEQUENCE; 
+		ST gen = group.getInstanceOf("vardec");
+		gen.add("name", varName);
+
+		String varValue = "[]";
+		
+		int sequencesNum = ctx.sequence().size();
+		for (int i = 0; i < sequencesNum; i++) {
+			varValue += ".append(" + visit(ctx.sequence(i)) + ")";
+		}
+
+		gen.add("value", varValue);
+		printer.println(gen.render());
+
+		return varName;
+
+		//return visitChildren(ctx);
 	}
 
 	// PERFORMANCE
-	@Override public ST visitPerFromSeq(MusicinatorParser.PerFromSeqContext ctx) { 
+	@Override public String visitPerFromSeq(MusicinatorParser.PerFromSeqContext ctx) { 
 
 		// Type seqType = (ctx.seq == null) ? visit(ctx.sequence()) : visit(ctx.seq);
 		// Type instType = visit(ctx.inst);
@@ -203,61 +273,80 @@ public class Compiler extends MusicinatorParserBaseVisitor<ST> {
 	}
 
 	// NUMBER
-	@Override public ST visitNumInt(MusicinatorParser.NumIntContext ctx) { 
-		return visitChildren(ctx);// return Type.NUMBER; 
+	@Override public String visitNumInt(MusicinatorParser.NumIntContext ctx) { 
+
+		String varName = "_" + varNum++; // descartable variable
+
+		ST gen = group.getInstanceOf("vardec");
+		
+		gen.add("name", varName);
+		gen.add("value", ctx.INT().getText());
+
+		printer.println(gen.render());
+
+		return varName;
+
+		// return visitChildren(ctx);
 	}
 
-	@Override public ST visitNumDouble(MusicinatorParser.NumDoubleContext ctx) { 
-		return visitChildren(ctx);// return Type.NUMBER; 
+	@Override public String visitNumDouble(MusicinatorParser.NumDoubleContext ctx) { 
+
+		String varName = "_" + varNum++; // descartable variable
+
+		ST gen = group.getInstanceOf("vardec");
+		
+		gen.add("name", varName);
+		gen.add("value", ctx.DOUBLE().getText());
+
+		printer.println(gen.render());
+
+		return varName;
+
+		// return visitChildren(ctx);
 	}
 
-	@Override public ST visitNumGetInt(MusicinatorParser.NumGetIntContext ctx) { 
-		return visitChildren(ctx);// return Type.NUMBER; 
+	@Override public String visitNumGetInt(MusicinatorParser.NumGetIntContext ctx) { 
+
+		String varName = "_" + varNum++; // descartable variable
+
+		ST gen = group.getInstanceOf("u_getint");
+		
+		gen.add("varname", varName);
+		gen.add("str", ctx.STRING().getText());
+
+		printer.println(gen.render());
+
+		return varName;
+
+		// return visitChildren(ctx);
 	}
 
-	@Override public ST visitNumDuration(MusicinatorParser.NumDurationContext ctx) { 
-		// // verify variable is single sequence or performance
-		// Type varType = visit(ctx.variable());
+	@Override public String visitNumDuration(MusicinatorParser.NumDurationContext ctx) { 
+		
+		String varName = "_" + varNum++; // descartable variable
 
-		// if (varType != Type.SEQUENCE && varType != Type.PERFORMANCE) {
-		// 	error("Variable \"" + ctx.variable().getText()
-		// 		  + "\" is neither a sequence nor a performance!", ctx);
-		// } 
+		ST gen = group.getInstanceOf("u_duration");
+		
+		gen.add("varname", varName);
+		gen.add("performance", visit(ctx.variable()));
 
-		return visitChildren(ctx);// return Type.NUMBER; 
+		printer.println(gen.render());
+
+		return varName;
+
+		//return visitChildren(ctx);// return Type.NUMBER; 
 	}
 
 	// VARIABLE
-	@Override public ST visitVariable(MusicinatorParser.VariableContext ctx) { 
-		// String varName = ctx.WORD().getText();
-		// Type varType = Type.INSTRUMENT;
-
-		// // get variable type
-		// if (currentScope.isVariable(varName)) {
-		// 	varType = currentScope.getVariable(varName).type();
-
-		// } else if (!music.isInstrument(varName)) {
-		// 	error("Variable \"" + varName + "\" is not defined!", ctx);
-		// }
-
-		// if (ctx.OPEN_SB() != null) {
-
-		// 	if (Type.isSimpleType(varType)) {
-		// 		error("Variable \"" + varName + "\" is not an array!", ctx);
-		// 	}
-		// 	return Type.toSimpleType(varType); 
-		// }
-
-		// //System.out.println("["+ctx.start.getLine()+"] Read variable \""+varName+"\" of type "+ varType);
-
-		return visitChildren(ctx);// return varType; 
+	@Override public String visitVariable(MusicinatorParser.VariableContext ctx) { 
+		return "_" + ctx.getText();
 	}
 
-	// @Override public ST visitTypes(MusicinatorParser.TypesContext ctx) { 
+	// @Override public String visitTypes(MusicinatorParser.TypesContext ctx) { 
 	// 	return visitChildren(ctx); 
 	// }
 
-	// @Override public ST visitCondition(MusicinatorParser.ConditionContext ctx) { 
+	// @Override public String visitCondition(MusicinatorParser.ConditionContext ctx) { 
 	// 	return visitChildren(ctx); 
 	// }
 

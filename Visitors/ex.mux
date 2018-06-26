@@ -13,9 +13,9 @@ sequence intro2 = [R{4}C{4}G{4} C5{3.5} E|G#|C5{.5} Eb|G|C5{8}C{4}G{4}];
 
 performance pp = [C''C GG A'A' G{2} FF EE DD C{2} ] on guitar ;
 
-instrument [] band = [ piano , guitar, bass, drums];
-//instrument [] band2 = [ ]; // <- TODO fix this
-instrument [] band3 = piano and guitar and bass and drums;
+instrument[] band = [ piano , guitar, bass, drums];
+//instrument[] band2 = [ ]; // <- TODO fix this
+instrument[] band3 = piano and guitar and bass and drums;
 number[] n = [1, 2, 3];
 number[] n2 = 1->3;
 sequence s = [CC GG AA G{2} FF EE DD C{2}];

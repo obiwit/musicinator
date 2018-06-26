@@ -75,9 +75,7 @@ public class DefPhase extends MusicinatorParserBaseListener {/*
 	
 	@Override public void enterMain(MusicinatorParser.MainContext ctx) {
 		scopes.put(ctx, new HashMap<String, Object>());
-		int maxtracks = 0;
-		String temp = ctx.getText();
-		maxtracks = ctx.instructions().size();
+		int maxtracks = ctx.instructions().size();
 		towrite.append(group.getInstanceOf("header").render()+"\n"); //Python imports
 		//////////
 		gen = group.getInstanceOf("createmidi");

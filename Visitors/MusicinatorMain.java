@@ -68,7 +68,7 @@ public class MusicinatorMain {
          // visit main file's tree;
          SemanticAnalysis semanticVisitor = new SemanticAnalysis(aux.music);
          semanticVisitor.visit(main_tree);
-         Compiler compilerVisitor = new Compiler(aux.music, semanticVisitor.globalScope);
+         Compiler compilerVisitor = new Compiler(aux.music, semanticVisitor.globalScope, filename);
          compilerVisitor.visit(main_tree);
       }
    }
