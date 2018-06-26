@@ -20,40 +20,54 @@ def addnotes(notes):
     repeat_times = (int)(notes[len(notes)-1])
     
     for x in range(len(time)):
-        currtime = time[x]
+        initialTime = time[x]
         for _ in range(repeat_times):
             for i in range(1, len(notes)-1):
                 try:
-                    note = notes[i][0] #getting the note
-                    duration = notes[i][1] #duration of the note
+                    note = notes[1][i][0] #getting the note
+                    duration = notes[1][i][1] #duration of the note
+                    toInsert = notes[1][i][3] + initialTime
                     if note == -1:
-                        currtime+=duration
                         continue
 
                 except:
                     pass
                 
                 try: #trying for instrument change
-                    instrument = notes[i][2] #checking for instrument
+                    instrument = notes[1][i][2] #checking for instrument
                     if(instrument != temp):
-                        midi.addProgramChange(currtrack, 0, currtime, instrument) #changing the current instrument
+                        midi.addProgramChange(currtrack, 0, toInsert, instrument) #changing the current instrument
                         temp = instrument
                 except:
                     instrument = temp #it keeps the old instrument
                     pass
                 
-                midi.addNote(currtrack,0,note,currtime,duration,100)
+                midi.addNote(currtrack,0,note,toInsert,duration,100)
 
-                print("Added note {}, with instument {} with a duration of {} on time {} , on channel {}".format(note, instrument, duration, currtime, currtrack))
-                currtime += duration
+                print("Added note {}, with instument {} with a duration of {} on time {}, on channel {}".format(note, instrument, duration, toInsert, currtrack))
         currtrack += 1
+
+def duration(toCheck):
+    if type(toCheck[0]) is tuple:
+        size = len(toCheck)-1
+        return toCheck[0][3] + toCheck[size][3] + toCheck[size][1]
+    else:
+        size = len(toCheck[1]) - 1
+        return toCheck[1][0][3] + toCheck[1][size][3] + toCheck[1][size][1]
+>>
+
+u_duration(varname, performance) ::= <<
+<varname> = duration(<performance>)
 >>
 
 
-createperformance(name, notes) ::= "<name> = <notes>"
+createperformance(name, notes) ::= <<
+<name> = <notes>
+>>
 
-addperformance(name) ::= "addnotes(<name>)"
-
+addperformance(name) ::= <<
+addnotes(<name>)
+>>
 exportfile(name) ::= <<
 with open("<name>", 'wb') as file:
     midi.writeFile(file) #Writting the file
@@ -77,26 +91,33 @@ u_getint(str, varname) ::= <<
 <varname> = getInt("<str>")
 >>
 
-vardec(name, value) ::= "<name> = <value>"
-
-forloop(begin, end, code, indent) ::= <<
-<indent>for <begin> in <end>:
-    <indent><code>
+vardec(name, value) ::= <<
+<name> = <value>
 >>
 
-ifstat(codition, code, indent) ::= <<
-<indent>if <condition>:
-    <indent><code>
+forloop(begin, end, code) ::= <<
+for <begin> in <end>:
+    <code>
 >>
 
-elseif(condition, code,indent) ::= <<
-<indent>elif <condition>:
-    <indent><code>
+ifstat(codition, code) ::= <<
+if <condition>:
+    <code>
 >>
 
-fornumbers(first, last, code, indent) ::= <<
-<indent>for i in range(<first>, <last>+1):
-    <indent><code>
+elseif(condition, code) ::= <<
+elif <condition>:
+    <code>
+>>
+
+fornumbers(first, last, code) ::= <<
+for i in range(<first>, <last>+1):
+    <code>
+>>
+
+else(code) ::= <<
+else:
+	<code>
 >>
 
 
