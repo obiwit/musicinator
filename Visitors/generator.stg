@@ -111,6 +111,27 @@ def modTempo(toMod, ModNumber):
         toMod[1] = modded
         return toMod
 
+def extendseq(original, toextend):
+    modded = []
+    if len(original) == 0:
+        for tup in toextend:
+            newtup = (tup[0], tup[1], tup[2], 0)
+            modded.append(newtup)
+        return modded
+    else:
+        for tup in original:
+            modded.append(tup)
+        time = duration(original)
+        for tup in toextend:
+            newtup = (tup[0], tup[1], tup[2], time)
+            modded.append(newtup)
+        return modded
+
+
+>>
+
+u_extendseq(new, original, toextend) ::= <<
+<new> = extendseq(<original>, <toextend>)
 >>
 
 u_modPitch(var, performance, modnumber) ::= <<
