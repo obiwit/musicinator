@@ -10,17 +10,17 @@ import java.util.*;
  * which can be extended to create a visitor which only needs to handle a subset
  * of the available methods.
  *
- * @param <T> The return type of the visit operation. Use {@link Void} for
- * operations with no return type.
+ * @param <Variable> The return type of the visit operation. 
  */
 public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
-	Scope globalScope;
-	Scope currentScope;
+	private Scope globalScope;
+	private Scope currentScope;
 	private Music music;
 
 	private final STGroup group;
 	private PrintWriter printer;
 	private int varNum;
+	private String currentIndentation;
 
 	Compiler(Music m, Scope s, String dstFile) {
 		music = m;
@@ -28,6 +28,7 @@ public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
 		currentScope = globalScope;
 
 		varNum = 0;
+		currentIndentation = "";
 
 		group = new STGroupFile("generator.stg");
 
@@ -57,6 +58,7 @@ System.out.println("Started Compilation (๑˃̵ᴗ˂̵)و");
 		Set<String> instrNames = instruments.keySet();
 		for (String s : instrNames) {
 		    gen = group.getInstanceOf("vardec");
+			gen.add("indentation", currentIndentation);
 			gen.add("varname", s);				
 			gen.add("value", instruments.get(s));
 			printer.println(gen.render());
@@ -77,14 +79,15 @@ System.out.println("Started Compilation (๑˃̵ᴗ˂̵)و");
 		return v;
 
 	}
-	
+
 	@Override public Variable visitInstructions(MusicinatorParser.InstructionsContext ctx) {
-printer.println("############################ LINE = "+ctx.start.getLine());	
+printer.println(currentIndentation+"############################ LINE = "+ctx.start.getLine());	
 
 		if (ctx.play() != null) {
 			Variable v = visit(ctx.play());
 
 			ST gen = group.getInstanceOf("u_addnotes");
+			gen.add("indentation", currentIndentation);
 			gen.add("varname", v.name());
 			printer.println(gen.render());
 
@@ -100,11 +103,89 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		String varName = ctx.WORD().getText();
 
 		ST gen = group.getInstanceOf("vardec");
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 		gen.add("value", visit(ctx.expr()).name());
 		printer.println(gen.render());
 
 		return currentScope.getVariable(varName);
+	}
+	
+	// FOR
+	@Override public Variable visitForStat(MusicinatorParser.ForStatContext ctx) { 
+		// create new scope child
+		currentScope = currentScope.getNextChildScope();
+
+		// generate for loop
+		ST gen = group.getInstanceOf("forloop");
+		gen.add("indentation", currentIndentation);
+		gen.add("instance", ctx.newVar.getText());
+		gen.add("array", ctx.array.getText());
+		printer.println(gen.render());
+
+		// update indentation level and visit children
+		currentIndentation += "\t";
+		Variable v = visitChildren(ctx); 
+
+		// restore indentation level and return to parent scope
+		currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
+		currentScope = currentScope.getParentScope();
+
+		return v;
+	}
+	
+	// IF
+	@Override public Variable visitIfStat(MusicinatorParser.IfStatContext ctx) { 
+		
+		// create new scope child
+		currentScope = currentScope.getNextChildScope();
+
+		// visit else if conditions before generating if
+		// (otherwise it wouldn't be possible to initialize
+		// the variables for the else if conditions)
+		int elifNum = ctx.ELIF().size();
+		String[] elifConds = new String[elifNum];
+		for (int i = 0; i < elifNum; i++) {
+			elifConds[i] = visit(ctx.elifCond).name();
+		}
+
+		// generate if statement
+		ST gen = group.getInstanceOf("if");
+		gen.add("indentation", currentIndentation);
+		gen.add("condition", visit(ctx.ifCond).name());
+		printer.println(gen.render());
+
+		// update indentation level and visit children
+		currentIndentation += "\t";
+		Variable v = visit(ctx.ifBody); 
+		currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
+
+		// generate else ifs, if any
+		for (int i = 0; i < elifNum; i++) {
+			gen = group.getInstanceOf("elif");
+			gen.add("indentation", currentIndentation);
+			gen.add("condition", elifConds[i]);
+			printer.println(gen.render());
+
+			currentIndentation += "\t";
+			visit(ctx.elifBody); 
+			currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
+		}
+
+		// generate else, if any
+		if (ctx.ELSE() != null) {
+			gen = group.getInstanceOf("else");
+			gen.add("indentation", currentIndentation);
+			printer.println(gen.render());
+
+			currentIndentation += "\t";
+			visit(ctx.elseBody); 
+			currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
+		}
+
+		// return to parent scope
+		currentScope = currentScope.getParentScope();
+		return v;
 	}
 	
 	// PLAY
@@ -113,6 +194,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 
 		// change start time to 0
 		ST gen = group.getInstanceOf("vardec");
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName+"[0]");
 		gen.add("value", "[0]");
 		printer.println(gen.render());
@@ -120,6 +202,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		// change repeat times to given number or 1, if no number was given 
 		String repeatTimes = (ctx.rep == null)? "1": ctx.rep.getText();
 		gen = group.getInstanceOf("vardec");
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName+"[2]");
 		gen.add("value", repeatTimes);
 		printer.println(gen.render());
@@ -127,8 +210,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		// TODOs
 		// update longestPerformanceDuration
 
-		// TODO return other value
-		return new Variable(varName, Type.ERROR);
+		return new Variable(varName, Type.NONE);
 	}
 	
 	@Override public Variable visitTimedPlay(MusicinatorParser.TimedPlayContext ctx) {
@@ -137,6 +219,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 
 		// change start time
 		ST gen = group.getInstanceOf("vardec");
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName+"[0]");
 
 		// TODO if var not number arrar, add []
@@ -161,42 +244,6 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		return visitChildren(ctx);
 	}
 	
-	// FOR
-	@Override public Variable visitForStat(MusicinatorParser.ForStatContext ctx) { 
-		// TODO
-
-		// create new scope child
-		currentScope = currentScope.getNextChildScope();
-
-		ST gen = group.getInstanceOf("forloop");
-		gen.add("instance", ctx.newVar.getText());
-		gen.add("array", ctx.array.getText());
-		gen.add("code", "");
-		printer.println(gen.render());
-
-		Variable v = visitChildren(ctx); 
-
-
-		// return to parent scope
-		currentScope = currentScope.getParentScope();
-
-		return v;
-	}
-	
-	// IF
-	@Override public Variable visitIfStat(MusicinatorParser.IfStatContext ctx) { 
-		// TODO 
-
-		// create new scope child
-		currentScope = currentScope.getNextChildScope();
-		Variable v =  visitChildren(ctx); 
-
-		// return to parent scope
-		currentScope = currentScope.getParentScope();
-
-		return v;
-	}
-	
 	// EXPR (SIMPLE TYPES)
 	@Override public Variable visitVarExpr(MusicinatorParser.VarExprContext ctx) {
 		return visit(ctx.variable());
@@ -219,17 +266,68 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 	}
 	
 	@Override public Variable visitMulDivExpr(MusicinatorParser.MulDivExprContext ctx) { 
-		// TODO
-		// how to check whether first operand is Type.NUMBER
+		String varName = "_" + varNum++; // descartable variable
+
+		ST gen;
+
+		// check whether first operand is Type.NUMBER or not
+		Variable firstOperand = visit(ctx.e1);
+		if (firstOperand.type() == Type.NUMBER) {
+
+			gen = group.getInstanceOf("vardec");
+			gen.add("indentation", currentIndentation);
+			gen.add("varname", varName);
+			gen.add("value", firstOperand.name()+ctx.op.getText()+visit(ctx.e2).name());
+
+		} else { 
+
+			// firstOperand is a performance or sequence
+			gen = group.getInstanceOf("u_modTempo");
+			gen.add("indentation", currentIndentation);
+			gen.add("varname", varName);
+			gen.add("performance", firstOperand.name());
+
+			String modNumber = visit(ctx.e2).name();
+			if (ctx.op.getText().equals("/")) 
+				modNumber = "1/"+modNumber;
+
+			gen.add("modnumber", modNumber);
+		}
 		
-		return visitChildren(ctx);// return visit(ctx.e1); 
+		printer.println(gen.render());
+		return new Variable(varName, firstOperand.type());
 	}
 	
 	@Override public Variable visitAddSubExpr(MusicinatorParser.AddSubExprContext ctx) { 
-		// TODO
-		// how to check whether first operand is Type.NUMBER
+		String varName = "_" + varNum++; // descartable variable
+
+		ST gen;
+
+		// check whether first operand is Type.NUMBER or not
+		Variable firstOperand = visit(ctx.e1);
+		if (firstOperand.type() == Type.NUMBER) {
+
+			gen = group.getInstanceOf("vardec");
+			gen.add("indentation", currentIndentation);
+			gen.add("varname", varName);
+			gen.add("value", firstOperand.name()+ctx.op.getText()+visit(ctx.e2).name());
+
+		} else { 
+			
+			// firstOperand is a performance or sequence
+			gen = group.getInstanceOf("u_modPitch");
+			gen.add("indentation", currentIndentation);
+			gen.add("varname", varName);
+			gen.add("performance", firstOperand.name());
+
+			String modNumber = visit(ctx.e2).name();
+			if (ctx.op.getText().equals("-")) 
+				modNumber = "-1*"+modNumber;
+			gen.add("modnumber", modNumber);
+		}
 		
-		return visitChildren(ctx);// return visit(ctx.e1); 
+		printer.println(gen.render());
+		return new Variable(varName, firstOperand.type());
 	}
 	
 	// EXPR (ARRAYS)
@@ -237,6 +335,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		String varName = "_" + varNum++; // descartable variable
 
 		ST gen = group.getInstanceOf("vardec");
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 
 		Variable v = visit(ctx.expr(0));
@@ -256,6 +355,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		String varName = "_" + varNum++; // descartable variable
 
 		ST gen = group.getInstanceOf("vardec");
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 
 		Variable v = visit(ctx.expr(0));
@@ -275,6 +375,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		String varName = "_" + varNum++; // descartable variable
 
 		ST gen = group.getInstanceOf("range");
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 		gen.add("first", visit(ctx.e1).name());
 		gen.add("last", visit(ctx.e1).name());
@@ -288,6 +389,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		String varName = "_" + varNum++; // descartable variable
 
 		ST gen = group.getInstanceOf("vardec");
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 		gen.add("value", "[" + new Note(ctx.SOUND().getText()) + "]");
 		printer.println(gen.render());
@@ -299,6 +401,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		String varName = "_" + varNum++; // descartable variable
 
 		ST gen = group.getInstanceOf("vardec");
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 		gen.add("value", new Chord(ctx.CHORD().getText()));
 		printer.println(gen.render());
@@ -311,6 +414,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		String varName = "_" + varNum++; // descartable variable
 
 		ST gen = group.getInstanceOf("u_createseq");
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 		gen.add("seqs", "[");
 
@@ -325,12 +429,13 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 	}
 
 	// PERFORMANCE
-	@Override public Variable visitPerFromSeq(MusicinatorParser.PerFromSeqContext ctx) { 
+	@Override public Variable visitPerformance(MusicinatorParser.PerformanceContext ctx) { 
 
 		String varName = "_" + varNum++; // descartable variable
 
 		// get sequence and tie it to an instrument
 		ST gen = group.getInstanceOf("u_setinstrument");
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 		String sequence = (ctx.seq == null)? 
 							visit(ctx.sequence()).name() : visit(ctx.seq).name();
@@ -340,6 +445,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 
 		// create performance, with 'flag' values for start & repeat times
 		gen = group.getInstanceOf("vardec");
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 		gen.add("value", "[[-1], "+varName+", -1]");
 		printer.println(gen.render());
@@ -354,7 +460,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		String varName = "_" + varNum++; // descartable variable
 
 		ST gen = group.getInstanceOf("vardec");
-		
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 		gen.add("value", ctx.INT().getText());
 
@@ -368,7 +474,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		String varName = "_" + varNum++; // descartable variable
 
 		ST gen = group.getInstanceOf("vardec");
-		
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 		gen.add("value", ctx.DOUBLE().getText());
 
@@ -382,7 +488,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		String varName = "_" + varNum++; // descartable variable
 
 		ST gen = group.getInstanceOf("u_getint");
-		
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 		gen.add("str", ctx.STRING().getText());
 
@@ -396,7 +502,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		String varName = "_" + varNum++; // descartable variable
 
 		ST gen = group.getInstanceOf("u_duration");
-		
+		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 		gen.add("performance", visit(ctx.variable()).name());
 
@@ -423,9 +529,27 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 	// 	return visitChildren(ctx); 
 	// }
 
-	// @Override public Variable visitCondition(MusicinatorParser.ConditionContext ctx) { 
-	// 	return visitChildren(ctx); 
-	// }
+	@Override public Variable visitCondition(MusicinatorParser.ConditionContext ctx) { 
+		
+		String varName = "_" + varNum++; // descartable variable
+
+		ST gen = group.getInstanceOf("vardec");
+		gen.add("indentation", currentIndentation);
+		gen.add("varname", varName);
+
+		// get condition value
+		String value = "";
+		if (ctx.e1 == null) {
+			value = visit(ctx.condition()).name();
+		} else {
+			value = visit(ctx.e1).name() + ctx.op.getText() + visit(ctx.e2).name();
+		}
+
+		gen.add("value", value);
+		printer.println(gen.render());
+
+		return new Variable(varName, Type.BOOL);
+	}
 
 	private void error(String details, ParserRuleContext ctx) {
 		System.err.println("ERROR! Line " + ctx.start.getLine() + ": " + details);

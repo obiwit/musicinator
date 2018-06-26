@@ -20,15 +20,6 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		globalScope = new Scope();
 		currentScope = globalScope;
 	}
-
-	
-	// @Override public Type visitMain(MusicinatorParser.MainContext ctx) { 
-	// 	return visitChildren(ctx); 
-	// }
-	
-	// @Override public Type visitInstructions(MusicinatorParser.InstructionsContext ctx) {
-	// 	return visitChildren(ctx); 
-	// }
 	
 	// ASSIGN
 	@Override public Type visitAssignment(MusicinatorParser.AssignmentContext ctx) { 
@@ -100,6 +91,16 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		currentScope = currentScope.getParentScope();
 
 		return t;
+	}
+
+	// PLAY
+	@Override public Type visitSimplePlay(MusicinatorParser.SimplePlayContext ctx) {
+		Type perType = visit(ctx.per);
+		if (perType != Type.PERFORMANCE && perType != Type.PERFORMANCE_ARRAY) {
+			error("Variable \"" + ctx.per.getText()
+				  + "\" is not a performance nor a performance array!", ctx);
+		}
+		return Type.NONE;
 	}
 	
 	// EXPR (SIMPLE TYPES)
@@ -222,7 +223,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	}
 
 	// PERFORMANCE
-	@Override public Type visitPerFromSeq(MusicinatorParser.PerFromSeqContext ctx) { 
+	@Override public Type visitPerformance(MusicinatorParser.PerformanceContext ctx) { 
 
 		Type seqType = (ctx.seq == null) ? visit(ctx.sequence()) : visit(ctx.seq);
 		Type instType = visit(ctx.inst);
@@ -286,6 +287,19 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		//System.out.println("["+ctx.start.getLine()+"] Read variable \""+varName+"\" of type "+ varType);
 
 		return varType; 
+	}
+
+
+	@Override public Type visitCondition(MusicinatorParser.ConditionContext ctx) { 
+		
+		if (ctx.e1 == null) {
+			return visit(ctx.condition());
+		}
+		if(visit(ctx.e1) != Type.NUMBER || visit(ctx.e2) != Type.NUMBER) {
+			error("Condition operands must be numbers!", ctx);
+		}
+
+		return Type.BOOL;
 	}
 
 	private void error(String details, ParserRuleContext ctx) {

@@ -24,9 +24,8 @@ play 	: PLAY per=expr SEQUENTIALLY? (rep=expr TIMES)? SEMICOLON 	#simplePlay
 forStat	: FOR types newVar=WORD IN array=WORD OPEN_BR instructions* CLOSE_BR
 		;
 
-ifStat	: IF condition 
-		  OPEN_BR  ifBody=instructions* CLOSE_BR 
-		  (ELIF condition OPEN_BR  elifBody=instructions* CLOSE_BR)* 
+ifStat	: IF ifCond=condition OPEN_BR ifBody=instructions* CLOSE_BR 
+		  (ELIF elifCond=condition OPEN_BR  elifBody=instructions* CLOSE_BR)* 
 		  (ELSE OPEN_BR  elseBody=instructions* CLOSE_BR)?
 		;
 
@@ -54,7 +53,7 @@ sequence
 		;
 
 performance
-		: (sequence|seq=variable) ON inst=variable 	#perFromSeq
+		: (sequence|seq=variable) ON inst=variable 
 		;
 
 number 	: BAR variable BAR 						#numDuration
@@ -75,7 +74,7 @@ types 	: SQ_LIT
 		;
 
 condition
-		: number op=(BIGR|BIGE|SMLR|SMLE|EQLS|DIFS) number
+		: e1=expr op=(BIGR|BIGE|SMLR|SMLE|EQLS|DIFS) e2=expr
 		| OPEN_PR condition CLOSE_PR
 		;
 

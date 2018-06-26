@@ -60,9 +60,11 @@ public class MusicinatorMain {
          main_parser.getNumberOfSyntaxErrors() == 0) {
 
          // walk aux file's tree
-         ParseTreeWalker aux_walker = new ParseTreeWalker();
-         AuxPhase aux = new AuxPhase();
-         aux_walker.walk(aux, aux_tree);
+         // ParseTreeWalker aux_walker = new ParseTreeWalker();
+         // AuxPhase aux = new AuxPhase();
+         // aux_walker.walk(aux, aux_tree);
+         AuxVisitor aux = new AuxVisitor();
+         aux.visit(aux_tree);
 
 
          // visit main file's tree;

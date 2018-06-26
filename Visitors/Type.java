@@ -1,7 +1,7 @@
 public enum Type {
 		NUMBER, SEQUENCE, PERFORMANCE, INSTRUMENT, 
 		NUMBER_ARRAY, SEQUENCE_ARRAY, PERFORMANCE_ARRAY, INSTRUMENT_ARRAY,
-		ERROR;
+		BOOL, NONE, ERROR;
 
 		public static boolean isSimpleType(Type t) {
 			return (t == NUMBER || t == SEQUENCE || t == PERFORMANCE || t == INSTRUMENT);

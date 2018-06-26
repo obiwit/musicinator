@@ -151,68 +151,63 @@ with open("<name>", 'wb') as file:
 >>
 
 
-vardec(varname, value) ::= <<
-<varname> = <value>
+vardec(indentation, varname, value) ::= <<
+<indentation><varname> = <value>
 >>
 
-range(varname, first, last) ::= <<
-<varname> = range(<first>, <last>+1)
+range(indentation, varname, first, last) ::= <<
+<indentation><varname> = range(<first>, <last>+1)
 >>
 
-u_addnotes(varname) ::= <<
-addnotes(<varname>)
+u_addnotes(indentation, varname) ::= <<
+<indentation>addnotes(<varname>)
 >>
 
-u_getint(str, varname) ::= <<
-<varname> = getInt(<str>)
+u_getint(indentation, varname, str) ::= <<
+<indentation><varname> = getInt(<str>)
 >>
 
-u_duration(varname, performance) ::= <<
-<varname> = duration(<performance>)
+u_duration(indentation, varname, performance) ::= <<
+<indentation><varname> = duration(<performance>)
 >>
 
-u_extendseq(varname, original, toextend) ::= <<
-<varname> = extendseq(<original>, <toextend>)
+u_extendseq(indentation, varname, original, toextend) ::= <<
+<indentation><varname> = extendseq(<original>, <toextend>)
 >>
-u_createseq(varname, seqs) ::= <<
-<varname> = createseq(<seqs>)
->>
-
-u_modPitch(varname, performance, modnumber) ::= <<
-<varname> = modPitch(<performace>, <modnumber>)
+u_createseq(indentation, varname, seqs) ::= <<
+<indentation><varname> = createseq(<seqs>)
 >>
 
-u_modTempo(varname, performance, modnumber) ::= <<
-<varname> = modTempo(<performance>, <modnumber>)
+u_modPitch(indentation, varname, performance, modnumber) ::= <<
+<indentation><varname> = modPitch(<performance>, <modnumber>)
 >>
 
-u_setinstrument(varname, seq, instrument) ::= <<
-<varname> = setinstrument(<seq>, <instrument>)
+u_modTempo(indentation, varname, performance, modnumber) ::= <<
+<indentation><varname> = modTempo(<performance>, <modnumber>)
 >>
 
-forloop(instance, array, code) ::= <<
-for <instance> in <array>:
-    <code>
+u_setinstrument(indentation, varname, seq, instrument) ::= <<
+<indentation><varname> = setinstrument(<seq>, <instrument>)
 >>
 
-fornumbers(first, last, code) ::= <<
-for i in range(<first>, <last>+1):
-    <code>
+forloop(indentation, instance, array) ::= <<
+<indentation>for <instance> in <array>:
 >>
 
-ifstat(codition, code) ::= <<
-if <condition>:
-    <code>
+fornumbers(indentation, first, last) ::= <<
+<indentation>for i in range(<first>, <last>+1):
 >>
 
-elseif(condition, code) ::= <<
-elif <condition>:
-    <code>
+if(indentation, condition) ::= <<
+<indentation>if <condition>:
 >>
 
-else(code) ::= <<
-else:
-	<code>
+elif(indentation, condition) ::= <<
+<indentation>elif <condition>:
+>>
+
+else(indentation, code) ::= <<
+<indentation>else:
 >>
 
 
