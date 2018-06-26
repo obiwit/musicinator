@@ -14,7 +14,7 @@ import java.util.*;
  * operations with no return type.
  */
 public class AuxVisitor extends AuxinatorParserBaseVisitor<Instrument> {
-	
+	/*
 	Music music = new Music();
 	Map<String, Integer> noteMap = new HashMap<>(); // Map - noteName to Pitch
 
@@ -103,5 +103,5 @@ public class AuxVisitor extends AuxinatorParserBaseVisitor<Instrument> {
 			inst.redefineRange(val1, val2, music.getInstrument(word).value(val1));
 			return inst;
 		}
-	}
+	}*/
 }

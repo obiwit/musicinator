@@ -56,6 +56,10 @@ public class Music {
 		return instruments.get(name);
 	}
 
+	public HashMap<String, Instrument> getAllInstruments() {
+		return new HashMap<String, Instrument>(instruments);
+	}
+
 	public boolean isInstrument(String name) {
 		return instruments.containsKey(name);
 	}

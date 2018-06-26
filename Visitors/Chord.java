@@ -63,10 +63,10 @@ public class Chord {
 
 	@Override
 	public String toString() {
-		String temp = "";
+		String temp = "[";
 		for (Note t_note : notes) {
-			temp += t_note.toString();
+			temp += t_note.toString() +",";
 		}
-		return temp;
+		return temp.substring(0, temp.length()-1) + "]";
 	}
 }

@@ -59,7 +59,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 			error("Can only define an instrument in aux file!", ctx);
 		}
 
-		System.out.println("["+ctx.start.getLine()+"] Set variable \""+varName+"\" of type "+varType.name());
+//		System.out.println("["+ctx.start.getLine()+"] Set variable \""+varName+"\" of type "+varType.name());
 
 		currentScope.setVariable(varName, new Variable(varName, varType, ctx));
 		return varType; 
@@ -149,9 +149,9 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		}
 
 		// iterate over all other children and check same type
-		int sequencesNum = ctx.expr().size();
+		int exprsNum = ctx.expr().size();
 
-		for (int i = 1; i < sequencesNum; i++) {
+		for (int i = 1; i < exprsNum; i++) {
 			if (visit(ctx.expr(i)) != firstType) {
 				error("All items of array \"" + ctx.getText()
 					  + "\" must be of the same type!", ctx);
@@ -166,10 +166,9 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		Type arrayType = Type.toSimpleType(visit(ctx.expr(0)));
 
 		// iterate over all other children and check same type
-		int sequencesNum = ctx.expr().size();
+		int exprsNum = ctx.expr().size();
 
-		for (int i = 1; i < sequencesNum; i++) {
-
+		for (int i = 1; i < exprsNum; i++) {
 			if (Type.toSimpleType(visit(ctx.expr(i))) != arrayType) {
 				error("All items of array \"" + ctx.getText()
 					  + "\" must be of the same type!", ctx);

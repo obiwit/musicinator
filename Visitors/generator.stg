@@ -127,6 +127,12 @@ def extendseq(original, toextend):
             modded.append(newtup)
         return modded
 
+def createseq(seq):
+    newseq = []
+    for i in len(seq):
+        newseq = extendseq(newseq,seq[i])
+    return newseq
+
 def setinstrument(seq,nome):
     if len(seq)==0:
         return seq
@@ -136,45 +142,26 @@ def setinstrument(seq,nome):
         newseq.append(new)
     return newseq
 
-def createseq(seq):
-    newseq = []
-    for i in len(seq):
-        newseq = extendseq(newseq,seq[i])
-    return newseq
->>
-u_createseq(var_name,seq) ::= <<
-<var_name> = createseq(<seq>)
 >>
 
-u_setinstrument(var, seq, name) ::= <<
-<var> = setinstrument(<seq>, <name>)
->>
-
-u_extendseq(new, original, toextend) ::= <<
-<new> = extendseq(<original>, <toextend>)
->>
-
-u_modPitch(var, performance, modnumber) ::= <<
-<var> = modPitch(<performace>, <modnumber>)
->>
-
-u_modTempo(var, performance, modnumber) ::= <<
-<var> = modTempo(<performance>, <modnumber>)
->>
-
-createperformance(name, notes) ::= <<
-<name> = <notes>
->>
-
-addperformance(name) ::= <<
-addnotes(<name>)
->>
 exportfile(name) ::= <<
 with open("<name>", 'wb') as file:
     midi.writeFile(file) #Writting the file
     print("MIDI File Written")
 >>
 
+
+vardec(varname, value) ::= <<
+<varname> = <value>
+>>
+
+range(varname, first, last) ::= <<
+<varname> = range(<first>, <last>+1)
+>>
+
+u_addnotes(varname) ::= <<
+addnotes(<varname>)
+>>
 
 u_getint(str, varname) ::= <<
 <varname> = getInt(<str>)
@@ -184,8 +171,23 @@ u_duration(varname, performance) ::= <<
 <varname> = duration(<performance>)
 >>
 
-vardec(name, value) ::= <<
-<name> = <value>
+u_extendseq(varname, original, toextend) ::= <<
+<varname> = extendseq(<original>, <toextend>)
+>>
+u_createseq(varname, seqs) ::= <<
+<varname> = createseq(<seqs>)
+>>
+
+u_modPitch(varname, performance, modnumber) ::= <<
+<varname> = modPitch(<performace>, <modnumber>)
+>>
+
+u_modTempo(varname, performance, modnumber) ::= <<
+<varname> = modTempo(<performance>, <modnumber>)
+>>
+
+u_setinstrument(varname, seq, instrument) ::= <<
+<varname> = setinstrument(<seq>, <instrument>)
 >>
 
 forloop(begin, end, code) ::= <<

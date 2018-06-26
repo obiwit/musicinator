@@ -46,18 +46,33 @@ System.out.println("Started Compilation (๑˃̵ᴗ˂̵)و");
 		int maxtracks = ctx.instructions().size();
 		printer.println(group.getInstanceOf("header").render()+"\n"); //Python imports
 
-		//////////
+		// add global definitions
 		ST gen = group.getInstanceOf("createmidi");
 		gen.add("varbpm", music.bpm());				//Initializing Midi
 		gen.add("vartrack", maxtracks);
-		//////////
-
-		// TODO!! add instruments as arrays using vardecl
-
 		printer.println(gen.render()+"\n");
-		printer.println(group.getInstanceOf("body").render()+"\n"); // def addnotes()
 
+		// add all instruments as arrays 
+		HashMap<String, Instrument> instruments = music.getAllInstruments();
+		Set<String> instrNames = instruments.keySet();
+		for (String s : instrNames) {
+		    gen = group.getInstanceOf("vardec");
+			gen.add("varname", s);				
+			gen.add("value", instruments.get(s));
+			printer.println(gen.render());
+		}
+
+		// add methods
+		printer.println("\n"+group.getInstanceOf("body").render()+"\n"); // def addnotes()
+
+		// visit children
 		String s = visitChildren(ctx);
+
+		// add instruction to export to destination file
+		gen = group.getInstanceOf("exportfile");
+		gen.add("name", "out.mid");
+		printer.println("\n"+gen.render());
+
 		printer.flush();
 		return s;
 
@@ -74,7 +89,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		String varName = ctx.WORD().getText();
 
 		ST gen = group.getInstanceOf("vardec");
-		gen.add("name", varName);
+		gen.add("varname", varName);
 		gen.add("value", visit(ctx.expr()));
 		printer.println(gen.render());
 
@@ -164,7 +179,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		String varName = "_" + varNum++; // descartable variable
 
 		ST gen = group.getInstanceOf("vardec");
-		gen.add("name", varName);
+		gen.add("varname", varName);
 		gen.add("value", "[");
 
 		int exprsNum = ctx.expr().size();
@@ -178,12 +193,12 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 
 		return varName;
 	}
-	
+
 	@Override public String visitAndArray(MusicinatorParser.AndArrayContext ctx) { 
 		String varName = "_" + varNum++; // descartable variable
 
 		ST gen = group.getInstanceOf("vardec");
-		gen.add("name", varName);
+		gen.add("varname", varName);
 		gen.add("value", "[");
 
 		int exprsNum = ctx.expr().size();
@@ -201,13 +216,11 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 	@Override public String visitNumRangeArray(MusicinatorParser.NumRangeArrayContext ctx) { 
 		String varName = "_" + varNum++; // descartable variable
 
-		// TODO fix using ST
-		// ST gen = group.getInstanceOf("fornumbers");
-		// gen.add("first", visit(ctx.e1));
-		// gen.add("last", visit(ctx.e1));
-		// printer.println(gen.render());
-
-		printer.println(varName + " = " + "range("+visit(ctx.e1)+", "+visit(ctx.e1)+"+1)");
+		ST gen = group.getInstanceOf("range");
+		gen.add("varname", varName);
+		gen.add("first", visit(ctx.e1));
+		gen.add("last", visit(ctx.e1));
+		printer.println(gen.render());
 
 		return varName;
 	}
@@ -217,7 +230,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		String varName = "_" + varNum++; // descartable variable
 
 		ST gen = group.getInstanceOf("vardec");
-		gen.add("name", varName);
+		gen.add("varname", varName);
 		gen.add("value", "[" + new Note(ctx.SOUND().getText()) + "]");
 		printer.println(gen.render());
 
@@ -228,7 +241,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 		String varName = "_" + varNum++; // descartable variable
 
 		ST gen = group.getInstanceOf("vardec");
-		gen.add("name", varName);
+		gen.add("varname", varName);
 		gen.add("value", new Chord(ctx.CHORD().getText()));
 		printer.println(gen.render());
 
@@ -239,28 +252,15 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 
 		String varName = "_" + varNum++; // descartable variable
 
-		ST gen = group.getInstanceOf("u_extendseq");
+		ST gen = group.getInstanceOf("u_createseq");
 		gen.add("varname", varName);
+		gen.add("seqs", "[");
 
 		int sequencesNum = ctx.sequence().size();
-
-		// TODO use ST instead of semi-hardcoded strings
 		for (int i = 0; i < sequencesNum-1; i++) {
-			gen.add("original", "extendseq(");
-			gen.add("toextend", visit(ctx.sequence(i))+"),");
+			gen.add("seqs", visit(ctx.sequence(i))+",");
 		}
-		gen.add("original", "[]");
-		gen.add("toextend", visit(ctx.sequence(sequencesNum-1)));
-
-		// extendSeq( ... extendSeq(extendSeq([], v1), v2) ... )
-
-		// extendSeq(<first>, <last>)
-		// <first> = extendSeq(
-		// <last> = v1), 
-		// ....
-		// <first> = [], 
-		// <last> = vlast
-
+		gen.add("seqs", visit(ctx.sequence(sequencesNum-1)) + "]");
 		printer.println(gen.render());
 
 		return varName;
@@ -269,19 +269,21 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 	// PERFORMANCE
 	@Override public String visitPerFromSeq(MusicinatorParser.PerFromSeqContext ctx) { 
 
-		// [[-1], seq, -1]
 		String varName = "_" + varNum++; // descartable variable
 
-		// ST gen = group.getInstanceOf("vardec");
-		// gen.add("name", varName);
+		// get sequence and tie it to an instrument
+		ST gen = group.getInstanceOf("u_setinstrument");
+		gen.add("varname", varName);
+		String sequence = (ctx.seq == null)? visit(ctx.sequence()) : visit(ctx.seq);
+		gen.add("seq", sequence);
+		gen.add("instrument", ctx.inst.getText());
+		printer.println(gen.render());
 
-		// TODO
-		// get sequence
-		// String sequence = visit()
-		// alter sequence so it now knows instrument
-		//...
-
-		//gen.add("value", "[[-1], "+sequence+", -1]");
+		// create performance, with 'flag' values for start & repeat times
+		gen = group.getInstanceOf("vardec");
+		gen.add("varname", varName);
+		gen.add("value", "[[-1], "+varName+", -1]");
+		printer.println(gen.render());
 
 		return varName;
 
@@ -294,7 +296,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 
 		ST gen = group.getInstanceOf("vardec");
 		
-		gen.add("name", varName);
+		gen.add("varname", varName);
 		gen.add("value", ctx.INT().getText());
 
 		printer.println(gen.render());
@@ -310,7 +312,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 
 		ST gen = group.getInstanceOf("vardec");
 		
-		gen.add("name", varName);
+		gen.add("varname", varName);
 		gen.add("value", ctx.DOUBLE().getText());
 
 		printer.println(gen.render());
@@ -354,7 +356,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 
 	// VARIABLE
 	@Override public String visitVariable(MusicinatorParser.VariableContext ctx) { 
-		return "_" + ctx.getText();
+		return ctx.getText();
 	}
 
 	// @Override public String visitTypes(MusicinatorParser.TypesContext ctx) { 
