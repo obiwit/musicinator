@@ -20,8 +20,6 @@ public class Compiler extends MusicinatorParserBaseVisitor<String> {
 
 	final STGroup group;
 	private PrintWriter printer;
-	//private ST gen;
-
 	private int varNum;
 
 	Compiler(Music m, Scope s, String dstFile) {
@@ -163,52 +161,55 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 	
 	// EXPR (ARRAYS)
 	@Override public String visitBracketArray(MusicinatorParser.BracketArrayContext ctx) { 
-		// // get and check String of first child
-		// Type firstType = visit(ctx.expr(0));
-		// if(!Type.isSimpleType(firstType)) {
-		// 	error("Invalid array type! Items must be of type number,"
-		// 		  + " sequence, performance or instrument!", ctx);
-		// }
+		String varName = "_" + varNum++; // descartable variable
 
-		// // iterate over all other children and check same type
-		// int sequencesNum = ctx.expr().size();
+		ST gen = group.getInstanceOf("vardec");
+		gen.add("name", varName);
+		gen.add("value", "[");
 
-		// for (int i = 1; i < sequencesNum; i++) {
-		// 	if (visit(ctx.expr(i)) != firstType) {
-		// 		error("All items of array \"" + ctx.getText()
-		// 			  + "\" must be of the same type!", ctx);
-		// 	}
-		// }
+		int exprsNum = ctx.expr().size();
+		for (int i = 1; i < exprsNum-1; i++) {
+			gen.add("value", visit(ctx.expr(i)) + ",");
+		}
+		gen.add("value", visit(ctx.expr(exprsNum-1)));
+		gen.add("value", "]");
 
-		return visitChildren(ctx);// return Type.toArrayType(firstType); 
+		printer.println(gen.render());
+
+		return varName;
 	}
-	// TODO!! Fix awful repetition
+	
 	@Override public String visitAndArray(MusicinatorParser.AndArrayContext ctx) { 
-		// // get and check String of array
-		// Type arrayType = Type.toSimpleType(visit(ctx.expr(0)));
+		String varName = "_" + varNum++; // descartable variable
 
-		// // iterate over all other children and check same type
-		// int sequencesNum = ctx.expr().size();
+		ST gen = group.getInstanceOf("vardec");
+		gen.add("name", varName);
+		gen.add("value", "[");
 
-		// for (int i = 1; i < sequencesNum; i++) {
+		int exprsNum = ctx.expr().size();
+		for (int i = 1; i < exprsNum-1; i++) {
+			gen.add("value", visit(ctx.expr(i)) + ",");
+		}
+		gen.add("value", visit(ctx.expr(exprsNum-1)));
+		gen.add("value", "]");
 
-		// 	if (Type.toSimpleType(visit(ctx.expr(i))) != arrayType) {
-		// 		error("All items of array \"" + ctx.getText()
-		// 			  + "\" must be of the same type!", ctx);
-		// 	}
-		// }
+		printer.println(gen.render());
 
-		return visitChildren(ctx);// return Type.toArrayType(arrayType); 
+		return varName;
 	}
 
 	@Override public String visitNumRangeArray(MusicinatorParser.NumRangeArrayContext ctx) { 
-		// // guarantee exprs are Type.NUMBER
-		// if (visit(ctx.e1) != Type.NUMBER)
-		// 	error("Variable \"" + ctx.e1.getText() + "is not a number!", ctx);
-		// if (visit(ctx.e2) != Type.NUMBER)
-		// 	error("Variable \"" + ctx.e2.getText() + "is not a number!", ctx);
+		String varName = "_" + varNum++; // descartable variable
 
-		return visitChildren(ctx);// return Type.NUMBER_ARRAY; 
+		// TODO fix using ST
+		// ST gen = group.getInstanceOf("fornumbers");
+		// gen.add("first", visit(ctx.e1));
+		// gen.add("last", visit(ctx.e1));
+		// printer.println(gen.render());
+
+		printer.println(varName + " = " + "range("+visit(ctx.e1)+", "+visit(ctx.e1)+"+1)");
+
+		return varName;
 	}
 	
 	// SEQUENCE
@@ -217,7 +218,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 
 		ST gen = group.getInstanceOf("vardec");
 		gen.add("name", varName);
-		gen.add("value", new Note(ctx.SOUND().getText()));
+		gen.add("value", "[" + new Note(ctx.SOUND().getText()) + "]");
 		printer.println(gen.render());
 
 		return varName;
@@ -228,7 +229,7 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 
 		ST gen = group.getInstanceOf("vardec");
 		gen.add("name", varName);
-		gen.add("value", new Note(ctx.CHORD().getText()));
+		gen.add("value", new Chord(ctx.CHORD().getText()));
 		printer.println(gen.render());
 
 		return varName;
@@ -238,37 +239,51 @@ printer.println("############################ LINE = "+ctx.start.getLine());
 
 		String varName = "_" + varNum++; // descartable variable
 
-		ST gen = group.getInstanceOf("vardec");
-		gen.add("name", varName);
+		ST gen = group.getInstanceOf("u_extendseq");
+		gen.add("varname", varName);
 
-		String varValue = "[]";
-		
 		int sequencesNum = ctx.sequence().size();
-		for (int i = 0; i < sequencesNum; i++) {
-			varValue += ".append(" + visit(ctx.sequence(i)) + ")";
-		}
 
-		gen.add("value", varValue);
+		// TODO use ST instead of semi-hardcoded strings
+		for (int i = 0; i < sequencesNum-1; i++) {
+			gen.add("original", "extendseq(");
+			gen.add("toextend", visit(ctx.sequence(i))+"),");
+		}
+		gen.add("original", "[]");
+		gen.add("toextend", visit(ctx.sequence(sequencesNum-1)));
+
+		// extendSeq( ... extendSeq(extendSeq([], v1), v2) ... )
+
+		// extendSeq(<first>, <last>)
+		// <first> = extendSeq(
+		// <last> = v1), 
+		// ....
+		// <first> = [], 
+		// <last> = vlast
+
 		printer.println(gen.render());
 
 		return varName;
-
-		//return visitChildren(ctx);
 	}
 
 	// PERFORMANCE
 	@Override public String visitPerFromSeq(MusicinatorParser.PerFromSeqContext ctx) { 
 
-		// Type seqType = (ctx.seq == null) ? visit(ctx.sequence()) : visit(ctx.seq);
-		// Type instType = visit(ctx.inst);
+		// [[-1], seq, -1]
+		String varName = "_" + varNum++; // descartable variable
 
-		// if (seqType != Type.SEQUENCE) 
-		// 	error("Variable \"" + ctx.seq.getText() + "is not a sequence!", ctx);
-		
-		// if (instType != Type.INSTRUMENT)
-		// 	error("Variable \"" + ctx.inst.getText() + "is not an instrument!", ctx);
-		
-		return visitChildren(ctx);// return Type.PERFORMANCE;
+		// ST gen = group.getInstanceOf("vardec");
+		// gen.add("name", varName);
+
+		// TODO
+		// get sequence
+		// String sequence = visit()
+		// alter sequence so it now knows instrument
+		//...
+
+		//gen.add("value", "[[-1], "+sequence+", -1]");
+
+		return varName;
 
 	}
 
