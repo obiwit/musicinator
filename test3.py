@@ -8,7 +8,9 @@ vartrack = 2 #to be defined by user
 
 
 ####
-toadd = [[1,10,15,25,36],(64,0.5,2,3),(62,0.25,25,4),1]
+toadd = [[1,10,15,25,36],[(64,0.5,2,3),(62,0.25,25,4)],1]
+toadd2 = [[1,10,15,25,36],[(64,0.5,2,3),(62,0.25,25,4)]]
+toadd3 = [(64,0.5,2,3),(62,0.25,25,4)]
 
 midi = MIDIFile(numTracks=1500, file_format=1) #it takes the number of tracks as a parameter
 midi.addTempo(0,0,bpm) #adding tempo
@@ -30,9 +32,9 @@ def addnotes(notes):
         for _ in range(repeat_times):
             for i in range(1, len(notes)-1):
                 try:
-                    note = notes[i][0] #getting the note
-                    duration = notes[i][1] #duration of the note
-                    toInsert = notes[i][3] + initialTime
+                    note = notes[1][i][0] #getting the note
+                    duration = notes[1][i][1] #duration of the note
+                    toInsert = notes[1][i][3] + initialTime
                     if note == -1:
                         continue
 
@@ -40,7 +42,7 @@ def addnotes(notes):
                     pass
                 
                 try: #trying for instrument change
-                    instrument = notes[i][2] #checking for instrument
+                    instrument = notes[1][i][2] #checking for instrument
                     if(instrument != temp):
                         midi.addProgramChange(currtrack, 0, toInsert, instrument) #changing the current instrument
                         temp = instrument
@@ -53,8 +55,17 @@ def addnotes(notes):
                 print("Added note {}, with instument {} with a duration of {} on time {}, on channel {}".format(note, instrument, duration, toInsert, currtrack))
         currtrack += 1
 
+def duration(toCheck):
+    if type(toCheck[0]) is tuple:
+        size = len(toCheck)-1
+        return toCheck[0][3] + toCheck[size][3] + toCheck[size][1]
+    else:
+        size = len(toCheck[1]) - 1
+        return toCheck[1][0][3] + toCheck[1][size][3] + toCheck[1][size][1]
 
 addnotes(toadd)
+print(duration(toadd2))
+print(duration(toadd3))
 
 
 with open("test.mid", 'wb') as file: #writting binary file
