@@ -68,11 +68,8 @@ public class MusicinatorMain {
          // visit main file's tree;
          SemanticAnalysis semanticVisitor = new SemanticAnalysis(aux.music);
          semanticVisitor.visit(main_tree);
-         Compiler compilerVisitor = new Compiler();
+         Compiler compilerVisitor = new Compiler(aux.music, semanticVisitor.globalScope);
          compilerVisitor.visit(main_tree);
-         // ParseTreeWalker main_walker = new ParseTreeWalker();
-         // DefPhase def = new DefPhase(aux.music, aux.noteMap, filename);
-         // main_walker.walk(def, main_tree);
       }
    }
 }

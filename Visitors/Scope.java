@@ -11,6 +11,7 @@ public class Scope {
 	public Scope(Scope s) {
 		parent = s;
 		scopeMap = new HashMap<>();
+		children = new ArrayList<>();
 
 		accessedChildren = 0;
 	}

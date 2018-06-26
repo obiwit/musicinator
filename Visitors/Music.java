@@ -87,9 +87,6 @@ public class Music {
 	}
 
 	public boolean isReservedWord(String word) {
-		if (reserved.contains(word)) {
-			return true;
-		}
-		return false;
+		return reserved.contains(word);
 	}
 }

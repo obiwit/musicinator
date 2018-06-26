@@ -1,7 +1,6 @@
 // Generated from MusicinatorParser.g4 by ANTLR 4.7.1
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
-//import org.stringtemplate.v4.*;
 
 import java.util.*;
 
@@ -23,14 +22,13 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	}
 
 	
-	@Override public Type visitMain(MusicinatorParser.MainContext ctx) { 
-		return visitChildren(ctx); 
-	}
+	// @Override public Type visitMain(MusicinatorParser.MainContext ctx) { 
+	// 	return visitChildren(ctx); 
+	// }
 	
-	@Override public Type visitInstructions(MusicinatorParser.InstructionsContext ctx) {
-		//System.out.println("["+ctx.start.getLine()+"]"); 
-		return visitChildren(ctx); 
-	}
+	// @Override public Type visitInstructions(MusicinatorParser.InstructionsContext ctx) {
+	// 	return visitChildren(ctx); 
+	// }
 	
 	// ASSIGN
 	@Override public Type visitAssignment(MusicinatorParser.AssignmentContext ctx) { 
@@ -67,30 +65,23 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		return varType; 
 	}
 	
-	// @Override public Type visitArrayAssign(MusicinatorParser.ArrayAssignContext ctx) { 
-	// 	// TODO new scope entry
-	// 	return visitChildren(ctx); 
-	// }
-	
-	// PLAY
-	@Override public Type visitSimplePlay(MusicinatorParser.SimplePlayContext ctx) { 
-		return visitChildren(ctx); 
-	}
-	
-	@Override public Type visitTimedPlay(MusicinatorParser.TimedPlayContext ctx) { 
-		return visitChildren(ctx); 
-	}
-	
-	@Override public Type visitLoopPlay(MusicinatorParser.LoopPlayContext ctx) { 
-		return visitChildren(ctx); 
-	}
-	
 	// FOR
 	@Override public Type visitForStat(MusicinatorParser.ForStatContext ctx) { 
-		// TODO
-
 		// create new scope child
 		currentScope = currentScope.createChildScope();
+
+		// get type of array
+		Type arrayType = currentScope.getVariable(ctx.array.getText()).type();
+		if (Type.isSimpleType(arrayType)) {
+			error("Variable \"" + ctx.array.getText() + "\" is not an array!", ctx);
+		}
+
+		// add variable defined in the for declaration to current scope
+		String varName = ctx.newVar.getText();
+		currentScope.setVariable(varName, 
+				new Variable(varName, Type.toSimpleType(arrayType), ctx));
+
+		// visit children
 		Type t =  visitChildren(ctx); 
 
 		// return to parent scope
@@ -101,8 +92,6 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	
 	// IF
 	@Override public Type visitIfStat(MusicinatorParser.IfStatContext ctx) { 
-		// TODO 
-
 		// create new scope child
 		currentScope = currentScope.createChildScope();
 		Type t =  visitChildren(ctx); 
@@ -137,7 +126,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	@Override public Type visitMulDivExpr(MusicinatorParser.MulDivExprContext ctx) { 
 		// guarantee second operand is Type.NUMBER
 		if (visit(ctx.e2) != Type.NUMBER)
-			error("Variable \"" + ctx.e2.getText() + "is not a number!", ctx);
+			error("Variable \"" + ctx.e2.getText() + "\" is not a number!", ctx);
 		
 		return visit(ctx.e1); 
 	}
@@ -145,7 +134,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	@Override public Type visitAddSubExpr(MusicinatorParser.AddSubExprContext ctx) { 
 		// guarantee second operand is Type.NUMBER
 		if (visit(ctx.e2) != Type.NUMBER)
-			error("Variable \"" + ctx.e2.getText() + "is not a number!", ctx);
+			error("Variable \"" + ctx.e2.getText() + "\" is not a number!", ctx);
 		
 		return visit(ctx.e1); 
 	}
@@ -193,9 +182,9 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	@Override public Type visitNumRangeArray(MusicinatorParser.NumRangeArrayContext ctx) { 
 		// guarantee exprs are Type.NUMBER
 		if (visit(ctx.e1) != Type.NUMBER)
-			error("Variable \"" + ctx.e1.getText() + "is not a number!", ctx);
+			error("Variable \"" + ctx.e1.getText() + "\" is not a number!", ctx);
 		if (visit(ctx.e2) != Type.NUMBER)
-			error("Variable \"" + ctx.e2.getText() + "is not a number!", ctx);
+			error("Variable \"" + ctx.e2.getText() + "\" is not a number!", ctx);
 
 		return Type.NUMBER_ARRAY; 
 	}
@@ -208,22 +197,6 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	@Override public Type visitSeqChord(MusicinatorParser.SeqChordContext ctx) { 
 		return Type.SEQUENCE; 
 	}
-
-	// @Override public Type visitSeqSpeedMod(MusicinatorParser.SeqSpeedModContext ctx) { 
-	// 	// guarantee expr is Type.NUMBER
-	// 	if (visit(ctx.expr()) != Type.NUMBER)
-	// 		error("Variable \"" + ctx.expr().getText() + "is not a number!", ctx);
-
-	// 	return visit(ctx.sequence());  
-	// }
-
-	// @Override public Type visitSeqPitchMod(MusicinatorParser.SeqPitchModContext ctx) {
-	// 	// guarantee expr is Type.NUMBER
-	// 	if (visit(ctx.expr()) != Type.NUMBER)
-	// 		error("Variable \"" + ctx.expr().getText() + "is not a number!", ctx);
-
-	// 	return visit(ctx.sequence()); 
-	// }
 
 	@Override public Type visitSeqList(MusicinatorParser.SeqListContext ctx) { 
 		// iterate over all children, and confirm they are all Type.SEQUENCE
@@ -244,30 +217,14 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		Type instType = visit(ctx.inst);
 
 		if (seqType != Type.SEQUENCE) 
-			error("Variable \"" + ctx.seq.getText() + "is not a sequence!", ctx);
+			error("Variable \"" + ctx.seq.getText() + "\" is not a sequence!", ctx);
 		
 		if (instType != Type.INSTRUMENT)
-			error("Variable \"" + ctx.inst.getText() + "is not an instrument!", ctx);
+			error("Variable \"" + ctx.inst.getText() + "\" is not an instrument!", ctx);
 		
 		return Type.PERFORMANCE;
 
 	}
-
-	// @Override public Type visitPerSpeedMod(MusicinatorParser.PerSpeedModContext ctx) {
-	// 	// guarantee expr is Type.NUMBER
-	// 	if (visit(ctx.expr()) != Type.NUMBER)
-	// 		error("Variable \"" + ctx.expr().getText() + "is not a number!", ctx);
-
-	// 	return visit(ctx.performance()); 
-	// }
-
-	// @Override public Type visitPerPitchMod(MusicinatorParser.PerPitchModContext ctx) { 
-	// 	// guarantee expr is Type.NUMBER
-	// 	if (visit(ctx.expr()) != Type.NUMBER)
-	// 		error("Variable \"" + ctx.expr().getText() + "is not a number!", ctx);
-
-	// 	return visit(ctx.performance()); 
-	// }
 
 	// NUMBER
 	@Override public Type visitNumInt(MusicinatorParser.NumIntContext ctx) { 
@@ -277,14 +234,6 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	@Override public Type visitNumDouble(MusicinatorParser.NumDoubleContext ctx) { 
 		return Type.NUMBER; 
 	}
-
-	// @Override public Type visitNumMulDiv(MusicinatorParser.NumMulDivContext ctx) { 
-	// 	return Type.NUMBER; 
-	// }
-
-	// @Override public Type visitNumAddSub(MusicinatorParser.NumAddSubContext ctx) { 
-	// 	return Type.NUMBER; 
-	// }
 
 	@Override public Type visitNumGetInt(MusicinatorParser.NumGetIntContext ctx) { 
 		return Type.NUMBER; 
@@ -301,13 +250,6 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 
 		return Type.NUMBER; 
 	}
-
-	// @Override public Type visitNumVar(MusicinatorParser.NumVarContext ctx) { 
-	// 	if (visit(ctx.variable()) != Type.NUMBER) 
-	// 		error("Variable \"" + ctx.variable().getText() + "\" is not a number!", ctx);
-
-	// 	return Type.NUMBER; 
-	// }
 
 	// VARIABLE
 	@Override public Type visitVariable(MusicinatorParser.VariableContext ctx) { 
@@ -334,18 +276,6 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 
 		return varType; 
 	}
-
-	// @Override public Type visitTypes(MusicinatorParser.TypesContext ctx) { 
-	// 	return visitChildren(ctx); 
-	// }
-
-	// @Override public Type visitArrayTypes(MusicinatorParser.ArrayTypesContext ctx) { 
-	// 	return visitChildren(ctx); 
-	// }
-
-	// @Override public Type visitCondition(MusicinatorParser.ConditionContext ctx) { 
-	// 	return visitChildren(ctx); 
-	// }
 
 	private void error(String details, ParserRuleContext ctx) {
 		System.err.println("ERROR! Line " + ctx.start.getLine() + ": " + details);

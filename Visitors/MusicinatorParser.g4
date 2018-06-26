@@ -18,16 +18,16 @@ assignment
 
 play 	: PLAY expr SEQUENTIALLY? (expr TIMES)? SEMICOLON 			#simplePlay
 		| (AT expr | AFTER variable ALWAYS?) play					#timedPlay
-		| LOOP performance												#loopPlay
+		| LOOP performance											#loopPlay
 		;
 
-forStat	: FOR types WORD IN WORD OPEN_BR instructions* CLOSE_BR
+forStat	: FOR types newVar=WORD IN array=WORD OPEN_BR instructions* CLOSE_BR
 		;
 
 ifStat	: IF condition 
-		  OPEN_BR  instructions* CLOSE_BR 
-		  (ELIF condition OPEN_BR  instructions* CLOSE_BR)* 
-		  (ELSE OPEN_BR  instructions* CLOSE_BR)?
+		  OPEN_BR  ifBody=instructions* CLOSE_BR 
+		  (ELIF condition OPEN_BR  elifBody=instructions* CLOSE_BR)* 
+		  (ELSE OPEN_BR  elseBody=instructions* CLOSE_BR)?
 		;
 
 
@@ -76,5 +76,6 @@ types 	: SQ_LIT
 
 condition
 		: number op=(BIGR|BIGE|SMLR|SMLE|EQLS|DIFS) number
+		| OPEN_PR condition CLOSE_PR
 		;
 
