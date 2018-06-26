@@ -134,6 +134,12 @@ def setinstrument(seq,nome):
         newseq.append(new)
     return newseq
 
+def createseq(seq):
+    newseq = []
+    for i in len(seq):
+        newseq = extendseq(newseq,seq[i])
+    return newseq
+
 
 addnotes(toadd)
 print("DURATION////////////////////////////////")

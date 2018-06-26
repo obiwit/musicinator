@@ -135,6 +135,15 @@ def setinstrument(seq,nome):
         new = (tup[0],tup[1],nome[tup[0]],tup[3])
         newseq.append(new)
     return newseq
+
+def createseq(seq):
+    newseq = []
+    for i in len(seq):
+        newseq = extendseq(newseq,seq[i])
+    return newseq
+>>
+u_createseq(var_name,seq) ::= <<
+<var_name> = createseq(<seq>)
 >>
 
 u_setinstrument(var, seq, name) ::= <<
