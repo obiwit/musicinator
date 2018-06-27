@@ -1,6 +1,9 @@
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -9,7 +12,7 @@ public class ErrorHandling {
 	boolean flag;
 	PrintWriter printer;
 
-	public ErrorHandling(String filepath) {
+	public ErrorHandling(String filepath) throws IOException {
 		this.flag = false;
 		this.printer = new PrintWriter(new FileOutputStream(new File(filepath)));
 	}
