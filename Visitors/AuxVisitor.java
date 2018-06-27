@@ -36,7 +36,12 @@ public class AuxVisitor extends AuxinatorParserBaseVisitor<Instrument> {
         	
         Instrument inst = visit(ctx.instrumentDef());	
         inst.name(word);	
-        	
+        /*
+
+        Defining an instrument that can be based on another instrument, -1 is a generic value to aid on another
+        tasks to let us know that it can be ignored.
+
+        */	
         if(music.isInstrument(word)){	
             music.getInstrument(word).concatenate(inst, -1);        	
         }	
@@ -56,7 +61,11 @@ public class AuxVisitor extends AuxinatorParserBaseVisitor<Instrument> {
     }	
     	
     @Override public Instrument visitDefWord(AuxinatorParser.DefWordContext ctx) { 	
-            	
+        /*
+
+            Getting the name of the instrument so we can work on it and returning a new instrument
+
+        */
         String word = ctx.WORD().getText();		
         if(!music.isInstrument(word)){	
             System.err.println("ERROR: the instrument \""+word+"\" is not defined!");	
@@ -68,19 +77,22 @@ public class AuxVisitor extends AuxinatorParserBaseVisitor<Instrument> {
     }	
     	
     @Override public Instrument visitDefInt(AuxinatorParser.DefIntContext ctx) {	
-        int val = Integer.parseInt(ctx.INT().getText());		
-        Instrument inst = new Instrument("DefWord", -1);		
-        return inst; 	
+        /*
+
+            Defining an Instrument based on it's Integer value
+
+        */
+        return  new Instrument("DefWord", Integer.parseInt(ctx.INT().getText())); 	
     }	
     	
     @Override public Instrument visitInstrumentInheritance(AuxinatorParser.InstrumentInheritanceContext ctx) {	
         Instrument inst = new Instrument("block", -1);		
         String word = ctx.WORD().getText();		
-        if (!music.isInstrument(word)) {	
+        if (!music.isInstrument(word)) {	//Self explanatory
             System.err.println("ERROR: the instrument \""+word+"\" is not defined!");	
             System.exit(1);	
         }		
-        if(ctx.n != null){	
+        if(ctx.n != null){	//First option
             int val = Note.noteToPitch(ctx.n.getText());	
             inst.redefineNote(val, music.getInstrument(word).value(val));	
             return inst; 	
