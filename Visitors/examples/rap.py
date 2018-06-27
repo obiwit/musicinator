@@ -1,8 +1,10 @@
 from midiutil import MIDIFile
+from math import ceil
 import sys
+import copy
 
 bpm = 160
-midi = MIDIFile(numTracks=8, file_format=1)
+midi = MIDIFile(numTracks=1000, file_format=1)
 midi.addTempo(0,0,bpm)
 currtrack = 0
 longest = 0
@@ -10,7 +12,6 @@ longest = 0
 bass = [44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44, 44]
 piano = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 violin = [41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41]
-porcoespinho = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 drums = [119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119, 119]
 guitar = [25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25]
 cello = [43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43]
@@ -19,17 +20,18 @@ def addnotes(notes):
     time = notes[0] #When the sequence will start time wise
     temp = 1 #default instrument
     global currtrack #we want the global scope of this variable
-
+    duration(notes)
 
     repeat_times = (int)(notes[len(notes)-1])
 
     for x in range(len(time)):
-        initialTime = time[x]
+        initialTime = time[x] - duration(notes[1])
         for _ in range(repeat_times):
+            initialTime += duration(notes[1])
             for i in range(0, len(notes[1])):
                 try:
                     note = notes[1][i][0] #getting the note
-                    duration = notes[1][i][1] #duration of the note
+                    noteDur = notes[1][i][1] #duration of the note
                     toInsert = notes[1][i][3] + initialTime
                     if note < 0:
                         continue
@@ -46,9 +48,9 @@ def addnotes(notes):
                     instrument = temp #it keeps the old instrument
                     pass
 
-                midi.addNote(currtrack,0,note,toInsert,duration,100)
+                midi.addNote(currtrack,0,note,toInsert,noteDur,100)
 
-                print("Added note {}, with instument {} with a duration of {} on time {}, on channel {}".format(note, instrument, duration, toInsert, currtrack))
+                print("Added note {}, with instument {} with a duration of {} on time {}, on channel {}".format(note, instrument, noteDur, (toInsert*(85/bpm)), currtrack))
         currtrack += 1
 
 def getInt(varstr):
@@ -63,10 +65,14 @@ def getInt(varstr):
     return a
 
 def duration(toCheck):
+    if len(toCheck) == 0:
+        return 0
     if type(toCheck[0]) is tuple:
         size = len(toCheck)-1
         return toCheck[0][3] + toCheck[size][3] + toCheck[size][1]
     else:
+        if len(toCheck[1]) == 0:
+            return 0
         size = len(toCheck[1]) - 1
         return toCheck[1][0][3] + toCheck[1][size][3] + toCheck[1][size][1]
 
@@ -85,6 +91,7 @@ def modPitch(toMod, ModNumber):
             modded.append(newtup)
         return modded
     else:
+        temp = copy.deepcopy(toMod)
         for tup in toMod[1]:
             newPitch = tup[0] + ModNumber
             try:
@@ -95,8 +102,8 @@ def modPitch(toMod, ModNumber):
                 pass
             newtup = (newPitch, tup[1],tup[2],tup[3])
             modded.append(newtup)
-        toMod[1] = modded
-        return toMod
+        temp[1] = modded
+        return temp
 
 
 def modTempo(toMod, ModNumber):
@@ -108,12 +115,13 @@ def modTempo(toMod, ModNumber):
             modded.append(newtup)
         return modded
     else:
+        temp = copy.deepcopy(toMod)
         for tup in toMod[1]:
             newTempo = tup[1] * ModNumber
             newtup = (tup[0], newTempo,tup[2],tup[3])
             modded.append(newtup)
-        toMod[1] = modded
-        return toMod
+        temp[1] = modded
+        return temp
 
 def extendseq(original, toextend):
     modded = []
@@ -156,7 +164,14 @@ def prepplay(perf):
 def preploop(perf):
     global longest #we want the global scope of this variable
     repeats = longest/duration(perf[1])
-    perf[2]=repeats
+    perf[2] = ceil(repeats)
+    return perf
+
+def offsetstart(perf, offset):
+    originaltime = perf[0][0]
+    perf[0] = offset
+    for i in range(0,len(perf[0])):
+        perf[0][i] += originaltime
     return perf
 
 
@@ -245,49 +260,54 @@ _72 = setinstrument(alors, piano)
 _72 = [[-1], _72, -1]
 p_alors = _72
 ############################ LINE = 16
-p_alors[0] = [0]
-p_alors = preploop(p_alors)
-addnotes(p_alors)
-############################ LINE = 17
 _73 = setinstrument(alors2, piano)
 _73 = [[-1], _73, -1]
-_74 = _73
-_74[0] = [0]
-_74[2] = 1
-_74 = prepplay(_74)
-_76 = 2
-_77 = duration(alors)
-_75 = _76*_77
-_79 = setinstrument(alors2, piano)
-_79 = [[-1], _79, -1]
-_80 = _79
-_80[0] = [0]
-_80[2] = 1
-_80 = prepplay(_80)
-_78 = _80
-_78[0] = [_75]
-_78 = prepplay(_78)
-addnotes(_78)
-############################ LINE = 18
-_81 = setinstrument(alors2, piano)
-_81 = [[-1], _81, -1]
-_82 = _81
+_74 = 0
+_75 = _73
+_75[0] = [0]
+_75[2] = 1
+_75 = prepplay(_75)
+_77 = 2
+_78 = duration(alors)
+_76 = _77*_78
+_80 = setinstrument(alors2, piano)
+_80 = [[-1], _80, -1]
+_81 = 0
+_82 = _80
 _82[0] = [0]
 _82[2] = 1
 _82 = prepplay(_82)
-_84 = 3
-_85 = duration(alors)
-_83 = _84*_85
-_87 = setinstrument(alors2, piano)
-_87 = [[-1], _87, -1]
-_88 = _87
-_88[0] = [0]
-_88[2] = 1
-_88 = prepplay(_88)
-_86 = _88
-_86[0] = [_83]
-_86 = prepplay(_86)
-addnotes(_86)
+_79 = _80
+_79 = offsetstart(_79, [_76])
+_79 = prepplay(_79)
+addnotes(_79)
+############################ LINE = 17
+_83 = setinstrument(alors2, piano)
+_83 = [[-1], _83, -1]
+_84 = 0
+_85 = _83
+_85[0] = [0]
+_85[2] = 1
+_85 = prepplay(_85)
+_87 = 3
+_88 = duration(alors)
+_86 = _87*_88
+_90 = setinstrument(alors2, piano)
+_90 = [[-1], _90, -1]
+_91 = 0
+_92 = _90
+_92[0] = [0]
+_92[2] = 1
+_92 = prepplay(_92)
+_89 = _90
+_89 = offsetstart(_89, [_86])
+_89 = prepplay(_89)
+addnotes(_89)
+############################ LINE = 18
+_93 = p_alors
+_93[0] = [0]
+_93 = preploop(_93)
+addnotes(_93)
 
 with open("out.mid", 'wb') as file:
     midi.writeFile(file) #Writting the file

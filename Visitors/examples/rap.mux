@@ -13,6 +13,6 @@ performance p_alors = alors on piano;
 
 //play alors on piano;
 
-loop p_alors;
 at 2* |alors| play alors2 on piano;
 at 3 * |alors| play alors2 on piano;
+loop p_alors;

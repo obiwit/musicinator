@@ -256,11 +256,11 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	
 	// SEQUENCE
 	@Override public Type visitSeqNote(MusicinatorParser.SeqNoteContext ctx) { 
-		return Type.SEQUENCE; 
+		return Type.NOTE; 
 	}
 
 	@Override public Type visitSeqChord(MusicinatorParser.SeqChordContext ctx) { 
-		return Type.SEQUENCE; 
+		return Type.NOTE; 
 	}
 
 	@Override public Type visitSeqList(MusicinatorParser.SeqListContext ctx) { 
@@ -268,8 +268,10 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		int sequencesNum = ctx.expr().size();
 
 		for (int i = 0; i < sequencesNum; i++) {
-			if (visit(ctx.expr(i)) != Type.SEQUENCE)
-				errors.error("Variable \"" + ctx.expr(i) + "\" is not a sequence!", ctx);
+			Type exprType = visit(ctx.expr(i));
+			if (exprType != Type.SEQUENCE && exprType != Type.NOTE)
+				errors.error("Variable \"" + ctx.expr(i) + "\" is not a sequence"
+							 + " nor a note!", ctx);
 		}
 
 		return Type.SEQUENCE; 

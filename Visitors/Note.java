@@ -25,7 +25,6 @@ public class Note {
 	}
 	
 	//setters
-	
 	public void duration(double duration) {
 		assert duration > 0;
 		this.duration = duration + "";
@@ -44,9 +43,10 @@ public class Note {
 	}
 
 	// other methods
-	// @Override public String toString() {
-	// 	return "("+value+"-"+duration+")";
-	// }
+	@Override
+	public String toString() {
+		return "("+this.value()+","+this.duration()+",-1,-1)";
+	}
 
 	// static functions
 	public static int noteToPitch(String note) {
@@ -89,7 +89,7 @@ public class Note {
 	}
 
 	private static int getBaseValue(char symbol) {
-		//de acordo com o simbolo dado: [A-G] retorna Value do seu numero MIDI
+		// return lowest MIDI value (octave -1) for the given char ('A' - 'G')
 		
 		switch (symbol) {
 			case 'C':
@@ -109,9 +109,5 @@ public class Note {
 		}
 
 		return -109; // guarantees rests ('R') are negative
-	}
-	@Override
-	public String toString() {
-		return "("+this.value()+","+this.duration()+",-1,-1)";
 	}
 }

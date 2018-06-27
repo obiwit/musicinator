@@ -413,18 +413,19 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 	@Override public Variable visitLoopPlay(MusicinatorParser.LoopPlayContext ctx) { 
 		// get passed performance and repeatTimes
 		Variable per = visit(ctx.expr());
-		String varName = per.name();
+
+		// generate name for performance (needed in case of performance arrays)
+		String instanceName = "_" + varNum++; 
 
 		// if per is actually an array, generate a for loop that
 		// iterates over all the performances
 		if (per.type() == Type.PERFORMANCE_ARRAY) {
-			String instanceName = "_" + varNum++; 
 
 			// generate for loop
 			ST gen = group.getInstanceOf("forloop");
 			gen.add("indentation", currentIndentation);
 			gen.add("instance", instanceName);
-			gen.add("array", varName);
+			gen.add("array", per.name());
 			printer.println(gen.render());
 			currentIndentation += "\t";
 
@@ -436,11 +437,17 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 
 		} else {
 			// copy performance to new var
-			varName = per.name();
-			generateLoopPlay(varName);
+			ST gen = group.getInstanceOf("vardec");
+			gen.add("indentation", currentIndentation);
+			gen.add("varname", instanceName);
+			gen.add("value", per.name());
+			printer.println(gen.render());
+
+			generateLoopPlay(instanceName);
 		}
 
-		return new Variable(varName, per.type());
+		insertInMIDI(per, instanceName);
+		return new Variable(instanceName, per.type());
 	}
 	private void generateLoopPlay(String varName) {
 		// change start time to 0
@@ -461,10 +468,6 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 	@Override public Variable visitVarExpr(MusicinatorParser.VarExprContext ctx) {
 		return visit(ctx.variable());
 	}
-	
-	// @Override public Variable visitPerExpr(MusicinatorParser.PerExprContext ctx) { 
-	// 	return visit(ctx.performance());
-	// }
 	
 	@Override public Variable visitSeqExpr(MusicinatorParser.SeqExprContext ctx) { 
 		return visit(ctx.sequence());
@@ -607,7 +610,7 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		gen.add("value", "[" + new Note(ctx.SOUND().getText()) + "]");
 		printer.println(gen.render());
 
-		return new Variable(varName, Type.SEQUENCE);
+		return new Variable(varName, Type.NOTE);
 	}
 
 	@Override public Variable visitSeqChord(MusicinatorParser.SeqChordContext ctx) { 
@@ -619,29 +622,46 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		gen.add("value", new Chord(ctx.CHORD().getText()));
 		printer.println(gen.render());
 
-		return new Variable(varName, Type.SEQUENCE);
+		return new Variable(varName, Type.NOTE);
 	}
 
 	@Override public Variable visitSeqList(MusicinatorParser.SeqListContext ctx) { 
 
 		String varName = "_" + varNum++; // descartable variable
 
-		ST gen = group.getInstanceOf("u_createseq");
+		// create empty sequence
+		ST gen = group.getInstanceOf("vardec");
 		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
-		gen.add("seqs", "[");
+		gen.add("value", "[]");
+		printer.println(gen.render());
 
 		int sequencesNum = ctx.expr().size();
 
 		// if not empty array, add sequences that make it up
-		if (sequencesNum > 0) {
-			for (int i = 0; i < sequencesNum-1; i++) {
-				gen.add("seqs", visit(ctx.expr(i)).name()+",");
+		for (int i = 0; i < sequencesNum; i++) {
+			Variable vExpr = visit(ctx.expr(i));
+
+			if (vExpr.type() == Type.NOTE) {
+				// add note or chord to sequence
+				gen = group.getInstanceOf("u_extendseq");
+				gen.add("indentation", currentIndentation);
+				gen.add("varname", varName);
+				gen.add("original",varName);
+				gen.add("toextend",vExpr.name());
+				printer.println(gen.render());
+
+			} else { 
+				// expr is a sequence
+				gen = group.getInstanceOf("u_appendseq");
+				gen.add("indentation", currentIndentation);
+				gen.add("varname", varName);
+				gen.add("original",varName);
+				gen.add("toappend",vExpr.name());
+				printer.println(gen.render());
+
 			}
-			gen.add("seqs", visit(ctx.expr(sequencesNum-1)).name());
 		}
-		gen.add("seqs", "]");
-		printer.println(gen.render());
 
 		return new Variable(varName, Type.SEQUENCE);
 	}
@@ -748,7 +768,6 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 				varDuration = Note.durationFromStr(ctx.DURATION().getText());
 			}
 
-
 			ST gen = group.getInstanceOf("vardec");
 			gen.add("indentation", currentIndentation);
 			gen.add("varname", varName);
@@ -761,10 +780,6 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 	 		return new Variable(ctx.getText(), Type.INSTRUMENT);
 	 	}
 	}
-
-	// @Override public Variable visitTypes(MusicinatorParser.TypesContext ctx) { 
-	// 	return visitChildren(ctx); 
-	// }
 
 	@Override public Variable visitCondition(MusicinatorParser.ConditionContext ctx) { 
 		

@@ -5,18 +5,12 @@ public class Chord {
 	private Note[] notes;
 	private double duration;
 
+	// constructors
 	public Chord(Note[] notes, double duration) {
 		this.notes = notes;
 		this.duration = duration;
 		enforceDuration();
 	}
-
-	private void enforceDuration(){
-		for (int i = 0; i < notes.length; i++) {
-			notes[i].duration(duration);
-		}
-	}
-	
 	public Chord(String chordSt) {
 		notes = new Note[chordSt.split("\\|").length];
 		double duration = 1;
@@ -39,9 +33,24 @@ public class Chord {
 			notes[i].duration(duration);
 			i++;
 		}
+	}
+	private void enforceDuration(){
+		for (int i = 0; i < notes.length; i++) {
+			notes[i].duration(duration);
+		}
+	}
 
+	// gettes
+	public Note[] notes() {
+		return notes;
 	}
 	
+	public double duration() {
+		return duration;
+	}
+
+	
+	// other methods
 	public Note[] modulatePitch(int PitchChange) {
 		Note[] tmpNotes = notes;
 		
@@ -52,17 +61,7 @@ public class Chord {
 		return tmpNotes;
 		
 	}
-
-	public Note[] notes() {
-		return notes;
-	}
-	
-	public double duration() {
-		return duration;
-	}
-
-	@Override
-	public String toString() {
+	@Override public String toString() {
 		String temp = "[";
 		for (Note t_note : notes) {
 			temp += t_note.toString() +",";

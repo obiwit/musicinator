@@ -1,6 +1,7 @@
 from midiutil import MIDIFile
 from math import ceil
 import sys
+import copy
 
 bpm = 160
 midi = MIDIFile(numTracks=1000, file_format=1)
@@ -90,7 +91,7 @@ def modPitch(toMod, ModNumber):
             modded.append(newtup)
         return modded
     else:
-        temp = toMod
+        temp = copy.deepcopy(toMod)
         for tup in toMod[1]:
             newPitch = tup[0] + ModNumber
             try:
@@ -114,7 +115,7 @@ def modTempo(toMod, ModNumber):
             modded.append(newtup)
         return modded
     else:
-        temp = toMod
+        temp = copy.deepcopy(toMod)
         for tup in toMod[1]:
             newTempo = tup[1] * ModNumber
             newtup = (tup[0], newTempo,tup[2],tup[3])

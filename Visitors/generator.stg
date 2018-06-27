@@ -2,6 +2,7 @@ header() ::= <<
 from midiutil import MIDIFile
 from math import ceil
 import sys
+import copy
 >>
 
 createmidi(varbpm, vartrack) ::= <<
@@ -89,7 +90,7 @@ def modPitch(toMod, ModNumber):
             modded.append(newtup)
         return modded
     else:
-        temp = toMod
+        temp = copy.deepcopy(toMod)
         for tup in toMod[1]:
             newPitch = tup[0] + ModNumber
             try:
@@ -113,7 +114,7 @@ def modTempo(toMod, ModNumber):
             modded.append(newtup)
         return modded
     else:
-        temp = toMod
+        temp = copy.deepcopy(toMod)
         for tup in toMod[1]:
             newTempo = tup[1] * ModNumber
             newtup = (tup[0], newTempo,tup[2],tup[3])
@@ -137,11 +138,13 @@ def extendseq(original, toextend):
             modded.append(newtup)
         return modded
 
-def createseq(seq):
-    newseq = []
-    for s in seq:
-        newseq = extendseq(newseq, s)
-    return newseq
+def appendseq(original, toappend):
+    offsetTime = duration(original)
+    for tup in toappend:
+        newTime = tup[3] + offsetTime
+        newtup = (tup[0],tup[1],tup[2],newTime)
+        original.append(newtup)
+    return original
 
 def setinstrument(seq,nome):
     if len(seq)==0:
@@ -204,8 +207,8 @@ u_duration(indentation, varname, performance) ::= <<
 u_extendseq(indentation, varname, original, toextend) ::= <<
 <indentation><varname> = extendseq(<original>, <toextend>)
 >>
-u_createseq(indentation, varname, seqs) ::= <<
-<indentation><varname> = createseq(<seqs>)
+u_appendseq(indentation, varname, original, toappend) ::= <<
+<indentation><varname> = appendseq(<original>, <toappend>)
 >>
 
 u_modPitch(indentation, varname, performance, modnumber) ::= <<

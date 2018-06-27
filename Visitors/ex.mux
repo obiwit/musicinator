@@ -1,23 +1,25 @@
-/*
+
 sequence row_your_boat = [ 	D D D E' F#' 
 			   				F# E' F#' G' A{2} 
-			   				D{0.33}D{0.33}D{0.33}A{0.33}A{0.33}A{0.33} F#{0.33}F#{0.33}F#{0.33}D{0.33}D{0.33}D{0.33}
-			   				A G F# E D] ;
+			   				D{0.33}D{0.33}D{0.33}A{0.33}A{0.33}A{0.33} 
+			   				F#{0.33}F#{0.33}F#{0.33}D{0.33}D{0.33}D{0.33}
+			   				A G F# E D
+			   			 ];
 
-performance p_boat = row_your_boat on cello ;
+performance p_boat = row_your_boat on violin;
 
 sequence s = [A G B B];
-sequence pombinhas_inicio = [ G G C' C' A G B B A G B B B A G C'];
-sequence pombinhas_inicio2x = [ G G tamborBarulhento' C' A G B B A G B B B A G C'  G G C' C' A G B B A G B B B A G C'];
+sequence pombinhas_inicio = [G G C' C' s s B A G C'];
+sequence pombinhas_inicio2x = [pombinhas_inicio  pombinhas_inicio];
 sequence pombinhas_refrao = [E E G E G E D D F F E E D D C{2}];
-sequence pombinhas_refrao2x = [ E E G E G E D D F F E E D D C{2} E E G E G E D D F F E E D D C{2}];
+sequence pombinhas_refrao2x = [pombinhas_refrao pombinhas_refrao];
 
 sequence [] sequences = [pombinhas_inicio, pombinhas_inicio, pombinhas_refrao, pombinhas_refrao, pombinhas_inicio, pombinhas_inicio, pombinhas_refrao, pombinhas_refrao];
 
 instrument [] band = [ piano , guitar, bass , drums ] ;
 number num = 0;
 for sequence s in sequences {
-	play s on band[num];
+//	play s on band[num];
 	num = num + 1;
 	if(num > 3){
 		num = 0;	
@@ -25,12 +27,12 @@ for sequence s in sequences {
 	
 }
 play p_boat;
-*/
+at |p_boat| + 5 play pombinhas_inicio on piano;
 /*
 sequence s0 = [];
 play s0 on piano;
 
-sequence s1 = [A];
+sequence s1 = [A G F E C];
 sequence s2 = [B];
 sequence s3 = [C];
 
@@ -64,8 +66,8 @@ sequence alors2 = [E3 R{.33} E3 R{.33} E3 R{.33} E3 R{.33} E3 R{.33} E3{.5} F#3{
 
 play rap1  on guitar;
 at 0 play rap2  on piano;
-at|rap1| play rap1 on guitar;
-at|rap1| play rap2 on piano;
+at |rap1| play rap1 on guitar;
+at |rap1| play rap2 on piano;
 
 performance p_alors = alors on piano;
 
