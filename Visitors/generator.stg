@@ -150,7 +150,7 @@ def prepplay(perf):
         longest = perf_duration
     return perf
 
-def preploop(perf)
+def preploop(perf):
     global longest #we want the global scope of this variable
     repeats = longest/duration(perf[1])
     perf[2]=repeats

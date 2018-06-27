@@ -2,8 +2,8 @@
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 /**
  * This class provides an empty implementation of {@link MusicinatorParserVisitor},
@@ -17,21 +17,21 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	Music music;
 	ErrorHandling errors;
 
-	SemanticAnalysis(Music m){
+	SemanticAnalysis(Music m) {
 		music = m;
 		globalScope = new Scope();
 		currentScope = globalScope;
-		try{
-			errors = new ErrorHandling("SemAnalysis.txt");
-		}catch (IOException e){
-			System.err.println("Could not create logFile, going down");
+		try {
+			errors = new ErrorHandling("sematicLog.txt");
+		} catch (IOException e) {
+			System.err.println("Could not create log file!");
 		}
 	}
 	
 	// ASSIGN
-	@Override public Type visitAssignment(MusicinatorParser.AssignmentContext ctx) { 
-		// check variable doesn't already exist
-		String varName = ctx.WORD().getText();
+	@Override public Type visitDeclare(MusicinatorParser.DeclareContext ctx) { 
+		// add new scope entry
+		String varName = ctx.assignment().getText().split("=")[0].trim();
 
 		if (currentScope.isVariable(varName)) {
 			errors.error("Variable \"" + varName + "\" already exists!", ctx);
@@ -39,27 +39,48 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 			errors.error("\"" + varName + "\" is a reserved word or an instrument name!", ctx);
 		}
 
-		// add new scope entry
-		Type varType = visit(ctx.expr());
+		// add an entry with variable's name, but no type yet
+		currentScope.setVariable(varName, new Variable(varName, Type.NONE));
+
+		// get variable value and check its type
+		Type varType = visit(ctx.assignment());
+
+		if (varType == Type.NONE) {
+			// remove created scope entry
+			currentScope.removeVariable(varName);
+			errors.error("Illegal variable definition: " + ctx.getText(), ctx);
+		}
 
 		String declaredVarType = ctx.types().getText();
 		if (ctx.OPEN_SB() != null) declaredVarType += "_array";
 
 		// compare declared and written types
 		if(!declaredVarType.equalsIgnoreCase(varType.name())) {
-			errors.error(declaredVarType.replace("_", " ") + " \"" +  ctx.expr().getText() 
+			// remove created scope entry
+			currentScope.removeVariable(varName);
+			errors.error(declaredVarType.replace("_", " ") + " \"" +  varName 
 				  + "\" is not of type " + varType.name().toLowerCase().replace("_", " ")
 				  + "!", ctx);
 		}
 
-		// check defined var is not an instrument
-		if (varType == Type.INSTRUMENT) {
-			errors.error("Can only define an instrument in aux file!", ctx);
+		currentScope.setVariable(varName, new Variable(varName, varType));
+
+		return Type.NONE; // used to prevent a declaration inside a declaration
+	}
+	@Override public Type visitAssign(MusicinatorParser.AssignContext ctx) { 
+		// check variable already exists
+		String varName = ctx.WORD().getText();
+
+		if (!currentScope.isVariable(varName)) {
+			errors.error("Variable \"" + varName + "\" doesn't exists!", ctx);
 		}
 
-//		System.out.println("["+ctx.start.getLine()+"] Set variable \""+varName+"\" of type "+varType.name());
+		// check defined var is not an instrument
+		Type varType = visit(ctx.expr());
+		if (varType == Type.INSTRUMENT) {
+			errors.error("Can only define instruments in aux file!", ctx);
+		}
 
-		currentScope.setVariable(varName, new Variable(varName, varType));
 		return varType; 
 	}
 	
@@ -113,7 +134,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	@Override public Type visitTimedPlay(MusicinatorParser.TimedPlayContext ctx) {
 		Type perType = visit(ctx.play());
 		Type timeType = visit(ctx.expr());
-		// TODO sure we want this errors.error?
+		// TODO sure we want this error?
 		if (timeType == Type.NUMBER_ARRAY) {
 			if (perType == Type.PERFORMANCE_ARRAY) {
 				errors.error("Invalid play comand! Play doesn't support both performance "
@@ -339,8 +360,4 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		return Type.BOOL;
 	}
 
-	/* private void errors.error(String details, ParserRuleContext ctx) {
-		System.err.println("ERROR! Line " + ctx.start.getLine() + ": " + details);
-		System.exit(1);
-	} */
 }

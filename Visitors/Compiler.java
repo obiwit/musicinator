@@ -21,11 +21,12 @@ public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
 
 	private final STGroup group;
 	private PrintWriter printer;
+	//private ErrorHandling errors;
+
 	private int varNum;
 	private String currentIndentation;
-	private ErrorHandling errors;
 
-	Compiler(Music m, Scope s, String dstFile){
+	Compiler(Music m, Scope s, String dstFile) {
 		music = m;
 		globalScope = s;
 		currentScope = globalScope;
@@ -34,18 +35,13 @@ public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
 		currentIndentation = "";
 
 		group = new STGroupFile("generator.stg");
-		try{
-			errors = new ErrorHandling("Compiler.txt");
-		}catch (IOException e){
-			System.err.println("Could not create logFile, going down");
-		}
 
 		try {
+			//errors = new ErrorHandling("logfile.txt");
 			printer = new PrintWriter(new FileOutputStream(new File(dstFile))); 
-		} catch (FileNotFoundException e) {
-			
-			errors.error("Couldn't write to \"" + dstFile + "\"!");
-			
+		} catch (IOException e) {
+			System.err.println("Couldn't write to \"" + dstFile + "\"!");
+			System.exit(1);
 		}
 	}
 
@@ -115,7 +111,7 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 	}
 	
 	// ASSIGN
-	@Override public Variable visitAssignment(MusicinatorParser.AssignmentContext ctx) { 
+	@Override public Variable visitAssign(MusicinatorParser.AssignContext ctx) { 
 
 		String varName = ctx.WORD().getText();
 
@@ -329,7 +325,7 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 			printer.println(gen.render());
 			currentIndentation += "\t";
 
-			// generate simple play for each performance in array
+			// generate timed play for each performance in array
 			generateTimedPlay(instanceName, startVar);
 
 			// end generated for loop
@@ -372,17 +368,42 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 	}
 	
 	@Override public Variable visitLoopPlay(MusicinatorParser.LoopPlayContext ctx) { 
-		// TODO support PERFORMANCE_ARRAYs
+		// get passed performance and repeatTimes
+		Variable per = visit(ctx.expr());
+		String varName = per.name();
 
-		// get performance
-		String varName = visit(ctx.expr()).name();
+		// if per is actually an array, generate a for loop that
+		// iterates over all the performances
+		if (per.type() == Type.PERFORMANCE_ARRAY) {
+			String instanceName = "_" + varNum++; 
 
+			// generate for loop
+			ST gen = group.getInstanceOf("forloop");
+			gen.add("indentation", currentIndentation);
+			gen.add("instance", instanceName);
+			gen.add("array", varName);
+			printer.println(gen.render());
+			currentIndentation += "\t";
+
+			// generate loop play for each performance in array
+			generateLoopPlay(instanceName);
+
+			// end generated for loop
+			currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
+
+		} else {
+			// copy performance to new var
+			varName = per.name();
+			generateLoopPlay(varName);
+		}
+
+		return new Variable(varName, per.type());
+	}
+	private void generateLoopPlay(String varName) {
 		ST gen = group.getInstanceOf("u_preploop");
 		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 		printer.println(gen.render());
-
-		return new Variable(varName, Type.NONE);
 	}
 	
 	// EXPR (SIMPLE TYPES)
@@ -691,11 +712,4 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 
 		return new Variable(varName, Type.BOOL);
 	}
-
-
-
-	/* private void error(String details, ParserRuleContext ctx) {
-		System.err.println("ERROR! Line " + ctx.start.getLine() + ": " + details);
-		System.exit(1);
-	} */
 }

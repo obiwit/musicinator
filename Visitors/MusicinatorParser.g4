@@ -13,7 +13,8 @@ instructions
 		;
 
 assignment
-		: types (OPEN_SB CLOSE_SB)? WORD EQUAL expr SEMICOLON
+		: types (OPEN_SB CLOSE_SB)? assignment 		#declare
+		| WORD EQUAL expr SEMICOLON 				#assign
 		;
 
 play 	: PLAY per=expr SEQUENTIALLY? (rep=expr TIMES)? SEMICOLON 	#simplePlay

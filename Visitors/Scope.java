@@ -35,6 +35,9 @@ public class Scope {
 			scopeMap.put(key, var);
 		}
 	}
+	public void removeVariable(String key) {
+		getVarScope(key).scopeMap.remove(key);
+	}
 	public boolean isVariable(String key) {
 		return getVarScope(key) != null;
 	}
