@@ -306,6 +306,11 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 			if (Type.isSimpleType(varType)) {
 				error("Variable \"" + varName + "\" is not an array!", ctx);
 			}
+			if (visit(ctx.expr()) != Type.NUMBER) {
+				error("Array index must be a number and variable \"" 
+					  + ctx.expr().getText() + "\" is not a number!", ctx);
+			}
+
 			return Type.toSimpleType(varType); 
 		}
 

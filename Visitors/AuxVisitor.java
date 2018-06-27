@@ -15,7 +15,6 @@ import java.util.*;
 public class AuxVisitor extends AuxinatorParserBaseVisitor<Instrument> {	
         	
     Music music = new Music();	
-    Map<String, Integer> noteMap = new HashMap<>(); // Map - noteName to Pitch	
 
     //@Override public Instrument visitMain(AuxinatorParser.MainContext ctx) { 	
     //        return visitChildren(ctx); 	
@@ -27,7 +26,7 @@ public class AuxVisitor extends AuxinatorParserBaseVisitor<Instrument> {
     }	
     	
     @Override public Instrument visitNoteMap(AuxinatorParser.NoteMapContext ctx) { 	
-        noteMap.put(ctx.WORD().getText(), Note.noteToPitch(ctx.NOTE().getText()));	
+        music.mapNote(ctx.WORD().getText(), Note.noteToPitch(ctx.NOTE().getText()));	
         return visitChildren(ctx); 	
     }	
     	
@@ -35,12 +34,7 @@ public class AuxVisitor extends AuxinatorParserBaseVisitor<Instrument> {
         String word = ctx.WORD().getText();	
         	
         Instrument inst = visit(ctx.instrumentDef());	
-<<<<<<< HEAD
         inst.name(word);	
-=======
-
-		inst.name(word);	
->>>>>>> 02f0506d2d0dbaf70f9bd36f5b6c5578ea4cfab5
         /*
 
         Defining an instrument that can be based on another instrument, -1 is a generic value to aid on another
@@ -53,7 +47,7 @@ public class AuxVisitor extends AuxinatorParserBaseVisitor<Instrument> {
         else{	
             music.addInstrument(word, inst);	
         }			
-        return inst; 	
+        return visitChildren(ctx); 	
     }	
     	
     @Override public Instrument visitDefInheritance(AuxinatorParser.DefInheritanceContext ctx) { 	
@@ -76,8 +70,8 @@ public class AuxVisitor extends AuxinatorParserBaseVisitor<Instrument> {
             System.err.println("ERROR: the instrument \""+word+"\" is not defined!");	
             System.exit(1);        	
         }		
-        Instrument inst = new Instrument("DefWord", -1);
-        inst.concatenate(music.getInstrument(word), -1);
+        Instrument inst = new Instrument("DefWord", -1);	
+        inst.concatenate(music.getInstrument(word), -1);	
         return inst; 	
     }	
     	

@@ -5,11 +5,14 @@ public class Music {
 	private Map<String, Instrument> instruments; // contains defined instruments
 	private double longestPerformanceDuration; // used for the loop instruction
 	private ArrayList<String> reserved;
+    private Map<String, Integer> noteMap; // Map - noteName to Pitch	
 
 	// constructors
 	public Music(int bpm) {
 		this.bpm = bpm;
+		noteMap = new HashMap<>();
 		reserved = new ArrayList<>();
+
 		// creates instruments supported by default
 		instruments = new HashMap<>();
 		instruments.put("piano", new Instrument("piano", 1));
@@ -19,7 +22,6 @@ public class Music {
 		instruments.put("bass", new Instrument("bass", 44));
 		instruments.put("drums", new Instrument("drums", 119));
 
-		longestPerformanceDuration = 0;
 		populateReserved();
 	}
 
@@ -36,13 +38,8 @@ public class Music {
 	public void bpm(int newBpm) {
 		bpm = newBpm;
 	}
-
-	public void longestPerformanceDuration(double newDuration) {
-		longestPerformanceDuration = newDuration;
-	}
-
-	public double longestPerformanceDuration() {
-		return longestPerformanceDuration;
+	public HashMap<String, Integer> noteMap() { // returns shallow copy of note Map
+		return new HashMap<String, Integer>(noteMap);	
 	}
 
 	// other methods
@@ -62,6 +59,10 @@ public class Music {
 
 	public boolean isInstrument(String name) {
 		return instruments.containsKey(name);
+	}
+
+	public void mapNote(String noteName, int note) { // maps a note
+		noteMap.put(noteName, note);	
 	}
 
 	private void populateReserved() {

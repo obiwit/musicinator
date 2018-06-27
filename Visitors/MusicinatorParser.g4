@@ -63,7 +63,7 @@ number 	: BAR variable BAR 						#numDuration
 		;
 
 variable
-		: WORD OPEN_SB INT CLOSE_SB
+		: WORD OPEN_SB expr CLOSE_SB
 		| WORD 										
 		;
 
