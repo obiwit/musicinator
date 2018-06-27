@@ -72,6 +72,8 @@ def getInt(varstr):
     return a
 
 def duration(toCheck):
+    if len(toCheck) == 0:
+        return 0
     if type(toCheck[0]) is tuple:
         size = len(toCheck)-1
         return toCheck[0][3] + toCheck[size][3] + toCheck[size][1]

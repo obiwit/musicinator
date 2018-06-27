@@ -51,6 +51,8 @@ def addnotes(notes):
         currtrack += 1
 
 def Fduration(toCheck):
+    if len(toCheck) == 0:
+        return 0
     if type(toCheck[0]) is tuple:
         size = len(toCheck)-1
         return toCheck[0][3] + toCheck[size][3] + toCheck[size][1]
@@ -64,7 +66,7 @@ def modPitch(toMod, ModNumber):
         for tup in toMod:
             newPitch = tup[0] + ModNumber
             try:
-                if newPitch < 0:
+                if newPitch \< 0:
                     raise ValueError
             except ValueError:
                 print("Modulated note below 0, expect silence")
@@ -77,7 +79,7 @@ def modPitch(toMod, ModNumber):
         for tup in toMod[1]:
             newPitch = tup[0] + ModNumber
             try:
-                if newPitch < 0:
+                if newPitch \< 0:
                     raise ValueError
             except ValueError:
                 print("Modulated note below 0, expect silence")
