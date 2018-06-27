@@ -76,7 +76,7 @@ def modPitch(toMod, ModNumber):
         for tup in toMod[1]:
             newPitch = tup[0] + ModNumber
             try:
-                if newPitch < 0:
+                if newPitch \< 0:
                     raise ValueError
             except ValueError:
                 print("Modulated note below 0, expect silence")
