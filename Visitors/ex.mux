@@ -26,10 +26,18 @@ for sequence s in sequences {
 }
 play p_boat;
 */
-/*
 
-sequence s = [ABC];
-sequence ss = [ s s ];
+sequence s0 = [];
+play s0 on piano;
+
+/*
+sequence s1 = [A];
+sequence s2 = [B];
+sequence s3 = [C];
+
+sequence[] s_a = [s1, s2, s3];
+
+sequence ss = [ s1 s1 ];
 
 play ss on piano;
 */
@@ -44,28 +52,29 @@ sequence pink = [Eb6{.33} E6 Gb6{.33} G6 Eb6{.33} E6 Gb6{.33} G6 C7{.33} B6 E6{.
 
 performance p_pink = pink on piano;
 
-play p_pink;
+play p_pink - getInt("How many semitones to lower? ");
 at |p_pink| play p_pink - 24 ;
-
 */
+
+/*
 sequence rap1 = [C3 D#3 G3 G#3 C4{3} G#3 G3{1.5} R{.5} G#3 G3{.4} G#3{.4} G3{.4} F3{.5} G3{0.6} R{0.2} B3] +12 ;
 sequence rap2 = [C2{2}  D2 D#2 F2{3} F2  D#2{1.5} R{.5}F2 D#2{.4} D2{1.3}				R{0.8}  G2] +12;
 
 sequence alors = [G#2{.5}R{.5} C#3{.5}R{.5} G#3{1.2}G#3{1.2}G#3{.8} E3{.5}R{.5} A3{.5}R{.5} Eb3{1.2}Eb3{1.2}Eb3{.8}] + 12;
 sequence alors2 = [E3 R{.33} E3 R{.33} E3 R{.33} E3 R{.33} E3 R{.33} E3{.5} F#3{.5} R{.1} Eb3{.5}R{.5} Eb3{.5}R{.5}Eb3{.5}]+ 24;
-/*
+
 play rap1  on guitar;
 at 0 play rap2  on piano;
 at|rap1| play rap1 on guitar;
 at|rap1| play rap2 on piano;
-*/
+
 performance p_alors = alors on piano;
 
 //play alors on piano;
 at 2* |alors| play alors2 on piano;
 at 3 * |alors| play alors2 on piano;
 loop p_alors;
-
+*/
 /*
 sequence first1_sequence = ( [C#8{2} A Cb Db{3.12} B# C8 D{3} C#5'  E#{4} F5{3} F4'''' ] + 40 -20) +12 ;
 

@@ -31,6 +31,19 @@ public class Performance {
     	String[] tmpArray = { start };
     	return tmpArray;
     }
+
+	// getters & setters
+	public double duration() {
+		return sequence.duration();
+	}
+	//return array sequencial( 0-1-5-6-23-2123-...)
+	public String[] startTime() {
+		return startTime;
+	}
+	public String repeatTimes() {
+		return repeatTimes;
+	}
+	
 	
 	public void addStartTime(String start) {
 //		assert start > 0;
@@ -50,45 +63,27 @@ public class Performance {
 		repeatTimes = repeat;
 	}
 
-	// return Performance with Pitch changed
+	// other methods
 	public Performance modulatePitch(int pitchChange) {
 		return new Performance(startTime, sequence.modulatePitch(pitchChange), instrument, repeatTimes);
 	}
-
-	//return Performance with Tempo changed
 	public Performance modulateTempo(double tempoChange) {
 		return new Performance(startTime, sequence.modulateTempo(tempoChange), instrument, repeatTimes);
 	}
-
-	//return Performance with with one or more repeats
 	public Performance repeat(String repeats) {
 		return new Performance(startTime, sequence, instrument, repeats);
 	}
 
-
-	// getters
-	public double duration() {
-		return sequence.duration();
-	}
-
-	public String[] startTime() {
-		return startTime;
-	}
-	
-	public String repeatTimes() {
-		return repeatTimes;
-	}
-
-//			toString() importante para a passagem das performances
-//			o formato da string é: 
-//			[[startTimes], (pitch, duration, instrument, insertionTime),(pitch2, duration2, instrument2, insertionTime2), ..... , repeatTimes]
 	@Override public String toString() {
+//			 print rests?
+//			 [[startTimes], (pitch, duration, instrument, insertionTime), ..., (,,), repeatTimes]
+		
 		String tmp = "";
 		double insertionTime = 0;
 		
 		for(Chord tmpChord : sequence.chords()) {
 			for(Note tmpNotes : tmpChord.notes()) {
-				//tmpNotes.duration() equivalente a tmpChord.duration()
+				//note.duration() === chords.duration()
 				tmp += "(" + tmpNotes.value() + ", " + tmpNotes.duration() + ", " +  instrument.name() + "[" + tmpNotes.value() + "]" + ", " + insertionTime + "), ";				
 			}
 			insertionTime += tmpChord.duration();

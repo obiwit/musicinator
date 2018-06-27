@@ -523,7 +523,7 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		gen.add("value", "[" + v.name());
 
 		int exprsNum = ctx.expr().size();
-		for (int i = 1; i < exprsNum-1; i++) {
+		for (int i = 1; i < exprsNum; i++) {
 			gen.add("value", "," + visit(ctx.expr(i)).name());
 		}
 		gen.add("value", "]");
@@ -600,10 +600,15 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		gen.add("seqs", "[");
 
 		int sequencesNum = ctx.expr().size();
-		for (int i = 0; i < sequencesNum-1; i++) {
-			gen.add("seqs", visit(ctx.expr(i)).name()+",");
+
+		// if not empty array, add sequences that make it up
+		if (sequencesNum > 0) {
+			for (int i = 0; i < sequencesNum-1; i++) {
+				gen.add("seqs", visit(ctx.expr(i)).name()+",");
+			}
+			gen.add("seqs", visit(ctx.expr(sequencesNum-1)).name());
 		}
-		gen.add("seqs", visit(ctx.expr(sequencesNum-1)).name() + "]");
+		gen.add("seqs", "]");
 		printer.println(gen.render());
 
 		return new Variable(varName, Type.SEQUENCE);
