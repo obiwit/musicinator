@@ -1,5 +1,6 @@
 from midiutil import MIDIFile
 from itertools import repeat
+from math import ceil
 import sys
 
 
@@ -25,18 +26,18 @@ def addnotes(notes):
     time = notes[0] #When the sequence will start time wise
     temp = 1 #default instrument
     global currtrack #we want the global scope of this variable
-    Fduration(notes)
+    duration(notes)
 
     repeat_times = (int)(notes[len(notes)-1])
     
     for x in range(len(time)):
-        initialTime = time[x] - Fduration(notes[1])
+        initialTime = time[x] - duration(notes[1])
         for _ in range(repeat_times):
-            initialTime += Fduration(notes[1])
+            initialTime += duration(notes[1])
             for i in range(0, len(notes[1])):
                 try:
                     note = notes[1][i][0] #getting the note
-                    duration = notes[1][i][1] #duration of the note
+                    noteDur = notes[1][i][1] #duration of the note
                     toInsert = notes[1][i][3] + initialTime
                     if note < 0:
                         continue
@@ -53,13 +54,24 @@ def addnotes(notes):
                     instrument = temp #it keeps the old instrument
                     pass
                 
-                midi.addNote(currtrack,0,note,toInsert,duration,100)
+                midi.addNote(currtrack,0,note,toInsert,noteDur,100)
                 
 
-                print("Added note {}, with instument {} with a duration of {} on time {}, on channel {}".format(note, instrument, duration, (toInsert*(85/bpm)), currtrack))
+                print("Added note {}, with instument {} with a duration of {} on time {}, on channel {}".format(note, instrument, noteDur, (toInsert*(85/bpm)), currtrack))
         currtrack += 1
 
-def Fduration(toCheck):
+def getInt(varstr):
+    while True:
+        try:
+            a = int(input(varstr))
+        except ValueError:
+            print("Please input a valid number")
+            continue
+        else:
+            break
+    return a
+
+def duration(toCheck):
     if type(toCheck[0]) is tuple:
         size = len(toCheck)-1
         return toCheck[0][3] + toCheck[size][3] + toCheck[size][1]
@@ -82,6 +94,7 @@ def modPitch(toMod, ModNumber):
             modded.append(newtup)
         return modded
     else:
+        temp = toMod
         for tup in toMod[1]:
             newPitch = tup[0] + ModNumber
             try:
@@ -92,8 +105,8 @@ def modPitch(toMod, ModNumber):
                 pass
             newtup = (newPitch, tup[1],tup[2],tup[3])
             modded.append(newtup)
-        toMod[1] = modded
-        return toMod
+        temp[1] = modded
+        return temp
 
 
 def modTempo(toMod, ModNumber):
@@ -105,13 +118,13 @@ def modTempo(toMod, ModNumber):
             modded.append(newtup)
         return modded
     else:
+        temp = toMod
         for tup in toMod[1]:
             newTempo = tup[1] * ModNumber
             newtup = (tup[0], newTempo,tup[2],tup[3])
             modded.append(newtup)
-        toMod[1] = modded
-        return toMod
-
+        temp[1] = modded
+        return temp
 
 def extendseq(original, toextend):
     modded = []
@@ -123,11 +136,17 @@ def extendseq(original, toextend):
     else:
         for tup in original:
             modded.append(tup)
-        time = Fduration(original)
+        time = duration(original)
         for tup in toextend:
             newtup = (tup[0], tup[1], tup[2], time)
             modded.append(newtup)
         return modded
+
+def createseq(seq):
+    newseq = []
+    for s in seq:
+        newseq = extendseq(newseq, s)
+    return newseq
 
 def setinstrument(seq,nome):
     if len(seq)==0:
@@ -138,25 +157,19 @@ def setinstrument(seq,nome):
         newseq.append(new)
     return newseq
 
-def createseq(seq):
-    newseq = []
-    for i in len(seq):
-        newseq = extendseq(newseq,seq[i])
-    return newseq
-
-
-def playPerformace(perf):
+def prepplay(perf):
     global longest #we want the global scope of this variable
-    perf_duration = max(perf[0])+Fduration(perf[1]) * perf[2]
+    perf_duration = max(perf[0])+duration(perf[1]) * perf[2]
     if perf_duration > longest:
         longest = perf_duration
-    addnotes(perf)
+    return perf
 
-def loop(seq):
+def preploop(perf):
     global longest #we want the global scope of this variable
-    repeats = longest/Fduration(seq[1])
-    seq[2]=repeats
-    return seq
+    repeats = longest/duration(perf[1])
+    perf[2] = ceil(repeats)
+    return perf
+
 
 
 

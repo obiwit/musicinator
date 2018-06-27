@@ -1,6 +1,5 @@
 header() ::= <<
 from midiutil import MIDIFile
-from math import ceil
 import sys
 >>
 
@@ -17,18 +16,18 @@ def addnotes(notes):
     time = notes[0] #When the sequence will start time wise
     temp = 1 #default instrument
     global currtrack #we want the global scope of this variable
-    duration(notes)
+    Fduration(notes)
 
     repeat_times = (int)(notes[len(notes)-1])
     
     for x in range(len(time)):
-        initialTime = time[x] - duration(notes[1])
+        initialTime = time[x] - Fduration(notes[1])
         for _ in range(repeat_times):
-            initialTime += duration(notes[1])
+            initialTime += Fduration(notes[1])
             for i in range(0, len(notes[1])):
                 try:
                     note = notes[1][i][0] #getting the note
-                    noteDur = notes[1][i][1] #duration of the note
+                    duration = notes[1][i][1] #duration of the note
                     toInsert = notes[1][i][3] + initialTime
                     if note \< 0:
                         continue
@@ -45,24 +44,13 @@ def addnotes(notes):
                     instrument = temp #it keeps the old instrument
                     pass
                 
-                midi.addNote(currtrack,0,note,toInsert,noteDur,100)
+                midi.addNote(currtrack,0,note,toInsert,duration,100)
                 
 
-                print("Added note {}, with instument {} with a duration of {} on time {}, on channel {}".format(note, instrument, noteDur, (toInsert*(85/bpm)), currtrack))
+                print("Added note {}, with instument {} with a duration of {} on time {}, on channel {}".format(note, instrument, duration, (toInsert*(85/bpm)), currtrack))
         currtrack += 1
 
-def getInt(varstr):
-    while True:
-        try:
-            a = int(input(varstr))
-        except ValueError:
-            print("Please input a valid number")
-            continue
-        else:
-            break
-    return a
-
-def duration(toCheck):
+def Fduration(toCheck):
     if type(toCheck[0]) is tuple:
         size = len(toCheck)-1
         return toCheck[0][3] + toCheck[size][3] + toCheck[size][1]
@@ -76,7 +64,7 @@ def modPitch(toMod, ModNumber):
         for tup in toMod:
             newPitch = tup[0] + ModNumber
             try:
-                if newPitch \< 0:
+                if newPitch < 0:
                     raise ValueError
             except ValueError:
                 print("Modulated note below 0, expect silence")
@@ -85,18 +73,19 @@ def modPitch(toMod, ModNumber):
             modded.append(newtup)
         return modded
     else:
+        temp = toMod
         for tup in toMod[1]:
             newPitch = tup[0] + ModNumber
             try:
-                if newPitch \< 0:
+                if newPitch < 0:
                     raise ValueError
             except ValueError:
                 print("Modulated note below 0, expect silence")
                 pass
             newtup = (newPitch, tup[1],tup[2],tup[3])
             modded.append(newtup)
-        toMod[1] = modded
-        return toMod
+        temp[1] = modded
+        return temp
 
 
 def modTempo(toMod, ModNumber):
@@ -108,12 +97,14 @@ def modTempo(toMod, ModNumber):
             modded.append(newtup)
         return modded
     else:
+        temp = toMod
         for tup in toMod[1]:
             newTempo = tup[1] * ModNumber
             newtup = (tup[0], newTempo,tup[2],tup[3])
             modded.append(newtup)
-        toMod[1] = modded
-        return toMod
+        temp[1] = modded
+        return temp
+
 
 def extendseq(original, toextend):
     modded = []
@@ -125,17 +116,11 @@ def extendseq(original, toextend):
     else:
         for tup in original:
             modded.append(tup)
-        time = duration(original)
+        time = Fduration(original)
         for tup in toextend:
             newtup = (tup[0], tup[1], tup[2], time)
             modded.append(newtup)
         return modded
-
-def createseq(seq):
-    newseq = []
-    for s in seq:
-        newseq = extendseq(newseq, s)
-    return newseq
 
 def setinstrument(seq,nome):
     if len(seq)==0:
@@ -146,18 +131,25 @@ def setinstrument(seq,nome):
         newseq.append(new)
     return newseq
 
-def prepplay(perf):
+def createseq(seq):
+    newseq = []
+    for s in seq:
+        newseq = extendseq(newseq,s)
+    return newseq
+
+
+def playPerformace(perf):
     global longest #we want the global scope of this variable
-    perf_duration = max(perf[0])+duration(perf[1]) * perf[2]
+    perf_duration = max(perf[0])+Fduration(perf[1]) * perf[2]
     if perf_duration > longest:
         longest = perf_duration
-    return perf
+    addnotes(perf)
 
-def preploop(perf):
+def loop(seq):
     global longest #we want the global scope of this variable
-    repeats = longest/duration(perf[1])
-    perf[2] = ceil(repeats)
-    return perf
+    repeats = longest/Fduration(seq[1])
+    seq[2]=repeats
+    return seq
 
 >>
 
@@ -185,7 +177,7 @@ u_getint(indentation, varname, str) ::= <<
 >>
 
 u_duration(indentation, varname, performance) ::= <<
-<indentation><varname> = duration(<performance>)
+<indentation><varname> = Fduration(<performance>)
 >>
 
 u_extendseq(indentation, varname, original, toextend) ::= <<
@@ -234,3 +226,5 @@ elif(indentation, condition) ::= <<
 else(indentation, code) ::= <<
 <indentation>else:
 >>
+
+
