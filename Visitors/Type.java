@@ -1,7 +1,7 @@
 public enum Type {
 		NUMBER, SEQUENCE, PERFORMANCE, INSTRUMENT, 
 		NUMBER_ARRAY, SEQUENCE_ARRAY, PERFORMANCE_ARRAY, INSTRUMENT_ARRAY,
-		BOOL, NONE, ERROR;
+		BOOL, NOTE, NONE;
 
 		public static boolean isSimpleType(Type t) {
 			return (t == NUMBER || t == SEQUENCE || t == PERFORMANCE || t == INSTRUMENT);
@@ -24,7 +24,7 @@ public enum Type {
 			}
 		}
 		public static Type toSimpleType(Type t) {
-			assert (!isSimpleType(t) && t != ERROR);
+			assert (!isSimpleType(t) && t != NOTE && t != BOOL && t != NONE);
 
 			switch(t) {
 				case NUMBER_ARRAY: 	  

@@ -41,28 +41,29 @@ public class Music {
 	public HashMap<String, Integer> noteMap() { // returns shallow copy of note Map
 		return new HashMap<String, Integer>(noteMap);	
 	}
+	public HashMap<String, Instrument> instruments() {
+		return new HashMap<String, Instrument>(instruments);
+	}
 
 	// other methods
 	public void addInstrument(String name, Instrument i) {
 		instruments.put(name, i);
 		addReservedWord(name);
 	}
-
 	public Instrument getInstrument(String name) {
 		assert instruments.containsKey(name);
 		return instruments.get(name);
 	}
-
-	public HashMap<String, Instrument> getAllInstruments() {
-		return new HashMap<String, Instrument>(instruments);
-	}
-
 	public boolean isInstrument(String name) {
 		return instruments.containsKey(name);
 	}
 
+	public boolean isNoteName(String name) {
+		return noteMap.containsKey(name);
+	}
 	public void mapNote(String noteName, int note) { // maps a note
 		noteMap.put(noteName, note);	
+		addReservedWord(noteName);
 	}
 
 	private void populateReserved() {

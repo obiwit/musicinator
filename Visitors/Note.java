@@ -11,18 +11,13 @@ public class Note {
 		this(v, 1);
 	}
 	public Note(String note) {
-		double d = 1;
+		double d = durationFromStr(note);
+
 		String noDuration = note;
-		
 		if (note.contains("{")) {
-			d = Double.parseDouble(note.substring(note.indexOf("{") + 1, note.indexOf("}")));
 			noDuration = note.substring(0, note.indexOf("{"));
 		} else if (note.contains("'")) {
-			while(note.contains("'")) {
-				d /= 2;
-				note = note.substring(0, note.length()-1);
-			}
-			noDuration = note;
+			noDuration = note.substring(0, note.indexOf("'"));;
 		}
 
 		this.value = noteToPitch(noDuration) + "";
@@ -78,6 +73,19 @@ public class Note {
 
 		return value;
 
+	}
+
+	public static double durationFromStr(String dur) {
+		double duration = 1;
+		if (dur.contains("{")) {
+			duration = Double.parseDouble(dur.substring(dur.indexOf("{") + 1, dur.indexOf("}")));
+		} else if (dur.contains("'")) {
+			while(dur.contains("'")) {
+				duration /= 2;
+				dur = dur.substring(0, dur.length()-1);
+			}
+		}
+		return duration;
 	}
 
 	private static int getBaseValue(char symbol) {

@@ -48,7 +48,7 @@ expr 	: variable 									#varExpr
 		
 
 sequence
-		: OPEN_SB sequence* CLOSE_SB 			#seqList // change to expr
+		: OPEN_SB expr* CLOSE_SB 				#seqList
 		| SOUND									#seqNote
 		| CHORD									#seqChord	
 		;
@@ -65,6 +65,7 @@ number 	: BAR variable BAR 						#numDuration
 
 variable
 		: WORD OPEN_SB expr CLOSE_SB
+		| WORD DURATION
 		| WORD 										
 		;
 

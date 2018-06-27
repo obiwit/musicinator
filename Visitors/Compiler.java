@@ -59,13 +59,24 @@ System.out.println("Started Compilation (๑˃̵ᴗ˂̵)و");
 		printer.println(gen.render()+"\n");
 
 		// add all instruments as arrays 
-		HashMap<String, Instrument> instruments = music.getAllInstruments();
+		HashMap<String, Instrument> instruments = music.instruments();
 		Set<String> instrNames = instruments.keySet();
 		for (String s : instrNames) {
 		    gen = group.getInstanceOf("vardec");
 			gen.add("indentation", currentIndentation);
 			gen.add("varname", s);				
 			gen.add("value", instruments.get(s));
+			printer.println(gen.render());
+		}
+
+		// add all note aliases
+		HashMap<String, Integer> noteMap = music.noteMap();
+		Set<String> noteNames = noteMap.keySet();
+		for (String s : noteNames) {
+		    gen = group.getInstanceOf("vardec");
+			gen.add("indentation", currentIndentation);
+			gen.add("varname", s);				
+			gen.add("value", noteMap.get(s));
 			printer.println(gen.render());
 		}
 
@@ -400,7 +411,15 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		return new Variable(varName, per.type());
 	}
 	private void generateLoopPlay(String varName) {
-		ST gen = group.getInstanceOf("u_preploop");
+		// change start time to 0
+		ST gen = group.getInstanceOf("vardec");
+		gen.add("indentation", currentIndentation);
+		gen.add("varname", varName+"[0]");
+		gen.add("value", "[0]");
+		printer.println(gen.render());
+
+		// change repeat times to allow looping
+		gen = group.getInstanceOf("u_preploop");
 		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 		printer.println(gen.render());
@@ -580,11 +599,11 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		gen.add("varname", varName);
 		gen.add("seqs", "[");
 
-		int sequencesNum = ctx.sequence().size();
+		int sequencesNum = ctx.expr().size();
 		for (int i = 0; i < sequencesNum-1; i++) {
-			gen.add("seqs", visit(ctx.sequence(i)).name()+",");
+			gen.add("seqs", visit(ctx.expr(i)).name()+",");
 		}
-		gen.add("seqs", visit(ctx.sequence(sequencesNum-1)).name() + "]");
+		gen.add("seqs", visit(ctx.expr(sequencesNum-1)).name() + "]");
 		printer.println(gen.render());
 
 		return new Variable(varName, Type.SEQUENCE);
@@ -675,13 +694,33 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 
 	// VARIABLE
 	@Override public Variable visitVariable(MusicinatorParser.VariableContext ctx) {
-	 	if (currentScope.isVariable(ctx.WORD().getText())) {
+		String varName = ctx.WORD().getText();
+
+	 	if (currentScope.isVariable(varName)) {
 	 		// if variable is entry of array, return it as a simple type
 			if (ctx.getText().contains("[")) {
 				return new Variable(ctx.getText(),
-					Type.toSimpleType(currentScope.getVariable(ctx.WORD().getText()).type()));
+					Type.toSimpleType(currentScope.getVariable(varName).type()));
 			}
 			return currentScope.getVariable(ctx.WORD().getText());
+	 	} else if (music.isNoteName(varName)) {
+	 		// generate sequence from note name
+	 		varName = "_" + varNum++;
+	 		double varDuration = 1;
+
+			if (ctx.DURATION() != null) {
+				varDuration = Note.durationFromStr(ctx.DURATION().getText());
+			}
+
+
+			ST gen = group.getInstanceOf("vardec");
+			gen.add("indentation", currentIndentation);
+			gen.add("varname", varName);
+			gen.add("value", "("+ctx.WORD().getText()+","+varDuration+"-1,-1)");
+			printer.println(gen.render());
+
+	 		return new Variable(varName, Type.SEQUENCE);
+
 	 	} else { // is instrument
 	 		return new Variable(ctx.getText(), Type.INSTRUMENT);
 	 	}

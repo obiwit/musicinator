@@ -265,11 +265,11 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 
 	@Override public Type visitSeqList(MusicinatorParser.SeqListContext ctx) { 
 		// iterate over all children, and confirm they are all Type.SEQUENCE
-		int sequencesNum = ctx.sequence().size();
+		int sequencesNum = ctx.expr().size();
 
 		for (int i = 0; i < sequencesNum; i++) {
-			if (visit(ctx.sequence(i)) != Type.SEQUENCE)
-				errors.error("Variable \"" + ctx.sequence(i) + "\" is not a sequence!", ctx);
+			if (visit(ctx.expr(i)) != Type.SEQUENCE)
+				errors.error("Variable \"" + ctx.expr(i) + "\" is not a sequence!", ctx);
 		}
 
 		return Type.SEQUENCE; 
@@ -324,8 +324,9 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		// get variable type
 		if (currentScope.isVariable(varName)) {
 			varType = currentScope.getVariable(varName).type();
-
-		} else if (!music.isInstrument(varName)) {
+		} else if (music.isNoteName(varName)) {
+			varType = Type.SEQUENCE;
+		} else if(!music.isInstrument(varName)) {
 			errors.error("Variable \"" + varName + "\" is not defined!", ctx);
 		}
 
