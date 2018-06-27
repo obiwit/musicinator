@@ -17,15 +17,15 @@ assignment
 		;
 
 play 	: PLAY per=expr SEQUENTIALLY? (rep=expr TIMES)? SEMICOLON 	#simplePlay
-		| (AT expr | AFTER variable ALWAYS?) play					#timedPlay
-		| LOOP performance											#loopPlay
+		| AT expr play												#timedPlay //(AT expr | AFTER variable ALWAYS?)
+		| LOOP expr													#loopPlay
 		;
 
 forStat	: FOR types newVar=WORD IN array=WORD OPEN_BR instructions* CLOSE_BR
 		;
 
 ifStat	: IF ifCond=condition OPEN_BR ifBody=instructions* CLOSE_BR 
-		  (ELIF elifCond=condition OPEN_BR  elifBody=instructions* CLOSE_BR)* 
+		  (ELIF elifCond+=condition OPEN_BR  (elifBody+=instructions)* CLOSE_BR)* 
 		  (ELSE OPEN_BR  elseBody=instructions* CLOSE_BR)?
 		;
 

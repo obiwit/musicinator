@@ -26,9 +26,11 @@ at n play pp;
 
 if |s| > 10 { 
 	play s on piano;
+	sequence banana = [C];
 }
 else if |s| < 5 {
 	play s on guitar;
+	number nada = 5;
 }
 else if (|p| == 10) {
 	play p;

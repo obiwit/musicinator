@@ -3,6 +3,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 import org.stringtemplate.v4.*;
 
+//import org.antlr.v4.runtime.RuleContext;
+
 import java.io.*;
 import java.util.*;
 /**
@@ -143,10 +145,11 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		// visit else if conditions before generating if
 		// (otherwise it wouldn't be possible to initialize
 		// the variables for the else if conditions)
+		Iterator<MusicinatorParser.ConditionContext> conditions = ctx.elifCond.iterator();
 		int elifNum = ctx.ELIF().size();
 		String[] elifConds = new String[elifNum];
 		for (int i = 0; i < elifNum; i++) {
-			elifConds[i] = visit(ctx.elifCond).name();
+			elifConds[i] = visit(conditions.next()).name();
 		}
 
 		// generate if statement
@@ -161,16 +164,32 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
 
 		// generate else ifs, if any
-		for (int i = 0; i < elifNum; i++) {
-			gen = group.getInstanceOf("elif");
-			gen.add("indentation", currentIndentation);
-			gen.add("condition", elifConds[i]);
-			printer.println(gen.render());
+		Iterator<MusicinatorParser.InstructionsContext> iter = ctx.elifBody.iterator();
+		int i = 0; 
+		ParserRuleContext parent = null;
+	    while(iter.hasNext()) {
+		//for (int i = 0; i < elifNum; i++) {
+			MusicinatorParser.InstructionsContext instruc = iter.next();
+
+System.out.println(instruc.getParent());
+System.out.println(instruc.getParent().getRuleContext());
+
+			if (instruc.getParent() != parent) {
+				gen = group.getInstanceOf("elif");
+				gen.add("indentation", currentIndentation);
+				gen.add("condition", elifConds[i++]);
+				printer.println(gen.render());
+
+				parent = instruc.getParent();
+			}
 
 			currentIndentation += "\t";
-			visit(ctx.elifBody); 
+System.out.println("["+ctx.start.getLine() + "] "+ visit(instruc).name());
+//	      	visit(instruc);
+//			visit(ctx.elifBody); 
 			currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
-		}
+		//}
+	    }
 
 		// generate else, if any
 		if (ctx.ELSE() != null) {
@@ -190,6 +209,8 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 	
 	// PLAY
 	@Override public Variable visitSimplePlay(MusicinatorParser.SimplePlayContext ctx) {
+		// TODO support PERFORMANCE_ARRAYs
+
 		String varName = visit(ctx.per).name();
 
 		// change start time to 0
@@ -214,6 +235,7 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 	}
 	
 	@Override public Variable visitTimedPlay(MusicinatorParser.TimedPlayContext ctx) {
+		// TODO support PERFORMANCE_ARRAYs
 
 		String varName = visit(ctx.play()).name();
 
@@ -240,6 +262,8 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 	}
 	
 	@Override public Variable visitLoopPlay(MusicinatorParser.LoopPlayContext ctx) { 
+		// TODO support PERFORMANCE_ARRAYs
+
 		// TODO
 		return visitChildren(ctx);
 	}

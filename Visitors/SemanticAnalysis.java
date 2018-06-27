@@ -29,7 +29,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		if (currentScope.isVariable(varName)) {
 			error("Variable \"" + varName + "\" already exists!", ctx);
 		} else if (music.isReservedWord(varName)) {
-			error("\"" + varName + "\" is a reserved word!", ctx);
+			error("\"" + varName + "\" is a reserved word or an instrument name!", ctx);
 		}
 
 		// add new scope entry
@@ -100,7 +100,32 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 			error("Variable \"" + ctx.per.getText()
 				  + "\" is not a performance nor a performance array!", ctx);
 		}
-		return Type.NONE;
+		return perType;
+	}
+
+	@Override public Type visitTimedPlay(MusicinatorParser.TimedPlayContext ctx) {
+		Type perType = visit(ctx.play());
+		Type timeType = visit(ctx.expr());
+		// TODO sure we want this error?
+		if (timeType == Type.NUMBER_ARRAY) {
+			if (perType == Type.PERFORMANCE_ARRAY) {
+				error("Invalid play comand! Play doesn't support both performance "
+					  + "and number arrays simultaneously!", ctx);
+			}
+		} else if (timeType != Type.NUMBER) { // TODO don't forget (timeType != Type.NUMBER_ARRAY && ... if you remove above
+			error("Variable \"" + ctx.expr().getText()
+				  + "\" is not a number nor a number array!", ctx);
+		}
+
+		return perType;
+	}
+	@Override public Type visitLoopPlay(MusicinatorParser.LoopPlayContext ctx) {
+		Type perType = visit(ctx.expr());
+		if (perType != Type.PERFORMANCE && perType != Type.PERFORMANCE_ARRAY) {
+			error("Variable \"" + ctx.expr().getText()
+				  + "\" is not a performance nor a performance array!", ctx);
+		}
+		return perType;
 	}
 	
 	// EXPR (SIMPLE TYPES)
