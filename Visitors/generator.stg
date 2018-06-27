@@ -29,7 +29,7 @@ def addnotes(notes):
                     note = notes[1][i][0] #getting the note
                     duration = notes[1][i][1] #duration of the note
                     toInsert = notes[1][i][3] + initialTime
-                    if note < 0:
+                    if note \< 0:
                         continue
 
                 except:
@@ -64,7 +64,7 @@ def modPitch(toMod, ModNumber):
         for tup in toMod:
             newPitch = tup[0] + ModNumber
             try:
-                if newPitch < 0:
+                if newPitch \< 0:
                     raise ValueError
             except ValueError:
                 print("Modulated note below 0, expect silence")
