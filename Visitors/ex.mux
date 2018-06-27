@@ -26,11 +26,10 @@ for sequence s in sequences {
 }
 play p_boat;
 */
-
+/*
 sequence s0 = [];
 play s0 on piano;
 
-/*
 sequence s1 = [A];
 sequence s2 = [B];
 sequence s3 = [C];
@@ -75,7 +74,8 @@ at 2* |alors| play alors2 on piano;
 at 3 * |alors| play alors2 on piano;
 loop p_alors;
 */
-/*
+
+
 sequence first1_sequence = ( [C#8{2} A Cb Db{3.12} B# C8 D{3} C#5'  E#{4} F5{3} F4'''' ] + 40 -20) +12 ;
 
 number t = |first1_sequence|;
@@ -130,7 +130,7 @@ performance [] p_a = [
 	[D{1.5} D{0.5} E D A G{2}] on bass ,
 	[D{1.5} D{0.5} D5 B G F# E] on guitar];
 
-play p_a;
+play p_a sequentially;
 
 instrument [] new_band = band and violin;
 //instrument [] left_over_band = band except bass;
@@ -141,4 +141,3 @@ performance intro3 = p_a[0];
 for instrument inst in band {
 	play twinkle on inst ;
 }
-*/

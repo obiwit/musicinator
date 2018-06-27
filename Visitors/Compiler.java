@@ -261,13 +261,23 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		String varName = per.name();
 		String repeatTimes = (ctx.rep == null)? "1": ctx.rep.getText();
 
+		// variable used to keep track of start times, needed
+		// if play is sequential
+		String startTime = "_" + varNum++; 
+		ST gen = group.getInstanceOf("vardec");
+		gen.add("indentation", currentIndentation);
+		gen.add("varname", startTime);
+		gen.add("value", "0");
+		printer.println(gen.render());
+
+		// generate name for performance (needed in case of performance arrays)
+		String instanceName = "_" + varNum++; 
+
 		// if per is actually an array, generate a for loop that
 		// iterates over all the performances
 		if (per.type() == Type.PERFORMANCE_ARRAY) {
-			String instanceName = "_" + varNum++; 
-
 			// generate for loop
-			ST gen = group.getInstanceOf("forloop");
+			gen = group.getInstanceOf("forloop");
 			gen.add("indentation", currentIndentation);
 			gen.add("instance", instanceName);
 			gen.add("array", varName);
@@ -275,32 +285,40 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 			currentIndentation += "\t";
 
 			// generate simple play for each performance in array
-			generateSimplePlay(instanceName, repeatTimes);
+			if (ctx.SEQUENTIALLY() != null) {
+				generateSimplePlay(instanceName, repeatTimes, startTime);
+
+				gen = group.getInstanceOf("u_duration");
+				gen.add("indentation", currentIndentation);
+				gen.add("varname", startTime);
+				gen.add("performance", instanceName);
+				printer.println(gen.render());
+
+			}
 
 			// end generated for loop
 			currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
 
 		} else {
 			// copy performance to new var
-			varName = "_" + varNum++; 
-			ST gen = group.getInstanceOf("vardec");
+			gen = group.getInstanceOf("vardec");
 			gen.add("indentation", currentIndentation);
-			gen.add("varname", varName);
+			gen.add("varname", instanceName);
 			gen.add("value", per.name());
 			printer.println(gen.render());
 
-			generateSimplePlay(varName, repeatTimes);
+			generateSimplePlay(instanceName, repeatTimes, "0");
 		}
 
-		return new Variable(varName, per.type());
+		return new Variable(instanceName, per.type());
 	}
 
-	private void generateSimplePlay(String varName, String repeatTimes) {
-		// change start time to 0
+	private void generateSimplePlay(String varName, String repeatTimes, String startTime) {
+		// change start time to startTime
 		ST gen = group.getInstanceOf("vardec");
 		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName+"[0]");
-		gen.add("value", "[0]");
+		gen.add("value", "["+startTime+"]");
 		printer.println(gen.render());
 
 		// change repeat times to given number or 1, if no number was given 
@@ -323,11 +341,12 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		String varName = per.name();
 		Variable startVar = visit(ctx.expr());
 
+		// generate name for performance (needed in case of performance arrays)
+		String instanceName = "_" + varNum++; 
+
 		// if per is actually an array, generate a for loop that
 		// iterates over all the performances
 		if (per.type() == Type.PERFORMANCE_ARRAY) {
-			String instanceName = "_" + varNum++; 
-
 			// generate for loop
 			ST gen = group.getInstanceOf("forloop");
 			gen.add("indentation", currentIndentation);
@@ -344,17 +363,16 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 
 		} else {
 			// copy performance to new var
-			varName = "_" + varNum++; 
 			ST gen = group.getInstanceOf("vardec");
 			gen.add("indentation", currentIndentation);
-			gen.add("varname", varName);
+			gen.add("varname", instanceName);
 			gen.add("value", visit(ctx.play()).name());
 			printer.println(gen.render());
 
-			generateTimedPlay(varName, startVar);
+			generateTimedPlay(instanceName, startVar);
 		}
 
-		return new Variable(varName, per.type());
+		return new Variable(instanceName, per.type());
 	}
 	
 	private void generateTimedPlay(String varName, Variable start) {
@@ -362,6 +380,9 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		ST gen = group.getInstanceOf("vardec");
 		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName+"[0]");
+
+		// add offset to original time (to allow sequential play)
+		gen.add("value", varName+"[0]+");
 
 		// if start var not number arrar, add [] around it
 		if (start.type() == Type.NUMBER_ARRAY) {
