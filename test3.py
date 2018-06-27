@@ -154,6 +154,12 @@ def playPerformace(perf):
         longest = perf_duration
     addnotes(perf)
 
+def loop(seq)
+    global longest #we want the global scope of this variable
+    repeats = longest/duration(seq[1])
+    seq[2]=repeats
+    return seq
+
 
 
 addnotes(toadd)
