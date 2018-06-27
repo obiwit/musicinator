@@ -18,15 +18,15 @@ assignment
 
 play 	: PLAY per=expr SEQUENTIALLY? (rep=expr TIMES)? SEMICOLON 	#simplePlay
 		| AT expr play												#timedPlay //(AT expr | AFTER variable ALWAYS?)
-		| LOOP expr													#loopPlay
+		| LOOP expr	SEMICOLON										#loopPlay
 		;
 
 forStat	: FOR types newVar=WORD IN array=WORD OPEN_BR instructions* CLOSE_BR
 		;
 
-ifStat	: IF ifCond=condition OPEN_BR ifBody=instructions* CLOSE_BR 
+ifStat	: IF ifCond=condition OPEN_BR ifBody+=instructions* CLOSE_BR 
 		  (ELIF elifCond+=condition OPEN_BR  (elifBody+=instructions)* CLOSE_BR)* 
-		  (ELSE OPEN_BR  elseBody=instructions* CLOSE_BR)?
+		  (ELSE OPEN_BR  elseBody+=instructions* CLOSE_BR)?
 		;
 
 
@@ -47,7 +47,7 @@ expr 	: variable 									#varExpr
 		
 
 sequence
-		: OPEN_SB sequence* CLOSE_SB 			#seqList
+		: OPEN_SB sequence* CLOSE_SB 			#seqList // change to expr
 		| SOUND									#seqNote
 		| CHORD									#seqChord	
 		;
@@ -77,4 +77,3 @@ condition
 		: e1=expr op=(BIGR|BIGE|SMLR|SMLE|EQLS|DIFS) e2=expr
 		| OPEN_PR condition CLOSE_PR
 		;
-

@@ -1,3 +1,48 @@
+/*
+sequence row_your_boat = [ 	D D D E' F#' 
+			   				F# E' F#' G' A{2} 
+			   				D{0.33}D{0.33}D{0.33}A{0.33}A{0.33}A{0.33} F#{0.33}F#{0.33}F#{0.33}D{0.33}D{0.33}D{0.33}
+			   				A G F# E D] ;
+
+performance p_boat = row_your_boat on cello ;
+
+sequence s = [A G B B];
+sequence pombinhas_inicio = [ G G C' C' A G B B A G B B B A G C'];
+sequence pombinhas_inicio2x = [ G G C' C' A G B B A G B B B A G C'  G G C' C' A G B B A G B B B A G C'];
+sequence pombinhas_refrao = [E E G E G E D D F F E E D D C{2}];
+sequence pombinhas_refrao2x = [ E E G E G E D D F F E E D D C{2} E E G E G E D D F F E E D D C{2}];
+
+sequence [] sequences = [pombinhas_inicio, pombinhas_inicio, pombinhas_refrao, pombinhas_refrao, pombinhas_inicio, pombinhas_inicio, pombinhas_refrao, pombinhas_refrao];
+
+instrument [] band = [ piano , guitar, bass , drums ] ;
+number num = 0;
+for sequence s in sequences{
+	play s on band[num];
+	num = num + 1;
+	//if(num > 3){
+	//	num = 0;	
+	//}
+	
+}
+play p_boat;
+*/
+/*
+sequence pink = [Eb6{.33} E6 Gb6{.33} G6 Eb6{.33} E6 Gb6{.33} G6 C7{.33} B6 E6{.33} G6 B6{.33} Bb6{3} A6{.6} G6{.6} E6{.6} D6{.6} E6{3} 
+		Eb6{.33} E6 Gb6{.33} G6 Eb6{.33} E6 Gb6{.33} G6 C7{.33} B6 G6{.33} B6 E7{.33} Eb7{4}
+		
+		Eb6{.33} E6 Gb6{.33} G6 Eb6{.33} E6 Gb6{.33} G6 C7{.33} B6 E6{.33} G6 B6{.33} Bb6{3} A6{.6} G6{.6} E6{.6} D6{.6} E6{3}
+
+		E7 D7{.33} B6 A6{.33} G6 E6{.33} Bb6{.33} A6 Bb6{.33} A6 Bb6{.33} A6 Bb6{.33} A6 G6 E6 D6 E6 E6{4}] 
+;
+
+performance p_pink = pink on piano;
+
+play p_pink;
+at |p_pink| play p_pink - 24 ;
+*/
+
+
+
 sequence first1_sequence = ( [C#8{2} A Cb Db{3.12} B# C8 D{3} C#5'  E#{4} F5{3} F4'''' ] + 40 -20) +12 ;
 
 number t = |first1_sequence|;
@@ -39,6 +84,7 @@ else{
 	play s on piano;
 }
 
+loop p;
 
 //ou , alternativamente , definindo a performance implicitamente
 play twinkle on piano;
@@ -62,6 +108,3 @@ performance intro3 = p_a[0];
 for instrument inst in band {
 	play twinkle on inst ;
 }
-
-
-

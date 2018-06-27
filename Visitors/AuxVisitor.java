@@ -35,7 +35,7 @@ public class AuxVisitor extends AuxinatorParserBaseVisitor<Instrument> {
         String word = ctx.WORD().getText();	
         	
         Instrument inst = visit(ctx.instrumentDef());	
-        inst.name(word);	
+		inst.name(word);	
         /*
 
         Defining an instrument that can be based on another instrument, -1 is a generic value to aid on another

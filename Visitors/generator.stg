@@ -8,6 +8,7 @@ bpm = <varbpm>
 midi = MIDIFile(numTracks=<vartrack>, file_format=1)
 midi.addTempo(0,0,bpm)
 currtrack = 0
+longest = 0
 >>
 
 body() ::= <<
@@ -142,18 +143,18 @@ def setinstrument(seq,nome):
         newseq.append(new)
     return newseq
 
-def playPerformace(perf):
+def prepplay(perf):
     global longest #we want the global scope of this variable
     perf_duration = max(perf[0])+duration(perf[1]) * perf[3]
     if perf_duration > longest:
         longest = perf_duration
-    addnotes(perf)
+    return perf
 
-def loop(seq)
+def preploop(perf)
     global longest #we want the global scope of this variable
-    repeats = longest/duration(seq[1])
-    seq[2]=repeats
-    return seq
+    repeats = longest/duration(perf[1])
+    perf[2]=repeats
+    return perf
 
 >>
 
@@ -203,12 +204,12 @@ u_setinstrument(indentation, varname, seq, instrument) ::= <<
 <indentation><varname> = setinstrument(<seq>, <instrument>)
 >>
 
-u_playerPerfomace(perf) ::= <<
-playPerformace(<perf>)
+u_prepplay(indentation, varname) ::= <<
+<indentation><varname> = prepplay(<varname>)
 >>
 
-u_loop(varname,seq) ::= <<
-<varname> = loop(<seq>)
+u_preploop(indentation, varname) ::= <<
+<indentation><varname> = preploop(<varname>)
 >>
 
 forloop(indentation, instance, array) ::= <<

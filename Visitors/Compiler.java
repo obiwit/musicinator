@@ -160,36 +160,58 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 
 		// update indentation level and visit children
 		currentIndentation += "\t";
-		Variable v = visit(ctx.ifBody); 
+		Iterator<MusicinatorParser.InstructionsContext> ifIntructions = ctx.ifBody.iterator();
+		while(ifIntructions.hasNext()) {
+			visit(ifIntructions.next()); 
+		}
+
+		// restore indentation
 		currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
 
 		// generate else ifs, if any
 		Iterator<MusicinatorParser.InstructionsContext> iter = ctx.elifBody.iterator();
-		int i = 0; 
-		ParserRuleContext parent = null;
-	    while(iter.hasNext()) {
-		//for (int i = 0; i < elifNum; i++) {
-			MusicinatorParser.InstructionsContext instruc = iter.next();
+		
+		if (elifNum > 1) {
+			// get start of first else if block 
+			conditions = ctx.elifCond.iterator();
+			MusicinatorParser.ConditionContext condition = conditions.next();
 
-System.out.println(instruc.getParent());
-System.out.println(instruc.getParent().getRuleContext());
+			int i = 0; 
+		    while(iter.hasNext()) {
+				MusicinatorParser.InstructionsContext instruc = iter.next();
 
-			if (instruc.getParent() != parent) {
+				// generate new else if blocks, if needed
+				if (instruc.start.getStartIndex() > condition.start.getStartIndex()) {
+					if (conditions.hasNext())
+						condition = conditions.next();
+
+					gen = group.getInstanceOf("elif");
+					gen.add("indentation", currentIndentation);
+					gen.add("condition", elifConds[i++]);
+					printer.println(gen.render());
+				}
+
+				// visit block body
+				currentIndentation += "\t";
+				visit(instruc);
+				currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
+		    }
+		} else { // 1 or 0 else ifs
+			while(iter.hasNext()) { // implies 1 else if
+
+				// start else if
 				gen = group.getInstanceOf("elif");
 				gen.add("indentation", currentIndentation);
-				gen.add("condition", elifConds[i++]);
+				gen.add("condition", elifConds[0]);
 				printer.println(gen.render());
 
-				parent = instruc.getParent();
+				// visit else if body
+				MusicinatorParser.InstructionsContext instruc = iter.next();
+				currentIndentation += "\t";
+				visit(instruc);
+				currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
 			}
-
-			currentIndentation += "\t";
-System.out.println("["+ctx.start.getLine() + "] "+ visit(instruc).name());
-//	      	visit(instruc);
-//			visit(ctx.elifBody); 
-			currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
-		//}
-	    }
+		}
 
 		// generate else, if any
 		if (ctx.ELSE() != null) {
@@ -197,24 +219,34 @@ System.out.println("["+ctx.start.getLine() + "] "+ visit(instruc).name());
 			gen.add("indentation", currentIndentation);
 			printer.println(gen.render());
 
+			// visit else body
 			currentIndentation += "\t";
-			visit(ctx.elseBody); 
+			Iterator<MusicinatorParser.InstructionsContext> elseIntructions = ctx.elseBody.iterator();
+			while(elseIntructions.hasNext()) {
+				visit(elseIntructions.next()); 
+			}
 			currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
 		}
 
 		// return to parent scope
 		currentScope = currentScope.getParentScope();
-		return v;
+		return new Variable("", Type.NONE);
 	}
 	
 	// PLAY
 	@Override public Variable visitSimplePlay(MusicinatorParser.SimplePlayContext ctx) {
 		// TODO support PERFORMANCE_ARRAYs
 
-		String varName = visit(ctx.per).name();
+		// copy performance to new var
+		String varName = "_" + varNum++; 
+		ST gen = group.getInstanceOf("vardec");
+		gen.add("indentation", currentIndentation);
+		gen.add("varname", varName);
+		gen.add("value", visit(ctx.per).name());
+		printer.println(gen.render());
 
 		// change start time to 0
-		ST gen = group.getInstanceOf("vardec");
+		gen = group.getInstanceOf("vardec");
 		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName+"[0]");
 		gen.add("value", "[0]");
@@ -228,8 +260,11 @@ System.out.println("["+ctx.start.getLine() + "] "+ visit(instruc).name());
 		gen.add("value", repeatTimes);
 		printer.println(gen.render());
 
-		// TODOs
 		// update longestPerformanceDuration
+		gen = group.getInstanceOf("u_prepplay");
+		gen.add("indentation", currentIndentation);
+		gen.add("varname", varName);
+		printer.println(gen.render());
 
 		return new Variable(varName, Type.NONE);
 	}
@@ -237,35 +272,49 @@ System.out.println("["+ctx.start.getLine() + "] "+ visit(instruc).name());
 	@Override public Variable visitTimedPlay(MusicinatorParser.TimedPlayContext ctx) {
 		// TODO support PERFORMANCE_ARRAYs
 
-		String varName = visit(ctx.play()).name();
+		// copy performance to new var
+		String varName = "_" + varNum++; 
+		ST gen = group.getInstanceOf("vardec");
+		gen.add("indentation", currentIndentation);
+		gen.add("varname", varName);
+		gen.add("value", visit(ctx.play()).name());
+		printer.println(gen.render());
 
 		// change start time
-		ST gen = group.getInstanceOf("vardec");
+		gen = group.getInstanceOf("vardec");
 		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName+"[0]");
 
-		// TODO if var not number arrar, add []
+		// if var not number arrar, add [] around it
 		Variable v = visit(ctx.expr());
 		if (v.type() == Type.NUMBER_ARRAY) {
 			gen.add("value", v.name());
 		} else {
 			gen.add("value", "["+v.name()+"]");
 		}
-
 		printer.println(gen.render());
 
-		// TODO
-		// update longestPerformanceDuration 
+		// update longestPerformanceDuration
+		gen = group.getInstanceOf("u_prepplay");
+		gen.add("indentation", currentIndentation);
+		gen.add("varname", varName);
+		printer.println(gen.render());
 
-		// TODO return other value
-		return new Variable(varName, Type.ERROR);
+		return new Variable(varName, Type.NONE);
 	}
 	
 	@Override public Variable visitLoopPlay(MusicinatorParser.LoopPlayContext ctx) { 
 		// TODO support PERFORMANCE_ARRAYs
 
-		// TODO
-		return visitChildren(ctx);
+		// get performance
+		String varName = visit(ctx.expr()).name();
+
+		ST gen = group.getInstanceOf("u_preploop");
+		gen.add("indentation", currentIndentation);
+		gen.add("varname", varName);
+		printer.println(gen.render());
+
+		return new Variable(varName, Type.NONE);
 	}
 	
 	// EXPR (SIMPLE TYPES)
