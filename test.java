@@ -11,7 +11,7 @@ public class test{
         String output = "";
         String toadd = "[1,(60,1,2),(62,1,25),(64,1,64),(65,1,53),(67,1,32),(69,1,14),(71,1,87),(72,1,69),2]";
         String toadd1 = "[1,(72,1,5),(71,1,55),(69,1,31),(67,1,45),(65,1,115),(64,1,54),(62,1,87),(60,1,69),2]";
-        STGroup group = new STGroupFile("/home/toms/Desktop/lfaprojlocal/lfa-1718-g12/generator.stg");
+        STGroup group = new STGroupFile("Visitors/generator.stg");
         //Creating the header file
         ST gen1 = group.getInstanceOf("header");
         output += gen1.render() + "\n";

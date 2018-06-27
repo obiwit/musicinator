@@ -20,7 +20,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		music = m;
 		globalScope = new Scope();
 		currentScope = globalScope;
-		errors = new ErrorHandling(semanticanalysis.txt);
+		errors = new ErrorHandling("semanticanalysis.txt");
 	}
 	
 	// ASSIGN
