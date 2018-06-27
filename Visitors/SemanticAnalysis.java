@@ -16,11 +16,15 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	Music music;
 	ErrorHandling errors;
 
-	SemanticAnalysis(Music m) {
+	SemanticAnalysis(Music m){
 		music = m;
 		globalScope = new Scope();
 		currentScope = globalScope;
-		errors = new ErrorHandling("semanticanalysis.txt");
+		try{
+			errors = new ErrorHandling("SemAnalysis.txt");
+		}catch (IOException e){
+			System.err.println("Could not create logFile, going down");
+		}
 	}
 	
 	// ASSIGN

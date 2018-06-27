@@ -25,7 +25,7 @@ public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
 	private String currentIndentation;
 	private ErrorHandling errors;
 
-	Compiler(Music m, Scope s, String dstFile) {
+	Compiler(Music m, Scope s, String dstFile){
 		music = m;
 		globalScope = s;
 		currentScope = globalScope;
@@ -34,7 +34,11 @@ public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
 		currentIndentation = "";
 
 		group = new STGroupFile("generator.stg");
-		errors = new ErrorHandling("logfile.txt");
+		try{
+			errors = new ErrorHandling("Compiler.txt");
+		}catch (IOException e){
+			System.err.println("Could not create logFile, going down");
+		}
 
 		try {
 			printer = new PrintWriter(new FileOutputStream(new File(dstFile))); 
