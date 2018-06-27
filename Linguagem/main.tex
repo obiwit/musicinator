@@ -47,6 +47,45 @@
 \usepackage{graphicx}
 
 \begin{document}
+\def\titulo{Especificação da Linguagem}
+\def\grupo{Grupo 12, LFA}
+\def\empresa{Universidade de Aveiro}
+\def\autores{António Santos\par Beatriz Borges\par \par Gustavo Inácio\par Filipe Vale\par Tomas Freitas}
+\def\logotipo{ua.pdf}
+
+%%%%%% CAPA %%%%%%
+\begin{titlepage}
+\begin{center}
+%
+\vspace*{40mm}
+%
+{\Huge \titulo}\\ 
+%
+\vspace{8mm}
+%
+{\Large \grupo}\\
+%
+\vspace{2mm}
+%
+{\Large \empresa}\\
+%
+\vspace{10mm}
+%
+{\LARGE \autores}\\ 
+%
+\vspace{30mm}
+%
+\begin{figure}[h]
+\center
+\includegraphics{\logotipo}
+\end{figure}
+%
+\vspace{30mm}
+\end{center}
+\end{titlepage}
+
+%%%%%% FIM CAPA %%%%%%
+
 
 \maketitle
 
@@ -250,6 +289,10 @@ play twinkle on guitar;
 play twinkle_bass on guitar;
 \end{lstlisting}
 
+
+%%%%%%%% ATENÇÃO COMMENT %%%%%%%%
+\iffalse
+%commentado sector por conter keyWords AFTER e  ALWAYS
 \subsubsection{Sequencial}
 A palavra chave \texttt{after} indica que uma dada performance deve começar imediatamente após o fim doutra.
 \begin{lstlisting} 
@@ -285,6 +328,7 @@ after first_line always play second_line;
 after second_line play first_line;
 // toca first_line (FL), seguido de second_line (SL), e repete uma vez, ou seja, FL, SL, FL, SL
 \end{lstlisting}
+\fi
 
 \subsubsection{Usando Números}
 A palavra chave \texttt{at} indica um número específico no qual a performance deve começar, independentemente de haver outras performances a decorrer nesse momento. 
