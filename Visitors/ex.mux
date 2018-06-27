@@ -142,7 +142,7 @@ for instrument inst in band {
 	play twinkle on inst ;
 }
 */
-
+/*
 // criar um array com 3 performances
 performance [] p_a = [
 	[D{1.5} D{0.5} E D G F#{2}] on piano ,
@@ -151,3 +151,4 @@ performance [] p_a = [
 
 play p_a sequentially;
 at |p_a[0]| + |p_a[1]| + |p_a[2]| +1 play p_a sequentially;
+*/

@@ -22,7 +22,7 @@ play 	: PLAY per=expr SEQUENTIALLY? (rep=expr TIMES)? SEMICOLON 	#simplePlay
 		| LOOP expr	SEMICOLON										#loopPlay
 		;
 
-forStat	: FOR types newVar=WORD IN array=WORD OPEN_BR instructions* CLOSE_BR
+forStat	: FOR types WORD IN expr OPEN_BR forBody+=instructions* CLOSE_BR
 		;
 
 ifStat	: IF ifCond=condition OPEN_BR ifBody+=instructions* CLOSE_BR 
@@ -33,13 +33,13 @@ ifStat	: IF ifCond=condition OPEN_BR ifBody+=instructions* CLOSE_BR
 
 // "lower level" definitions - types, expressions and conditions
 expr 	: variable 									#varExpr
-		| performance 								#perExpr
 		| sequence 									#seqExpr
 		| number 									#numExpr
 		| OPEN_PR expr CLOSE_PR						#parensExpr
 
 		| e1=expr op=(MUL|DIV) e2=expr				#mulDivExpr
 		| e1=expr op=(ADD|SUB) e2=expr				#addSubExpr
+		| expr ON variable 							#performance
 
 		| OPEN_SB expr (COMMA expr)* CLOSE_SB 		#bracketArray
 		| expr (AND expr)+							#andArray
@@ -51,10 +51,6 @@ sequence
 		: OPEN_SB expr* CLOSE_SB 				#seqList
 		| SOUND									#seqNote
 		| CHORD									#seqChord	
-		;
-
-performance
-		: (sequence|seq=variable) ON inst=variable 
 		;
 
 number 	: BAR variable BAR 						#numDuration

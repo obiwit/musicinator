@@ -7,12 +7,12 @@ import java.io.FileNotFoundException;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-public class ErrorHandling {
+public class ErrorHandler {
 
 	boolean flag;
 	PrintWriter printer;
 
-	public ErrorHandling(String filepath) throws IOException {
+	public ErrorHandler(String filepath) throws IOException {
 		this.flag = false;
 		this.printer = new PrintWriter(new FileOutputStream(new File(filepath)));
 	}
@@ -34,10 +34,12 @@ public class ErrorHandling {
 
 	public boolean errorsDetected() {
 		if (flag) {
-			printer.printf("[%s%s%s] %s\n", "\033[0;31m", printer.toString());
+			//printer.printf("[%s%s%s] %s\n", "\033[0;31m", printer.toString());
+			printer.printf(printer.toString());
 			printer.flush();
 		}else{
-			printer.printf("[%s%s%s] %s\n", "\033[0;32m", "Compilation Started sucessfully");
+			//printer.printf("[%s%s%s] %s\n", "\033[0;32m", "No errors in source code! ;)");
+			printer.printf("No errors in source code! ;)");
 		}
 		return flag;
 

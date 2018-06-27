@@ -15,14 +15,14 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	Scope globalScope;
 	Scope currentScope;
 	Music music;
-	ErrorHandling errors;
+	ErrorHandler errors;
 
 	SemanticAnalysis(Music m) {
 		music = m;
 		globalScope = new Scope();
 		currentScope = globalScope;
 		try {
-			errors = new ErrorHandling("sematicLog.txt");
+			errors = new ErrorHandler("sematicLog.txt");
 		} catch (IOException e) {
 			System.err.println("Could not create log file!");
 		}
@@ -90,13 +90,13 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		currentScope = currentScope.createChildScope();
 
 		// get type of array
-		Type arrayType = currentScope.getVariable(ctx.array.getText()).type();
+		Type arrayType = visit(ctx.expr());
 		if (Type.isSimpleType(arrayType)) {
-			errors.error("Variable \"" + ctx.array.getText() + "\" is not an array!", ctx);
+			errors.error("Variable \"" + ctx.expr().getText() + "\" is not an array!", ctx);
 		}
 
 		// add variable defined in the for declaration to current scope
-		String varName = ctx.newVar.getText();
+		String varName = ctx.WORD().getText();
 		currentScope.setVariable(varName, 
 				new Variable(varName, Type.toSimpleType(arrayType)));
 
@@ -161,9 +161,9 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		return visit(ctx.variable()); 
 	}
 	
-	@Override public Type visitPerExpr(MusicinatorParser.PerExprContext ctx) { 
-		return visit(ctx.performance()); 
-	}
+	// @Override public Type visitPerExpr(MusicinatorParser.PerExprContext ctx) { 
+	// 	return visit(ctx.performance()); 
+	// }
 	
 	@Override public Type visitSeqExpr(MusicinatorParser.SeqExprContext ctx) { 
 		return visit(ctx.sequence()); 
@@ -278,14 +278,16 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	// PERFORMANCE
 	@Override public Type visitPerformance(MusicinatorParser.PerformanceContext ctx) { 
 
-		Type seqType = (ctx.seq == null) ? visit(ctx.sequence()) : visit(ctx.seq);
-		Type instType = visit(ctx.inst);
+		Type seqType = visit(ctx.expr());
+		Type instType = visit(ctx.variable());
 
 		if (seqType != Type.SEQUENCE) 
-			errors.error("Variable \"" + ctx.seq.getText() + "\" is not a sequence!", ctx);
+			errors.error("Variable \"" + ctx.expr().getText() 
+						 + "\" is not a sequence!", ctx);
 		
 		if (instType != Type.INSTRUMENT)
-			errors.error("Variable \"" + ctx.inst.getText() + "\" is not an instrument!", ctx);
+			errors.error("Variable \"" + ctx.variable().getText() 
+						 + "\" is not an instrument!", ctx);
 		
 		return Type.PERFORMANCE;
 

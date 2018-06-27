@@ -48,10 +48,6 @@ public class MusicinatorMain {
       CommonTokenStream main_tokens = new CommonTokenStream(main_lexer);
       MusicinatorParser main_parser = new MusicinatorParser(main_tokens);
 
-      // replace error listener:
-      //parser.removeErrorListeners(); // remove ConsoleErrorListener
-      //parser.addErrorListener(new ErrorHandlingListener());
-
       // begin parsing at main rule
       ParseTree aux_tree = aux_parser.main();
       ParseTree main_tree = main_parser.main();
@@ -70,6 +66,13 @@ public class MusicinatorMain {
          // visit main file's tree;
          SemanticAnalysis semanticVisitor = new SemanticAnalysis(aux.music);
          semanticVisitor.visit(main_tree);
+
+         // check there were no semantic errors
+         if (semanticVisitor.errors.errorsDetected()) {
+            System.exit(1);
+         }
+         
+         // start compilation
          Compiler compilerVisitor = new Compiler(aux.music, semanticVisitor.globalScope, filename);
          compilerVisitor.visit(main_tree);
       }

@@ -21,7 +21,7 @@ public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
 
 	private final STGroup group;
 	private PrintWriter printer;
-	//private ErrorHandling errors;
+	//private ErrorHandler errors;
 
 	private int varNum;
 	private String currentIndentation;
@@ -37,7 +37,7 @@ public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
 		group = new STGroupFile("generator.stg");
 
 		try {
-			//errors = new ErrorHandling("logfile.txt");
+			//errors = new ErrorHandler("logfile.txt");
 			printer = new PrintWriter(new FileOutputStream(new File(dstFile))); 
 		} catch (IOException e) {
 			System.err.println("Couldn't write to \"" + dstFile + "\"!");
@@ -95,29 +95,10 @@ System.out.println("Started Compilation (๑˃̵ᴗ˂̵)و");
 
 	}
 
+	// TODO remove method
 	@Override public Variable visitInstructions(MusicinatorParser.InstructionsContext ctx) {
 printer.println(currentIndentation+"############################ LINE = "+ctx.start.getLine());	
-
-		// if (ctx.play() != null) {
-		// 	Variable v = visit(ctx.play());
-
-		// 	String addnotesIndentation = currentIndentation;
-
-		// 	// if play was applied to a performance array, instead of
-		// 	// adding only a performance, must add every perfomance iterated
-		// 	// over in the for loop that play created 
-		// 	if (v.type() == Type.PERFORMANCE_ARRAY)
-		// 		addnotesIndentation += "\t";
-
-		// 	ST gen = group.getInstanceOf("u_addnotes");
-		// 	gen.add("indentation", addnotesIndentation);
-		// 	gen.add("varname", v.name());
-		// 	printer.println(gen.render());
-
-		// 	return v;
-		// } else {
-			return visitChildren(ctx);
-		// }
+		return visitChildren(ctx);
 	}
 	
 	// ASSIGN
@@ -142,19 +123,22 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		// generate for loop
 		ST gen = group.getInstanceOf("forloop");
 		gen.add("indentation", currentIndentation);
-		gen.add("instance", ctx.newVar.getText());
-		gen.add("array", ctx.array.getText());
+		gen.add("instance", ctx.WORD().getText());
+		gen.add("array", visit(ctx.expr()).name());
 		printer.println(gen.render());
 
 		// update indentation level and visit children
 		currentIndentation += "\t";
-		Variable v = visitChildren(ctx); 
+		Iterator<MusicinatorParser.InstructionsContext> forIntructions = ctx.forBody.iterator();
+		while(forIntructions.hasNext()) {
+			visit(forIntructions.next()); 
+		}
 
 		// restore indentation level and return to parent scope
 		currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
 		currentScope = currentScope.getParentScope();
 
-		return v;
+		return new Variable("", Type.NONE);
 	}
 	
 	// IF
@@ -478,9 +462,9 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		return visit(ctx.variable());
 	}
 	
-	@Override public Variable visitPerExpr(MusicinatorParser.PerExprContext ctx) { 
-		return visit(ctx.performance());
-	}
+	// @Override public Variable visitPerExpr(MusicinatorParser.PerExprContext ctx) { 
+	// 	return visit(ctx.performance());
+	// }
 	
 	@Override public Variable visitSeqExpr(MusicinatorParser.SeqExprContext ctx) { 
 		return visit(ctx.sequence());
@@ -607,7 +591,7 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 		gen.add("first", visit(ctx.e1).name());
-		gen.add("last", visit(ctx.e1).name());
+		gen.add("last", visit(ctx.e2).name());
 		printer.println(gen.render());
 
 		return new Variable(varName, Type.NUMBER_ARRAY);
@@ -671,10 +655,9 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		ST gen = group.getInstanceOf("u_setinstrument");
 		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
-		String sequence = (ctx.seq == null)? 
-							visit(ctx.sequence()).name() : visit(ctx.seq).name();
+		String sequence = visit(ctx.expr()).name();
 		gen.add("seq", sequence);
-		gen.add("instrument", ctx.inst.getText());
+		gen.add("instrument", ctx.variable().getText());
 		printer.println(gen.render());
 
 		// create performance, with 'flag' values for start & repeat times
