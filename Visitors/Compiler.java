@@ -23,6 +23,7 @@ public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
 	private PrintWriter printer;
 	private int varNum;
 	private String currentIndentation;
+	private ErrorHandling errors;
 
 	Compiler(Music m, Scope s, String dstFile) {
 		music = m;
@@ -33,12 +34,14 @@ public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
 		currentIndentation = "";
 
 		group = new STGroupFile("generator.stg");
+		errors = new ErrorHandling("logfile.txt");
 
 		try {
 			printer = new PrintWriter(new FileOutputStream(new File(dstFile))); 
 		} catch (FileNotFoundException e) {
-			System.out.println("Couldn't write to \"" + dstFile + "\"!");
-			System.exit(1);
+			
+			errors.error("Couldn't write to \"" + dstFile + "\"!");
+			
 		}
 	}
 
@@ -685,8 +688,10 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		return new Variable(varName, Type.BOOL);
 	}
 
-	private void error(String details, ParserRuleContext ctx) {
+
+
+	/* private void error(String details, ParserRuleContext ctx) {
 		System.err.println("ERROR! Line " + ctx.start.getLine() + ": " + details);
 		System.exit(1);
-	}
+	} */
 }

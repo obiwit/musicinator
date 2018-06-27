@@ -14,11 +14,13 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	Scope globalScope;
 	Scope currentScope;
 	Music music;
+	ErrorHandling errors;
 
 	SemanticAnalysis(Music m) {
 		music = m;
 		globalScope = new Scope();
 		currentScope = globalScope;
+		errors = new ErrorHandling(semanticanalysis.txt);
 	}
 	
 	// ASSIGN
@@ -27,9 +29,9 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		String varName = ctx.WORD().getText();
 
 		if (currentScope.isVariable(varName)) {
-			error("Variable \"" + varName + "\" already exists!", ctx);
+			errors.error("Variable \"" + varName + "\" already exists!", ctx);
 		} else if (music.isReservedWord(varName)) {
-			error("\"" + varName + "\" is a reserved word or an instrument name!", ctx);
+			errors.error("\"" + varName + "\" is a reserved word or an instrument name!", ctx);
 		}
 
 		// add new scope entry
@@ -40,14 +42,14 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 
 		// compare declared and written types
 		if(!declaredVarType.equalsIgnoreCase(varType.name())) {
-			error(declaredVarType.replace("_", " ") + " \"" +  ctx.expr().getText() 
+			errors.error(declaredVarType.replace("_", " ") + " \"" +  ctx.expr().getText() 
 				  + "\" is not of type " + varType.name().toLowerCase().replace("_", " ")
 				  + "!", ctx);
 		}
 
 		// check defined var is not an instrument
 		if (varType == Type.INSTRUMENT) {
-			error("Can only define an instrument in aux file!", ctx);
+			errors.error("Can only define an instrument in aux file!", ctx);
 		}
 
 //		System.out.println("["+ctx.start.getLine()+"] Set variable \""+varName+"\" of type "+varType.name());
@@ -64,7 +66,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		// get type of array
 		Type arrayType = currentScope.getVariable(ctx.array.getText()).type();
 		if (Type.isSimpleType(arrayType)) {
-			error("Variable \"" + ctx.array.getText() + "\" is not an array!", ctx);
+			errors.error("Variable \"" + ctx.array.getText() + "\" is not an array!", ctx);
 		}
 
 		// add variable defined in the for declaration to current scope
@@ -97,7 +99,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	@Override public Type visitSimplePlay(MusicinatorParser.SimplePlayContext ctx) {
 		Type perType = visit(ctx.per);
 		if (perType != Type.PERFORMANCE && perType != Type.PERFORMANCE_ARRAY) {
-			error("Variable \"" + ctx.per.getText()
+			errors.error("Variable \"" + ctx.per.getText()
 				  + "\" is not a performance nor a performance array!", ctx);
 		}
 		return perType;
@@ -106,14 +108,14 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	@Override public Type visitTimedPlay(MusicinatorParser.TimedPlayContext ctx) {
 		Type perType = visit(ctx.play());
 		Type timeType = visit(ctx.expr());
-		// TODO sure we want this error?
+		// TODO sure we want this errors.error?
 		if (timeType == Type.NUMBER_ARRAY) {
 			if (perType == Type.PERFORMANCE_ARRAY) {
-				error("Invalid play comand! Play doesn't support both performance "
+				errors.error("Invalid play comand! Play doesn't support both performance "
 					  + "and number arrays simultaneously!", ctx);
 			}
 		} else if (timeType != Type.NUMBER) { // TODO don't forget (timeType != Type.NUMBER_ARRAY && ... if you remove above
-			error("Variable \"" + ctx.expr().getText()
+			errors.error("Variable \"" + ctx.expr().getText()
 				  + "\" is not a number nor a number array!", ctx);
 		}
 
@@ -122,7 +124,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	@Override public Type visitLoopPlay(MusicinatorParser.LoopPlayContext ctx) {
 		Type perType = visit(ctx.expr());
 		if (perType != Type.PERFORMANCE && perType != Type.PERFORMANCE_ARRAY) {
-			error("Variable \"" + ctx.expr().getText()
+			errors.error("Variable \"" + ctx.expr().getText()
 				  + "\" is not a performance nor a performance array!", ctx);
 		}
 		return perType;
@@ -153,12 +155,12 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		// guarantee first operand is Type.NUMBER, Type.SEQUENCE or Type.PERFORMANCE
 		Type e1Type = visit(ctx.e1);
 		if (e1Type != Type.NUMBER && e1Type != Type.SEQUENCE && e1Type != Type.PERFORMANCE)
-			error("Variable \"" + ctx.e1.getText() + "\" is not a number, sequence"
+			errors.error("Variable \"" + ctx.e1.getText() + "\" is not a number, sequence"
 				  +" or performance!", ctx);
 
 		// guarantee second operand is Type.NUMBER
 		if (visit(ctx.e2) != Type.NUMBER)
-			error("Variable \"" + ctx.e2.getText() + "\" is not a number!", ctx);
+			errors.error("Variable \"" + ctx.e2.getText() + "\" is not a number!", ctx);
 		
 		return visit(ctx.e1); 
 	}
@@ -167,12 +169,12 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		// guarantee first operand is Type.NUMBER, Type.SEQUENCE or Type.PERFORMANCE
 		Type e1Type = visit(ctx.e1);
 		if (e1Type != Type.NUMBER && e1Type != Type.SEQUENCE && e1Type != Type.PERFORMANCE)
-			error("Variable \"" + ctx.e1.getText() + "\" is not a number, sequence"
+			errors.error("Variable \"" + ctx.e1.getText() + "\" is not a number, sequence"
 				  +" or performance!", ctx);
 
 		// guarantee second operand is Type.NUMBER
 		if (visit(ctx.e2) != Type.NUMBER)
-			error("Variable \"" + ctx.e2.getText() + "\" is not a number!", ctx);
+			errors.error("Variable \"" + ctx.e2.getText() + "\" is not a number!", ctx);
 		
 		return visit(ctx.e1); 
 	}
@@ -182,7 +184,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		// get and check Type of first child
 		Type firstType = visit(ctx.expr(0));
 		if(!Type.isSimpleType(firstType)) {
-			error("Invalid array type! Items must be of type number,"
+			errors.error("Invalid array type! Items must be of type number,"
 				  + " sequence, performance or instrument!", ctx);
 		}
 
@@ -191,7 +193,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 
 		for (int i = 1; i < exprsNum; i++) {
 			if (visit(ctx.expr(i)) != firstType) {
-				error("All items of array \"" + ctx.getText()
+				errors.error("All items of array \"" + ctx.getText()
 					  + "\" must be of the same type!", ctx);
 			}
 		}
@@ -208,7 +210,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 
 		for (int i = 1; i < exprsNum; i++) {
 			if (Type.toSimpleType(visit(ctx.expr(i))) != arrayType) {
-				error("All items of array \"" + ctx.getText()
+				errors.error("All items of array \"" + ctx.getText()
 					  + "\" must be of the same type!", ctx);
 			}
 		}
@@ -219,9 +221,9 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	@Override public Type visitNumRangeArray(MusicinatorParser.NumRangeArrayContext ctx) { 
 		// guarantee exprs are Type.NUMBER
 		if (visit(ctx.e1) != Type.NUMBER)
-			error("Variable \"" + ctx.e1.getText() + "\" is not a number!", ctx);
+			errors.error("Variable \"" + ctx.e1.getText() + "\" is not a number!", ctx);
 		if (visit(ctx.e2) != Type.NUMBER)
-			error("Variable \"" + ctx.e2.getText() + "\" is not a number!", ctx);
+			errors.error("Variable \"" + ctx.e2.getText() + "\" is not a number!", ctx);
 
 		return Type.NUMBER_ARRAY; 
 	}
@@ -241,7 +243,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 
 		for (int i = 0; i < sequencesNum; i++) {
 			if (visit(ctx.sequence(i)) != Type.SEQUENCE)
-				error("Variable \"" + ctx.sequence(i) + "\" is not a sequence!", ctx);
+				errors.error("Variable \"" + ctx.sequence(i) + "\" is not a sequence!", ctx);
 		}
 
 		return Type.SEQUENCE; 
@@ -254,10 +256,10 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		Type instType = visit(ctx.inst);
 
 		if (seqType != Type.SEQUENCE) 
-			error("Variable \"" + ctx.seq.getText() + "\" is not a sequence!", ctx);
+			errors.error("Variable \"" + ctx.seq.getText() + "\" is not a sequence!", ctx);
 		
 		if (instType != Type.INSTRUMENT)
-			error("Variable \"" + ctx.inst.getText() + "\" is not an instrument!", ctx);
+			errors.error("Variable \"" + ctx.inst.getText() + "\" is not an instrument!", ctx);
 		
 		return Type.PERFORMANCE;
 
@@ -281,7 +283,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		Type varType = visit(ctx.variable());
 
 		if (varType != Type.SEQUENCE && varType != Type.PERFORMANCE) {
-			error("Variable \"" + ctx.variable().getText()
+			errors.error("Variable \"" + ctx.variable().getText()
 				  + "\" is neither a sequence nor a performance!", ctx);
 		} 
 
@@ -298,16 +300,16 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 			varType = currentScope.getVariable(varName).type();
 
 		} else if (!music.isInstrument(varName)) {
-			error("Variable \"" + varName + "\" is not defined!", ctx);
+			errors.error("Variable \"" + varName + "\" is not defined!", ctx);
 		}
 
 		if (ctx.OPEN_SB() != null) {
 
 			if (Type.isSimpleType(varType)) {
-				error("Variable \"" + varName + "\" is not an array!", ctx);
+				errors.error("Variable \"" + varName + "\" is not an array!", ctx);
 			}
 			if (visit(ctx.expr()) != Type.NUMBER) {
-				error("Array index must be a number and variable \"" 
+				errors.error("Array index must be a number and variable \"" 
 					  + ctx.expr().getText() + "\" is not a number!", ctx);
 			}
 
@@ -326,14 +328,14 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 			return visit(ctx.condition());
 		}
 		if(visit(ctx.e1) != Type.NUMBER || visit(ctx.e2) != Type.NUMBER) {
-			error("Condition operands must be numbers!", ctx);
+			errors.error("Condition operands must be numbers!", ctx);
 		}
 
 		return Type.BOOL;
 	}
 
-	private void error(String details, ParserRuleContext ctx) {
+	/* private void errors.error(String details, ParserRuleContext ctx) {
 		System.err.println("ERROR! Line " + ctx.start.getLine() + ": " + details);
 		System.exit(1);
-	}
+	} */
 }
