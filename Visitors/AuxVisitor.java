@@ -35,7 +35,12 @@ public class AuxVisitor extends AuxinatorParserBaseVisitor<Instrument> {
         String word = ctx.WORD().getText();	
         	
         Instrument inst = visit(ctx.instrumentDef());	
+<<<<<<< HEAD
         inst.name(word);	
+=======
+
+		inst.name(word);	
+>>>>>>> 02f0506d2d0dbaf70f9bd36f5b6c5578ea4cfab5
         /*
 
         Defining an instrument that can be based on another instrument, -1 is a generic value to aid on another
@@ -48,7 +53,7 @@ public class AuxVisitor extends AuxinatorParserBaseVisitor<Instrument> {
         else{	
             music.addInstrument(word, inst);	
         }			
-        return visitChildren(ctx); 	
+        return inst; 	
     }	
     	
     @Override public Instrument visitDefInheritance(AuxinatorParser.DefInheritanceContext ctx) { 	
@@ -71,8 +76,8 @@ public class AuxVisitor extends AuxinatorParserBaseVisitor<Instrument> {
             System.err.println("ERROR: the instrument \""+word+"\" is not defined!");	
             System.exit(1);        	
         }		
-        Instrument inst = new Instrument("DefWord", -1);	
-        inst.concatenate(music.getInstrument(word), -1);	
+        Instrument inst = new Instrument("DefWord", -1);
+        inst.concatenate(music.getInstrument(word), -1);
         return inst; 	
     }	
     	
