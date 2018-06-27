@@ -49,13 +49,12 @@ public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
 	@Override public Variable visitMain(MusicinatorParser.MainContext ctx) {
 System.out.println("Started Compilation (๑˃̵ᴗ˂̵)و"); 
 
-		int maxtracks = ctx.instructions().size();
 		printer.println(group.getInstanceOf("header").render()+"\n"); //Python imports
 
 		// add global definitions
 		ST gen = group.getInstanceOf("createmidi");
 		gen.add("varbpm", music.bpm());				//Initializing Midi
-		gen.add("vartrack", maxtracks);
+		gen.add("vartrack", 1000);
 		printer.println(gen.render()+"\n");
 
 		// add all instruments as arrays 
@@ -99,26 +98,26 @@ System.out.println("Started Compilation (๑˃̵ᴗ˂̵)و");
 	@Override public Variable visitInstructions(MusicinatorParser.InstructionsContext ctx) {
 printer.println(currentIndentation+"############################ LINE = "+ctx.start.getLine());	
 
-		if (ctx.play() != null) {
-			Variable v = visit(ctx.play());
+		// if (ctx.play() != null) {
+		// 	Variable v = visit(ctx.play());
 
-			String addnotesIndentation = currentIndentation;
+		// 	String addnotesIndentation = currentIndentation;
 
-			// if play was applied to a performance array, instead of
-			// adding only a performance, must add every perfomance iterated
-			// over in the for loop that play created 
-			if (v.type() == Type.PERFORMANCE_ARRAY)
-				addnotesIndentation += "\t";
+		// 	// if play was applied to a performance array, instead of
+		// 	// adding only a performance, must add every perfomance iterated
+		// 	// over in the for loop that play created 
+		// 	if (v.type() == Type.PERFORMANCE_ARRAY)
+		// 		addnotesIndentation += "\t";
 
-			ST gen = group.getInstanceOf("u_addnotes");
-			gen.add("indentation", addnotesIndentation);
-			gen.add("varname", v.name());
-			printer.println(gen.render());
+		// 	ST gen = group.getInstanceOf("u_addnotes");
+		// 	gen.add("indentation", addnotesIndentation);
+		// 	gen.add("varname", v.name());
+		// 	printer.println(gen.render());
 
-			return v;
-		} else {
+		// 	return v;
+		// } else {
 			return visitChildren(ctx);
-		}
+		// }
 	}
 	
 	// ASSIGN
@@ -255,6 +254,22 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 	}
 	
 	// PLAY
+	private void insertInMIDI(Variable per, String instanceName) { // adds performance to MIDI
+
+		String addnotesIndentation = currentIndentation;
+
+		// if play was applied to a performance array, instead of
+		// adding only a performance, must add every perfomance iterated
+		// over in the for loop that play created 
+		if (per.type() == Type.PERFORMANCE_ARRAY)
+			addnotesIndentation += "\t";
+
+		ST gen = group.getInstanceOf("u_addnotes");
+		gen.add("indentation", addnotesIndentation);
+		gen.add("varname", instanceName);
+		printer.println(gen.render());
+	}
+
 	@Override public Variable visitSimplePlay(MusicinatorParser.SimplePlayContext ctx) {
 		// get passed performance and repeatTimes
 		Variable per = visit(ctx.per);
@@ -288,10 +303,17 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 			if (ctx.SEQUENTIALLY() != null) {
 				generateSimplePlay(instanceName, repeatTimes, startTime);
 
+				String increment = "_" + varNum++;
 				gen = group.getInstanceOf("u_duration");
 				gen.add("indentation", currentIndentation);
-				gen.add("varname", startTime);
+				gen.add("varname", increment);
 				gen.add("performance", instanceName);
+				printer.println(gen.render());
+
+				gen = group.getInstanceOf("vardec");
+				gen.add("indentation", currentIndentation);
+				gen.add("varname", startTime);
+				gen.add("value", startTime+"+"+increment);
 				printer.println(gen.render());
 
 			}
@@ -310,7 +332,11 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 			generateSimplePlay(instanceName, repeatTimes, "0");
 		}
 
-		return new Variable(instanceName, per.type());
+		if(!(ctx.getParent() instanceof MusicinatorParser.TimedPlayContext)) {
+			insertInMIDI(per, instanceName);
+		}
+
+		return per;
 	}
 
 	private void generateSimplePlay(String varName, String repeatTimes, String startTime) {
@@ -372,23 +398,24 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 			generateTimedPlay(instanceName, startVar);
 		}
 
-		return new Variable(instanceName, per.type());
+		insertInMIDI(per, instanceName);
+
+		return per;
 	}
 	
 	private void generateTimedPlay(String varName, Variable start) {
-		// change start time
-		ST gen = group.getInstanceOf("vardec");
+		// change start time, by adding offset to original time
+		// (to allow sequential play)
+		ST gen = group.getInstanceOf("u_offsetstart");
 		gen.add("indentation", currentIndentation);
-		gen.add("varname", varName+"[0]");
-
-		// add offset to original time (to allow sequential play)
-		gen.add("value", varName+"[0]+");
+		gen.add("varname", varName);
+		gen.add("performance", varName);
 
 		// if start var not number arrar, add [] around it
 		if (start.type() == Type.NUMBER_ARRAY) {
-			gen.add("value", start.name());
+			gen.add("offset", start.name());
 		} else {
-			gen.add("value", "["+start.name()+"]");
+			gen.add("offset", "["+start.name()+"]");
 		}
 		printer.println(gen.render());
 

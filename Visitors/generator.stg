@@ -2,7 +2,6 @@ header() ::= <<
 from midiutil import MIDIFile
 from math import ceil
 import sys
-import copy
 >>
 
 createmidi(varbpm, vartrack) ::= <<
@@ -90,7 +89,7 @@ def modPitch(toMod, ModNumber):
             modded.append(newtup)
         return modded
     else:
-        temp = copy.deepcopy(toMod)
+        temp = toMod
         for tup in toMod[1]:
             newPitch = tup[0] + ModNumber
             try:
@@ -114,7 +113,7 @@ def modTempo(toMod, ModNumber):
             modded.append(newtup)
         return modded
     else:
-        temp = copy.deepcopy(toMod)
+        temp = toMod
         for tup in toMod[1]:
             newTempo = tup[1] * ModNumber
             newtup = (tup[0], newTempo,tup[2],tup[3])
@@ -164,6 +163,13 @@ def preploop(perf):
     global longest #we want the global scope of this variable
     repeats = longest/duration(perf[1])
     perf[2] = ceil(repeats)
+    return perf
+
+def offsetstart(perf, offset):
+    originaltime = perf[0][0]
+    perf[0] = offset
+    for i in range(0,len(perf[0])):
+        perf[0][i] += originaltime
     return perf
 
 >>
@@ -220,6 +226,10 @@ u_prepplay(indentation, varname) ::= <<
 
 u_preploop(indentation, varname) ::= <<
 <indentation><varname> = preploop(<varname>)
+>>
+
+u_offsetstart(indentation, varname, performance, offset) ::= <<
+<indentation><varname> = offsetstart(<performance>, <offset>)
 >>
 
 forloop(indentation, instance, array) ::= <<
