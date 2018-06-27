@@ -10,9 +10,10 @@ public class Instrument {
         value = new int[NOTERANGE];        	
         for (int i = 0; i < NOTERANGE; i++)        	
             value[i] = v;        	
-    }		
+    }
+
     public void concatenate(Instrument inst, int discriminant){	
-        for(int i = 1; i < NOTERANGE; i++){	
+        for(int i = 0; i < NOTERANGE; i++){	
             int val = inst.value(i);	
             if(val != discriminant){	
                 value[i] = val;	
