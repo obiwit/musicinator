@@ -142,6 +142,13 @@ def setinstrument(seq,nome):
         newseq.append(new)
     return newseq
 
+def playPerformace(perf):
+    global longest #we want the global scope of this variable
+    perf_duration = max(perf[0])+duration(perf[1]) * perf[3]
+    if perf_duration > longest:
+        longest = perf_duration
+    addnotes(perf)
+
 >>
 
 exportfile(name) ::= <<

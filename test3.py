@@ -7,6 +7,7 @@ bpm = 60 #to be defined by user
 vartrack = 2 #to be defined by user
 
 
+
 ####
 toadd = [[1,10,15,25,36],[(64,0.5,2,3),(62,0.25,25,4)],1]
 toadd2 = [[1,10,15,25,36],[(64,0.5,2,3),(62,0.25,25,4)]]
@@ -145,6 +146,14 @@ def add(varIn1,varIn2):
         return varIn1+varIn2
     else:
         return modPitch(varIn1,varIn2)
+
+def playPerformace(perf):
+    global longest #we want the global scope of this variable
+    perf_duration = max(perf[0])+duration(perf[1]) * perf[3]
+    if perf_duration > longest:
+        longest = perf_duration
+    addnotes(perf)
+
 
 
 addnotes(toadd)
