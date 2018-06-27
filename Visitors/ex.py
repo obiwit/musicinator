@@ -1,4 +1,5 @@
 from midiutil import MIDIFile
+from math import ceil
 import sys
 
 bpm = 160
@@ -158,7 +159,7 @@ def prepplay(perf):
 def preploop(perf):
     global longest #we want the global scope of this variable
     repeats = longest/duration(perf[1])
-    perf[2]=repeats
+    perf[2] = ceil(repeats)
     return perf
 
 
