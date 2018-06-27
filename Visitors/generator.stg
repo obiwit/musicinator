@@ -69,6 +69,8 @@ def duration(toCheck):
         size = len(toCheck)-1
         return toCheck[0][3] + toCheck[size][3] + toCheck[size][1]
     else:
+        if len(toCheck[1]) == 0:
+            return 0
         size = len(toCheck[1]) - 1
         return toCheck[1][0][3] + toCheck[1][size][3] + toCheck[1][size][1]
 
