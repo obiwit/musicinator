@@ -5,13 +5,14 @@ import sys
 
 bpm = 60 #to be defined by user
 vartrack = 2 #to be defined by user
-
+longest = 0
 
 
 ####
 toadd = [[1,10,15,25,36],[(64,0.5,2,3),(62,0.25,25,4)],1]
 toadd2 = [[1,10,15,25,36],[(64,0.5,2,3),(62,0.25,25,4)]]
 toadd3 = [(64,0.5,2,3),(62,0.25,25,4)]
+toadd4 = [[0], [(56, 0.5, 1, 0), (-37, 0.5, 1, 0.5), (61, 0.5, 1, 1.0), (-37, 0.5, 1, 1.5), (68, 1.2, 1, 2.0), (68, 1.2, 1, 3.2), (68, 0.8, 1, 4.4), (64, 0.5, 1, 5.2), (-37, 0.5, 1, 5.7), (69, 0.5, 1, 6.2), (-37, 0.5, 1, 6.7), (63, 1.2, 1, 7.2), (63, 1.2, 1, 8.4), (63, 0.8, 1, 9.6)], 4]
 
 midi = MIDIFile(numTracks=1500, file_format=1) #it takes the number of tracks as a parameter
 midi.addTempo(0,0,bpm) #adding tempo
@@ -24,13 +25,14 @@ def addnotes(notes):
     time = notes[0] #When the sequence will start time wise
     temp = 1 #default instrument
     global currtrack #we want the global scope of this variable
-
+    Fduration(notes)
 
     repeat_times = (int)(notes[len(notes)-1])
     
     for x in range(len(time)):
-        initialTime = time[x]
+        initialTime = time[x] - Fduration(notes[1])
         for _ in range(repeat_times):
+            initialTime += Fduration(notes[1])
             for i in range(0, len(notes[1])):
                 try:
                     note = notes[1][i][0] #getting the note
@@ -52,11 +54,12 @@ def addnotes(notes):
                     pass
                 
                 midi.addNote(currtrack,0,note,toInsert,duration,100)
+                
 
                 print("Added note {}, with instument {} with a duration of {} on time {}, on channel {}".format(note, instrument, duration, (toInsert*(85/bpm)), currtrack))
         currtrack += 1
 
-def duration(toCheck):
+def Fduration(toCheck):
     if type(toCheck[0]) is tuple:
         size = len(toCheck)-1
         return toCheck[0][3] + toCheck[size][3] + toCheck[size][1]
@@ -120,7 +123,7 @@ def extendseq(original, toextend):
     else:
         for tup in original:
             modded.append(tup)
-        time = duration(original)
+        time = Fduration(original)
         for tup in toextend:
             newtup = (tup[0], tup[1], tup[2], time)
             modded.append(newtup)
@@ -141,39 +144,25 @@ def createseq(seq):
         newseq = extendseq(newseq,seq[i])
     return newseq
 
-def add(varIn1,varIn2):
-    if varIn1.isnumeric():
-        return varIn1+varIn2
-    else:
-        return modPitch(varIn1,varIn2)
 
 def playPerformace(perf):
     global longest #we want the global scope of this variable
-    perf_duration = max(perf[0])+duration(perf[1]) * perf[3]
+    perf_duration = max(perf[0])+Fduration(perf[1]) * perf[2]
     if perf_duration > longest:
         longest = perf_duration
     addnotes(perf)
 
-def loop(seq)
+def loop(seq):
     global longest #we want the global scope of this variable
-    repeats = longest/duration(seq[1])
+    repeats = longest/Fduration(seq[1])
     seq[2]=repeats
     return seq
 
 
 
-addnotes(toadd)
-print("DURATION////////////////////////////////")
-print(duration(toadd2))
-print(duration(toadd3))
-print("/////////////////////////////////////////")
-print("MODTEMPO////////////////////////////////")
-print(modTempo(toadd2, 2))
-print(modTempo(toadd3, 1/2))
-print("/////////////////////////////////////////")
-print(modPitch(toadd3, 12))
-print(modPitch(toadd2, 24))
-print(add(1,2))
+addnotes(toadd4)
+
+
 
 
 with open("test.mid", 'wb') as file: #writting binary file
