@@ -192,7 +192,7 @@ start_times = 0->3;
 //    start_times = [0, 1, 2, 3];
 \end{lstlisting}
 
-Para se aceder a um instrumento, a notação de parênteses retos, começando a contar no 0, é usada. A notação de intervalo, com dois pontos (\texttt{:}) é também suportada.
+Para se aceder a um instrumento, a notação de parênteses retos, começando a contar no 0, é usada. %A notação de intervalo, com dois pontos (\texttt{:}) é também suportada.
 \begin{lstlisting} 
 performance[] p = [
     [D{1.5} D{0.5}   E  D G F#{2}] on piano, 
@@ -202,10 +202,9 @@ performance[] p = [
 // aceder ao primeiro elemento
 performance intro = p[0];
 
-// exemplo da notacao de intervalo
-performance[] q = p[0:1] and [C5{1.5} C5{0.5} B G A G{3}] on violin and p[2:];
 \end{lstlisting}
-
+% // exemplo da notacao de intervalo
+% performance[] q = p[0:1] and [C5{1.5} C5{0.5} B G A G{3}] on violin and p[2:];
 
 \section{Geração de aúdio} \label{audio}
 \subsection{Reprodução}
@@ -373,7 +372,7 @@ sequence[] melody_lines = [
 // definir array de instrumentos
 instrument[] band = [piano, guitar, bass, drums];
 
-play melody_lines/*sequentially*/ on band; // ilegal!!
+play melody_lines /*sequentially*/ on band; // ilegal!!
 \end{lstlisting}
 
 Para se obter este tipo de resultados, têm que ser utilizadas instruções de repetição (ver secção \ref{flux}).
@@ -606,7 +605,21 @@ instrument thing: B0-C4 -> drums,
 % 80	Ab4	Mute Triangle
 % 81	A4	Open Triangle	
 
+
+\section{Especificação da linguagem destino} \label{target}
+\subsection{Linguagem destino}
+A linguagem destino do compilador foi Python, porque permite um maior foco na linguagem e no compilador, uma vez que facilita a manipulação de ficheiros do tipo MIDI através da biblioteca MIDIUtil.
+
+Na geração de código utiliza-se, para cada performance, uma lista bastante detalhada, que permite a inserção modular de qualquer sequência de notas musicais ou acordes, suportando um número arbitrário de repetições e uma grande flexibilidade no tempo de inicio de reprodução da performance. Esta lista é parâmetro de entrada da função \textit{addnotes} que permite a inserção das notas, com os instrumentos certos no sítio certo da timeline. Uma lista exemplo é a seguinte:
+
+\begin{lstlisting}
+toadd = [[1,10,15,25,36], [(64,0.5,2,3),(62,0.25,25,4)], 3];
+\end{lstlisting}
+
+O primeiro elemento da lista é um \textit{Array} com os start times da performance. No exemplo acima, o array implica que a performance comece a tocar nos segundos 1, 10, 15, 25 e 36. Ainda no mesmo exemplo, o segundo elemento representa a descrição das notas que são \texttt{tuplos} constituídos da seguinte maneira: (nota, duração, instrumento, tempo de entrada relativo ao start time). O último elemento é o número de vezes que a performance é repetida em cada momento de inserção (com 5 start times, a performance será reproduzida 15 vezes).
+
 \clearpage
+
 \section{Exemplos (TODO)} \label{example}
 \subsection{Parabéns}
 \begin{lstlisting}[caption=parabens.auxiliar]
