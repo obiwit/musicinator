@@ -1,20 +1,25 @@
-header() ::= <<
 from midiutil import MIDIFile
+from itertools import repeat
 from math import ceil
 import sys
-import copy
->>
 
-createmidi(varbpm, vartrack) ::= <<
-bpm = <varbpm>
-midi = MIDIFile(numTracks=<vartrack>, file_format=1)
-midi.addTempo(0,0,bpm)
-currchannel = 0
+
+bpm = 60 #to be defined by user
+vartrack = 2 #to be defined by user
 longest = 0
-ch_inst[]
->>
 
-body() ::= <<
+toadd = [[1,10,15,25,36],[(64,0.5,2,3),(62,0.25,25,4)],1]
+toadd2 = [[1,10,15,25,36],[(64,0.5,2,3),(62,0.25,25,4)]]
+toadd3 = [(64,0.5,2,3),(62,0.25,25,4)]
+toadd4 = [[0], [(56, 0.5, 1, 0), (-37, 0.5, 1, 0.5), (61, 0.5, 1, 1.0), (-37, 0.5, 1, 1.5), (68, 1.2, 1, 2.0), (68, 1.2, 1, 3.2), (68, 0.8, 1, 4.4), (64, 0.5, 1, 5.2), (-37, 0.5, 1, 5.7), (69, 0.5, 1, 6.2), (-37, 0.5, 1, 6.7), (63, 1.2, 1, 7.2), (63, 1.2, 1, 8.4), (63, 0.8, 1, 9.6)], 4]
+toadd5 = [[0], [(56, 0.5, 126, 0), (-37, 0.5, 126, 0.5), (61, 0.5, 126, 1.0), (-37, 0.5, 126, 1.5), (68, 1.2, 126, 2.0), (68, 1.2, 126, 3.2), (68, 0.8, 126, 4.4), (64, 0.5, 126, 5.2), (-37, 0.5, 126, 5.7), (69, 0.5, 126, 6.2), (-37, 0.5, 126, 6.7), (63, 1.2, 126, 7.2), (63, 1.2, 126, 8.4), (63, 0.8, 126, 9.6)], 4]
+toadd6 = [[0], [(56, 0.5, 1, 0), (-37, 0.5, 2, 0.5), (61, 0.5, 3, 1.0), (-37, 0.5, 4, 1.5), (68, 1.2, 1, 2.0), (68, 1.2, 5, 3.2), (68, 0.8, 1, 4.4), (64, 0.5, 1, 5.2), (-37, 0.5, 1, 5.7), (69, 0.5, 1, 6.2), (-37, 0.5, 1, 6.7), (63, 1.2, 1, 7.2), (63, 1.2, 1, 8.4), (63, 0.8, 1, 9.6)], 4]
+midi = MIDIFile(numTracks=5, file_format=1, removeDuplicates=False, deinterleave=False) #it takes the number of tracks as a parameter
+midi.addTempo(0,0,bpm) #adding tempo
+currchannel = 0 #what channel are we writting on
+
+ch_inst = []
+
 def addnotes(notes):
     time = notes[0] #When the sequence will start time wise
     temp = -1 
@@ -45,7 +50,6 @@ def addnotes(notes):
                 midi.addNote(1,currchannel,note,toInsert,noteDur,100)
                 print("Added note {}, with instument {} with a duration of {} on time {}, on channel {}".format(note, instrument, noteDur, (toInsert*(85/bpm)), currchannel))
 
-
 def checkChannel(instrument):
     global ch_inst
     try:
@@ -62,9 +66,6 @@ def checkChannel(instrument):
     elif instrument not in ch_inst:
         ch_inst.append(instrument)
         return ch_inst.index(instrument)
-
-
-
 
 def getInt(varstr):
     while True:
@@ -84,8 +85,6 @@ def duration(toCheck):
         size = len(toCheck)-1
         return toCheck[0][3] + toCheck[size][3] + toCheck[size][1]
     else:
-        if len(toCheck[1]) == 0:
-            return 0
         size = len(toCheck[1]) - 1
         return toCheck[1][0][3] + toCheck[1][size][3] + toCheck[1][size][1]
 
@@ -95,7 +94,7 @@ def modPitch(toMod, ModNumber):
         for tup in toMod:
             newPitch = tup[0] + ModNumber
             try:
-                if newPitch \< 0:
+                if newPitch < 0:
                     raise ValueError
             except ValueError:
                 print("Modulated note below 0, expect silence")
@@ -104,11 +103,11 @@ def modPitch(toMod, ModNumber):
             modded.append(newtup)
         return modded
     else:
-        temp = copy.deepcopy(toMod)
+        temp = toMod
         for tup in toMod[1]:
             newPitch = tup[0] + ModNumber
             try:
-                if newPitch \< 0:
+                if newPitch < 0:
                     raise ValueError
             except ValueError:
                 print("Modulated note below 0, expect silence")
@@ -117,8 +116,6 @@ def modPitch(toMod, ModNumber):
             modded.append(newtup)
         temp[1] = modded
         return temp
-
-
 def modTempo(toMod, ModNumber):
     modded = []
     if type(toMod[0]) is tuple:
@@ -128,14 +125,13 @@ def modTempo(toMod, ModNumber):
             modded.append(newtup)
         return modded
     else:
-        temp = copy.deepcopy(toMod)
+        temp = toMod
         for tup in toMod[1]:
             newTempo = tup[1] * ModNumber
             newtup = (tup[0], newTempo,tup[2],tup[3])
             modded.append(newtup)
         temp[1] = modded
         return temp
-
 def extendseq(original, toextend):
     modded = []
     if len(original) == 0:
@@ -152,13 +148,11 @@ def extendseq(original, toextend):
             modded.append(newtup)
         return modded
 
-def appendseq(original, toappend):
-    offsetTime = duration(original)
-    for tup in toappend:
-        newTime = tup[3] + offsetTime
-        newtup = (tup[0],tup[1],tup[2],newTime)
-        original.append(newtup)
-    return original
+def createseq(seq):
+    newseq = []
+    for s in seq:
+        newseq = extendseq(newseq, s)
+    return newseq
 
 def setinstrument(seq,nome):
     if len(seq)==0:
@@ -182,89 +176,9 @@ def preploop(perf):
     perf[2] = ceil(repeats)
     return perf
 
-def offsetstart(perf, offset):
-    originaltime = perf[0][0]
-    perf[0] = offset
-    for i in range(0,len(perf[0])):
-        perf[0][i] += originaltime
-    return perf
-
->>
-
-exportfile(name) ::= <<
-with open("<name>", 'wb') as file:
-    midi.writeFile(file) #Writting the file
-    print("MIDI File Written")
->>
+addnotes(toadd6)
 
 
-vardec(indentation, varname, value) ::= <<
-<indentation><varname> = <value>
->>
-
-range(indentation, varname, first, last) ::= <<
-<indentation><varname> = range(<first>, <last>+1)
->>
-
-append(indentation, varname, toappend) ::= <<
-<indentation><varname>.append(<toappend>)
->>
-
-u_addnotes(indentation, varname) ::= <<
-<indentation>addnotes(<varname>)
->>
-
-u_getint(indentation, varname, str) ::= <<
-<indentation><varname> = getInt(<str>)
->>
-
-u_duration(indentation, varname, performance) ::= <<
-<indentation><varname> = duration(<performance>)
->>
-
-u_extendseq(indentation, varname, original, toextend) ::= <<
-<indentation><varname> = extendseq(<original>, <toextend>)
->>
-u_appendseq(indentation, varname, original, toappend) ::= <<
-<indentation><varname> = appendseq(<original>, <toappend>)
->>
-
-u_modPitch(indentation, varname, performance, modnumber) ::= <<
-<indentation><varname> = modPitch(<performance>, <modnumber>)
->>
-
-u_modTempo(indentation, varname, performance, modnumber) ::= <<
-<indentation><varname> = modTempo(<performance>, <modnumber>)
->>
-
-u_setinstrument(indentation, varname, seq, instrument) ::= <<
-<indentation><varname> = setinstrument(<seq>, <instrument>)
->>
-
-u_prepplay(indentation, varname) ::= <<
-<indentation><varname> = prepplay(<varname>)
->>
-
-u_preploop(indentation, varname) ::= <<
-<indentation><varname> = preploop(<varname>)
->>
-
-u_offsetstart(indentation, varname, performance, offset) ::= <<
-<indentation><varname> = offsetstart(<performance>, <offset>)
->>
-
-forloop(indentation, instance, array) ::= <<
-<indentation>for <instance> in <array>:
->>
-
-if(indentation, condition) ::= <<
-<indentation>if <condition>:
->>
-
-elif(indentation, condition) ::= <<
-<indentation>elif <condition>:
->>
-
-else(indentation, code) ::= <<
-<indentation>else:
->>
+with open("test.mid", 'wb') as file: #writting binary file
+	midi.writeFile(file)
+	print("written")   
