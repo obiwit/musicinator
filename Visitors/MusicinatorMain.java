@@ -10,37 +10,54 @@ public class MusicinatorMain {
         // looking for files
         int size = args.length;
         String muxName = null, auxName = null;
-        for(int i = 0; i < size; i++){
-            if(args[i].contains(".mux")){
+        Music m;
+        for (int i = 0; i < size; i++) {
+            if (args[i].contains(".mux")) {
                 muxName = args[i];
             }
-            if(args[i].contains("-d") || args[i].contains("--debug")){
+            if (args[i].contains("-d") || args[i].contains("--debug")) {
                 debugflag = true;
             }
-            if(args[i].contains(".aux")){
+            if (args[i].contains(".aux")) {
                 auxName = args[i];
             }
         }
 
-        if(muxName == null){
+        if (muxName == null) {
             errors.error("ERROR! Usage: java MusicinatorMain <main file> [aux file] [-d | --debug] ");
             System.exit(1);
         }
-        if(auxName == null){
-            Music m = new Music();
-        }
+        if (auxName == null) {
+            m = new Music();
+        } else {
+            InputStream aux_in = null;
 
-
-        // get input streams for aux and main files
-        InputStream aux_in = null, main_in = null;
-        if(auxName != null){
             try {
                 aux_in = new FileInputStream(new File(auxName));
             } catch (FileNotFoundException e) {
                 errors.error("ERROR: reading aux file!");
                 System.exit(1);
             }
+
+            // create a parser from the aux file
+            CharStream aux_input = CharStreams.fromStream(aux_in);
+            AuxinatorLexer aux_lexer = new AuxinatorLexer(aux_input);
+            CommonTokenStream aux_tokens = new CommonTokenStream(aux_lexer);
+            AuxinatorParser aux_parser = new AuxinatorParser(aux_tokens);
+
+            ParseTree aux_tree = aux_parser.main();
+            if (aux_parser.getNumberOfSyntaxErrors() == 0) {
+                AuxVisitor aux = new AuxVisitor();
+                aux.visit(aux_tree);
+                m = aux.music;
+            } else {
+                errors.error("Aborting... Syntax errors in " + auxName);
+                System.exit(1);
+            }
         }
+
+        // get input streams for aux and main files
+        InputStream main_in = null;
         try {
             main_in = new FileInputStream(new File(muxName));
         } catch (FileNotFoundException e) {
@@ -50,13 +67,6 @@ public class MusicinatorMain {
 
         // generate output filename
         String filename = muxName.split("\\.")[0];
-        
-
-        // create a parser from the aux file
-        CharStream aux_input = CharStreams.fromStream(aux_in);
-        AuxinatorLexer aux_lexer = new AuxinatorLexer(aux_input);
-        CommonTokenStream aux_tokens = new CommonTokenStream(aux_lexer);
-        AuxinatorParser aux_parser = new AuxinatorParser(aux_tokens);
 
         // create a parser from the main file
         CharStream main_input = CharStreams.fromStream(main_in);
@@ -75,11 +85,8 @@ public class MusicinatorMain {
             aux.visit(aux_tree);
 
             // visit main file's tree;
-            if(auxName != null){
-                SemanticAnalysis semanticVisitor = new SemanticAnalysis(aux.music);
-            }else{
-                SemanticAnalysis semanticVisitor = new SemanticAnalysis(m);
-            }
+
+            SemanticAnalysis semanticVisitor = new SemanticAnalysis(m);
             semanticVisitor.visit(main_tree);
 
             // check there were no semantic errors
@@ -88,11 +95,8 @@ public class MusicinatorMain {
             }
 
             // start compilation
-            if(auxName != null){
-                Compiler compilerVisitor = new Compiler(aux.music, semanticVisitor.globalScope, filename);
-            }else{
-                Compiler compilerVisitor = new Compiler(m, semanticVisitor.globalScope, filename);
-            }
+
+            Compiler compilerVisitor = new Compiler(m, semanticVisitor.globalScope, filename, debugflag);
             compilerVisitor.visit(main_tree);
         }
     }
