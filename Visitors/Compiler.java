@@ -52,7 +52,7 @@ System.out.println("Started Compilation (๑˃̵ᴗ˂̵)و");
 		// add global definitions
 		ST gen = group.getInstanceOf("createmidi");
 		gen.add("varbpm", music.bpm());				//Initializing Midi
-		gen.add("vartrack", "65534");
+		gen.add("vartrack", "10");
 		printer.println(gen.render()+"\n");
 
 		// add all instruments as arrays 
@@ -785,7 +785,7 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		ST gen = group.getInstanceOf("u_getint");
 		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
-		gen.add("str", ctx.STRING().getText());
+		gen.add("str", (ctx.STRING() == null)? "" : ctx.STRING().getText());
 
 		printer.println(gen.render());
 
