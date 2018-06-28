@@ -6,10 +6,7 @@ sequence s4 = [G#4G#4G4G4G#4G#4D#5D#5];
 sequence s5 = [G#4G#4G4G4G#4G#4C5C5];
 sequence s6 = [G#4G#4G4G4G#4G#4A#4A#4];
 sequence s7 = [G4G4F4F4G4G4C5C5];
-sequence s8 = [G4G4F4F4G4G4G#4G#4G#4G#4G4G4G#4G#4F5F5G#4G#4G4G4G#4G#4F5F5G#4G#4G#4G#4G#4];
-
-
-//play s1*10 on synth 4 times;
+sequence s8 = [G4G4F4F4G4G4G#4G#4G#4G#4G4G4G#4G#4F5F5G#4G#4G4G4G#4G#4F5F5G#4G#4G#4G#4G#4G#4G#4G#4G#4G#4G#4G#4G#4G#4G#4G#4];
 
 play s1 on synth 4 times;
 at 4*|s1| play s2 on synth 2 times;
@@ -57,11 +54,12 @@ number tl3 = tl2 + |pl2|;
 sequence pl3 = [D#3D#3F3F3F3F3F3F3F3F3F3F3F3F3F3F3F3F3];
 at tl3 play pl3 on synth;
 number tl4 = tl3 + |pl3|;
-sequence pl4 = [C4C4C4C4C4];
+sequence pl4 = [C4C4C4C4C4C4C4C4C4C4C4C4C4C4C4C4];
 at tl4 play pl4 on synth;
 
-//tiko
-performance p1 = [F2RRF2F2RRRF2RRF2F2RRR] on tiko;
+//synth de C2-G#2 -> tiko
+
+performance p1 = [beat RR beat beat RRR beat RR beat beat RRR] on synth;
 performance p2 = p1 + 3;
 performance p3 = p1 - 5;
 performance p4 = p1 - 4;
