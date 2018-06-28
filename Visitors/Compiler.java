@@ -680,13 +680,65 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 
 		String varName = "_" + varNum++; // descartable variable
 
+		Variable seq = visit(ctx.expr());
+		Variable inst = visit(ctx.variable());
+
+		if (seq.type() == Type.SEQUENCE && inst.type() == Type.INSTRUMENT) {			
+			
+			createPerformance(varName, seq.name(), inst.name());
+			return new Variable(varName, Type.PERFORMANCE);
+
+		} else { // performance array
+
+			// create new performance array
+			ST gen = group.getInstanceOf("vardec");
+			gen.add("indentation", currentIndentation);
+			gen.add("varname", varName);
+			gen.add("value", "[]");
+			printer.println(gen.render());
+
+			String instanceName = "_" + varNum++; // descartable variable
+			// generate for loop
+			gen = group.getInstanceOf("forloop");
+			gen.add("indentation", currentIndentation);
+			gen.add("instance", instanceName);
+			if (seq.type() == Type.SEQUENCE_ARRAY) {
+				gen.add("array", seq.name());
+			} else {
+				gen.add("array", inst.name());
+			}
+			printer.println(gen.render());
+			currentIndentation += "\t";
+
+			// generate loop play for each performance in array
+			if (seq.type() == Type.SEQUENCE_ARRAY) {
+				createPerformance(instanceName, instanceName, inst.name());
+			} else {
+				createPerformance(instanceName, seq.name(), instanceName);
+			}
+
+			// append new performances to array
+			gen = group.getInstanceOf("append");
+			gen.add("indentation", currentIndentation);
+			gen.add("varname", varName);
+			gen.add("toappend", instanceName);
+			printer.println(gen.render());
+
+			// end generated for loop
+			currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
+			return new Variable(varName, Type.PERFORMANCE_ARRAY);
+		}
+
+	} 
+	private void createPerformance(String varName, String seqName, String instName) {
+
 		// get sequence and tie it to an instrument
 		ST gen = group.getInstanceOf("u_setinstrument");
 		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
-		String sequence = visit(ctx.expr()).name();
+		String sequence = seqName;
 		gen.add("seq", sequence);
-		gen.add("instrument", ctx.variable().getText());
+		gen.add("instrument", instName);
 		printer.println(gen.render());
 
 		// create performance, with 'flag' values for start & repeat times
@@ -695,9 +747,6 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		gen.add("varname", varName);
 		gen.add("value", "[[-1], "+varName+", -1]");
 		printer.println(gen.render());
-
-		return new Variable(varName, Type.PERFORMANCE);
-
 	}
 
 	// NUMBER

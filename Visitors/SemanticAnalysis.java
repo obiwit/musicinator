@@ -279,15 +279,26 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		Type seqType = visit(ctx.expr());
 		Type instType = visit(ctx.variable());
 
-		if (seqType != Type.SEQUENCE) 
-			errors.error("Variable \"" + ctx.expr().getText() 
-						 + "\" is not a sequence!", ctx);
-		
-		if (instType != Type.INSTRUMENT)
-			errors.error("Variable \"" + ctx.variable().getText() 
+		if (seqType == Type.SEQUENCE) {
+			if (instType == Type.INSTRUMENT) {
+				return Type.PERFORMANCE;
+			} else if (instType == Type.INSTRUMENT_ARRAY) {
+				return Type.PERFORMANCE_ARRAY;
+			}
+			
+		} else if (seqType == Type.SEQUENCE_ARRAY) {
+			if (instType != Type.INSTRUMENT) {
+				errors.error("Variable \"" + ctx.variable().getText() 
 						 + "\" is not an instrument!", ctx);
-		
-		return Type.PERFORMANCE;
+			}
+			return Type.PERFORMANCE_ARRAY;
+		}
+
+		errors.error("Variable \"" + ctx.expr().getText() 
+						 + "\" is not a sequence nor a sequence array!", ctx);
+
+		// after flagging error, pass valid type to detect further errors
+		return Type.PERFORMANCE; 
 
 	}
 

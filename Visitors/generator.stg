@@ -47,8 +47,6 @@ def addnotes(notes):
                     pass
                 
                 midi.addNote(currtrack,0,note,toInsert,noteDur,100)
-                
-
                 print("Added note {}, with instument {} with a duration of {} on time {}, on channel {}".format(note, instrument, noteDur, (toInsert*(85/bpm)), currtrack))
         currtrack += 1
 
@@ -192,6 +190,10 @@ range(indentation, varname, first, last) ::= <<
 <indentation><varname> = range(<first>, <last>+1)
 >>
 
+append(indentation, varname, toappend) ::= <<
+<indentation><varname>.append(<toappend>)
+>>
+
 u_addnotes(indentation, varname) ::= <<
 <indentation>addnotes(<varname>)
 >>
@@ -237,10 +239,6 @@ u_offsetstart(indentation, varname, performance, offset) ::= <<
 
 forloop(indentation, instance, array) ::= <<
 <indentation>for <instance> in <array>:
->>
-
-fornumbers(indentation, first, last) ::= <<
-<indentation>for i in range(<first>, <last>+1):
 >>
 
 if(indentation, condition) ::= <<
