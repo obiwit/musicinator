@@ -316,7 +316,7 @@ at otherTimeChorusStarts play chorus;
 \end{lstlisting}
 
 \subsubsection{Repetição}
-Há duas palavras chaves que permitem a repetição: o uso da palavra chave \texttt{times} permite repetir uma performance 0 ou mais vezes. \texttt{loop} permite repetir uma performance até ao fim da peça (determinado pelo término da sequência que acabe mais tarde).
+Há duas palavras chaves que permitem a repetição: o uso da palavra chave \texttt{times} permite repetir uma performance 0 ou mais vezes. \texttt{loop} permite repetir uma performance até ao fim da duração atual da peça (determinada pelo fim mais tardio de qualquer outra sequência até aí adicionada).
 \begin{lstlisting} 
 performance verse = [CC E{2} GG B{2} C5C5 GG C{4}] on violin;
 performance chorus = [GAGA ABBA GEGE EBBE] on violin;
@@ -787,6 +787,99 @@ play waltz - 24 on bass;
 
 loop [G0 B0 D1] on strings; // simple bassline
 \end{lstlisting}
+
+\clearpage
+\subsection{Alexandre Desplat - Courtyard Apocalypse}
+\begin{lstlisting}[caption=court.aux]
+BPM = 240;
+
+instrument taiko : 117;
+
+instrument synth : piano;
+instrument synth : C2-G#2 -> taiko;
+
+beat = F2;
+\end{lstlisting}
+\begin{lstlisting}[caption=court.mux]
+//synth parte 1
+sequence s1 = [C4C4A#3A#3C4C4F4F4];
+sequence s2 = [D#4D#4D4D4D#4D#4G4G4];
+sequence s3 = [F4F4D#4D#4F4F4];
+sequence s4 = [G#4G#4G4G4G#4G#4D#5D#5];
+sequence s5 = [G#4G#4G4G4G#4G#4C5C5];
+sequence s6 = [G#4G#4G4G4G#4G#4A#4A#4];
+sequence s7 = [G4G4F4F4G4G4C5C5];
+sequence s8 = [G4G4F4F4G4G4G#4G#4G#4G#4G4G4G#4G#4F5F5G#4G#4G4G4G#4G#4F5F5G#4G#4G#4G#4G#4G#4G#4G#4G#4G#4G#4G#4G#4G#4G#4G#4];
+
+play s1 on synth 4 times;
+at 4*|s1| play s2 on synth 2 times;
+at 4*|s1| + 2*|s2| play s3 on synth;
+
+number t1 = 4*|s1| + 2*|s2| + |s3|;
+at t1 play [A#4A#4] on synth;
+
+performance ps1 = [A#4A#4] on synth;
+
+number t2 = t1 + |ps1|;
+at t2 play s3 on synth;
+
+number t3 = t2 + |s3|;
+at t3 play [G4G4] on synth;
+
+
+performance ps2 = [G4G4] on synth;
+
+number t4 = t3 +|ps2|;
+at t4 play s5 on synth 2 times;
+number t5 = t4 + 2*|s5|;
+at t5 play s4 on synth;
+number t6 = t5 + |s4|;
+at t6 play s6 on synth;
+number t7 = t6 + |s6|;
+at t7 play s7 on synth;
+number t8 = t7 + |s7|;
+at t8 play s8 on synth;
+
+
+//synth parte 2
+
+number tl1 = 62;
+sequence pl1 = [G3G3G#3G#3G#3G#3G#3G#3G#3G#3G#3G#3G#3G#3G#3G#3];
+at tl1 play pl1 on synth 2 times;
+number tl2 = tl1 + 2*|pl1|;
+sequence pl2 = [A#3A#3G3G3G3G3G3G3G3G3G3G3G3G3G3G3];
+at tl2 play pl2 on synth;
+number tl3 = tl2 + |pl2|;
+sequence pl3 = [D#3D#3F3F3F3F3F3F3F3F3F3F3F3F3F3F3F3F3];
+at tl3 play pl3 on synth;
+number tl4 = tl3 + |pl3|;
+sequence pl4 = [C4C4C4C4C4C4C4C4C4C4C4C4C4C4C4C4];
+at tl4 play pl4 on synth;
+
+//synth de C2-G#2 -> taiko
+
+performance p1 = [beat RR beat beat RRR beat RR beat beat RRR] on synth;
+performance p2 = p1 + 3;
+performance p3 = p1 - 5;
+performance p4 = p1 - 4;
+number n1 = |p1|;
+number n2 = n1 + |p2|;
+number n3 = n2 + |p3|;
+number n4 = n3 + |p4|;
+number n5 = n4 + |p1|;
+number n6 = n5 + |p2|;
+number n7 = n6 + |p3|;
+
+play p1;
+at n1 play p2;
+at n2 play p3;
+at n3 play p4;
+at n4 play p1;
+at n5 play p2;
+at n6 play p3;
+at n7 play p1;
+\end{lstlisting}
+
 
 \subsection{Mais exemplos}
 No repositório do projeto, podem ser encontrados mais exemplos, na pasta \texttt{Visitor/examples/}.
