@@ -191,13 +191,14 @@ def offsetstart(perf, offset):
         perf[0][i] += originaltime
     return perf
 
+def exportfile(name):
+    with open(name, 'wb') as file:
+        midi.writeFile(file) #Writting the file
+        print("MIDI File Written")
 >>
 
 exportfile(name) ::= <<
-def exportfile():
-    with open("<name>", 'wb') as file:
-        midi.writeFile(file) #Writting the file
-        print("MIDI File Written")
+exportfile("<name>")
 >>
 
 

@@ -4,7 +4,7 @@ import sys
 import copy
 
 bpm = 320
-midi = MIDIFile(numTracks=65534, file_format=1)
+midi = MIDIFile(numTracks=10, file_format=1)
 midi.addTempo(0,0,bpm)
 currchannel = 0
 longest = 0
@@ -194,6 +194,10 @@ def offsetstart(perf, offset):
         perf[0][i] += originaltime
     return perf
 
+def exportfile(name):
+    with open(name, 'wb') as file:
+        midi.writeFile(file) #Writting the file
+        print("MIDI File Written")
 
 ############################ LINE = 3
 _0 = []
@@ -477,7 +481,7 @@ waltz = _0
 ############################ LINE = 49
 _141 = 12
 _140 = modPitch(waltz, _141)
-_139 = setinstrument(_140, strings)
+_139 = setinstrument(_140, violin)
 _139 = [[-1], _139, -1]
 _142 = 0
 _143 = _139
@@ -487,7 +491,7 @@ _143 = prepplay(_143)
 _144 = 2
 _148 = 12
 _147 = modPitch(waltz, _148)
-_146 = setinstrument(_147, strings)
+_146 = setinstrument(_147, violin)
 _146 = [[-1], _146, -1]
 _149 = 0
 _150 = _146
@@ -531,20 +535,17 @@ _163 = prepplay(_163)
 addnotes(_163)
 ############################ LINE = 53
 _165 = []
-_166 = [(43,1.0,-1,-1)]
+_166 = [(19,1.0,-1,-1)]
 _165 = extendseq(_165, _166)
-_167 = [(45,1.0,-1,-1)]
+_167 = [(21,1.0,-1,-1)]
 _165 = extendseq(_165, _167)
-_168 = [(50,1.0,-1,-1)]
+_168 = [(26,1.0,-1,-1)]
 _165 = extendseq(_165, _168)
-_164 = setinstrument(_165, orchestra)
+_164 = setinstrument(_165, strings)
 _164 = [[-1], _164, -1]
 _169 = _164
 _169[0] = [0]
 _169 = preploop(_169)
 addnotes(_169)
 
-def exportfile():
-    with open("out.mid", 'wb') as file:
-        midi.writeFile(file) #Writting the file
-        print("MIDI File Written")
+exportfile("out.mid")

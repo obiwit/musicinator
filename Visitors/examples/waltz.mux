@@ -46,8 +46,8 @@ sequence waltz = [
 	G{4}
 ];
 
-at 2 play waltz + 12 on strings;
+at 2 play waltz + 12 on violin;
 at 1 play waltz on piano;
 play waltz - 24 on bass;
 
-loop [G2 A2 D3] on orchestra;
+loop [G0 A0 D1] on strings;
