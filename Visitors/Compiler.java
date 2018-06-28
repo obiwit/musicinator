@@ -21,7 +21,6 @@ public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
 
 	private final STGroup group;
 	private PrintWriter printer;
-	//private ErrorHandler errors;
 
 	private int varNum;
 	private String currentIndentation;
@@ -37,7 +36,6 @@ public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
 		group = new STGroupFile("generator.stg");
 
 		try {
-			//errors = new ErrorHandler("logfile.txt");
 			printer = new PrintWriter(new FileOutputStream(new File(dstFile))); 
 		} catch (IOException e) {
 			System.err.println("Couldn't write to \"" + dstFile + "\"!");
@@ -54,7 +52,7 @@ System.out.println("Started Compilation (๑˃̵ᴗ˂̵)و");
 		// add global definitions
 		ST gen = group.getInstanceOf("createmidi");
 		gen.add("varbpm", music.bpm());				//Initializing Midi
-		gen.add("vartrack", 1000);
+		gen.add("vartrack", "65534");
 		printer.println(gen.render()+"\n");
 
 		// add all instruments as arrays 
@@ -574,14 +572,25 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
 
+		// generate array in python, taking care to use the correct notation depending
+		// on expr being a simple type or an array
 		Variable v = visit(ctx.expr(0));
-		gen.add("value", "[" + v.name());
+		if (Type.isSimpleType(v.type())) {
+			gen.add("value", "[" + v.name()+"]");
+		} else {
+			gen.add("value", " + " + v.name());
+		}
 
 		int exprsNum = ctx.expr().size();
 		for (int i = 1; i < exprsNum; i++) {
-			gen.add("value", "," + visit(ctx.expr(i)).name());
+			v = visit(ctx.expr(i));
+
+			if (Type.isSimpleType(v.type())) {
+				gen.add("value", " + [" + v.name()+"]");
+			} else {
+				gen.add("value", " + " + v.name());
+			}
 		}
-		gen.add("value", "]");
 		printer.println(gen.render());
 
 		return new Variable(varName, Type.toArrayType(v.type()));
@@ -753,13 +762,36 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 		String varName = ctx.WORD().getText();
 
 	 	if (currentScope.isVariable(varName)) {
-	 		// if variable is entry of array, return it as a simple type
+
+	 		// check if variable is an indexing of an array
 			if (ctx.getText().contains("[")) {
-				return new Variable(ctx.getText(),
-					Type.toSimpleType(currentScope.getVariable(varName).type()));
+
+				if (ctx.COLON() == null) {
+					// if variable is entry of array (without colon),
+					// return it as a simple type
+					return new Variable(ctx.getText(),
+						Type.toSimpleType(currentScope.getVariable(varName).type()));
+				} else {
+
+					// create array slice
+					varName = "_" + varNum++;
+
+					ST gen = group.getInstanceOf("vardec");
+					gen.add("indentation", currentIndentation);
+					gen.add("varname", varName);
+					gen.add("value", ctx.getText());
+					printer.println(gen.render());
+
+					return new Variable(varName, 
+						currentScope.getVariable(ctx.WORD().getText()).type());
+				}
 			}
+
+			// otherwise, it's a variable
 			return currentScope.getVariable(ctx.WORD().getText());
+
 	 	} else if (music.isNoteName(varName)) {
+
 	 		// generate sequence from note name
 	 		varName = "_" + varNum++;
 	 		double varDuration = 1;

@@ -1,4 +1,4 @@
-
+/*
 sequence row_your_boat = [ 	D D D E' F#' 
 			   				F# E' F#' G' A{2} 
 			   				D{0.33}D{0.33}D{0.33}A{0.33}A{0.33}A{0.33} 
@@ -28,7 +28,8 @@ for sequence s in sequences {
 }
 play p_boat;
 at |p_boat| + 5 play pombinhas_inicio on piano;
-/*
+*/
+
 sequence s0 = [];
 play s0 on piano;
 
@@ -40,8 +41,11 @@ sequence[] s_a = [s1, s2, s3];
 
 sequence ss = [ s1 s1 ];
 
+sequence[] sss = ss and s_a;
+sss = sss[1:];
+
 play ss on piano;
-*/
+
 /*
 sequence pink = [Eb6{.33} E6 Gb6{.33} G6 Eb6{.33} E6 Gb6{.33} G6 C7{.33} B6 E6{.33} G6 B6{.33} Bb6{3} A6{.6} G6{.6} E6{.6} D6{.6} E6{3} 
 		Eb6{.33} E6 Gb6{.33} G6 Eb6{.33} E6 Gb6{.33} G6 C7{.33} B6 G6{.33} B6 E7{.33} Eb7{4}

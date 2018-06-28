@@ -2,5 +2,5 @@ lexer grammar AuxinatorLexer;
 
 import MusicinatorLexer;
 
-BPM: 'BPM';
+BPM: 'BPM'|'bpm';
 NOTE: LETTER ('#'|'b')* OCTAVE?;

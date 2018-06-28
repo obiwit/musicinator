@@ -22,7 +22,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		globalScope = new Scope();
 		currentScope = globalScope;
 		try {
-			errors = new ErrorHandler("sematicLog.txt");
+			errors = new ErrorHandler("log.txt");
 		} catch (IOException e) {
 			System.err.println("Could not create log file!");
 		}
@@ -161,10 +161,6 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 		return visit(ctx.variable()); 
 	}
 	
-	// @Override public Type visitPerExpr(MusicinatorParser.PerExprContext ctx) { 
-	// 	return visit(ctx.performance()); 
-	// }
-	
 	@Override public Type visitSeqExpr(MusicinatorParser.SeqExprContext ctx) { 
 		return visit(ctx.sequence()); 
 	}
@@ -226,7 +222,7 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 
 		return Type.toArrayType(firstType); 
 	}
-	// TODO!! Fix awful repetition
+
 	@Override public Type visitAndArray(MusicinatorParser.AndArrayContext ctx) { 
 		// get and check Type of array
 		Type arrayType = Type.toSimpleType(visit(ctx.expr(0)));
@@ -339,15 +335,19 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 			if (Type.isSimpleType(varType)) {
 				errors.error("Variable \"" + varName + "\" is not an array!", ctx);
 			}
-			if (visit(ctx.expr()) != Type.NUMBER) {
-				errors.error("Array index must be a number and variable \"" 
-					  + ctx.expr().getText() + "\" is not a number!", ctx);
+
+			int indexNum = ctx.expr().size();
+			for (int i = 0; i < indexNum; i++) {
+				if (visit(ctx.expr(i)) != Type.NUMBER) {
+					errors.error("Array index must be a number and variable \"" 
+						  + ctx.expr(i).getText() + "\" is not a number!", ctx);
+				}
 			}
-
-			return Type.toSimpleType(varType); 
+			// if indexing array without colon, then variable is no longer an array
+			if (ctx.COLON() == null) {
+				return Type.toSimpleType(varType); 
+			} 
 		}
-
-		//System.out.println("["+ctx.start.getLine()+"] Read variable \""+varName+"\" of type "+ varType);
 
 		return varType; 
 	}
