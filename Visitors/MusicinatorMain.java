@@ -10,12 +10,13 @@ public class MusicinatorMain {
         // looking for files
         int size = args.length;
         String muxName = null, auxName = null;
-        Music m = new Music();
-        for (int i = 0; i < size; i++) {
-            if(size == 1 && args[i].contains("-h")){
-                System.out.println("Usage: java MusicinatorMain <main file> [aux file] [-d | --debug] ");
-                System.exit(1);
-            }           
+        Music m = new Music(); 
+ 
+        if(size == 0 || (size == 1 && args[0].contains("-h"))){
+            System.out.println("Usage: java MusicinatorMain <main file> [aux file] [-d | --debug] ");
+            System.exit(1);
+        }        
+	for (int i = 0; i < size; i++) {   
             if (args[i].contains(".mux")) {
                 muxName = args[i];
             }
