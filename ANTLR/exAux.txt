@@ -1,8 +1,0 @@
-BPM = 190;
-
-instrument p : piano;
-
-tamborBarulhento = B2;
-
-instrument bpoe: B0 -> drums,
-			A0-B2 -> piano;
