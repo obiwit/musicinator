@@ -1,8 +1,9 @@
+
 //Parte 1
 
 sequence intro1 = [B4{0.25} E5{0.25} G5{0.25} B5{0.25} C6{0.25} B5{0.25} G5{0.25} E5{0.25}];	// VIBROFONE
 sequence intro2 = [R{0.25} B4{0.25} B4{0.25} B4{0.25} B4|C5{0.25} B4{0.25} B4{0.25}];			// SYNTH
-sequence intro3 = [R' G4{0.25} R{0.25}];														// SYNTH
+sequence intro3 = [R{0.5} G4{0.25} R{0.25}];														// SYNTH
 sequence intro4 = [E4{0.25}];																	// SYNTH
 
 play intro1 on vibrofone 4 times;
@@ -49,7 +50,7 @@ at t6 play ticker1 on slapBass 6 times;
 at t6 play ticker10 on synth 12 times;
 
 number t7 = t6 + 12*|ticker10|;
-sequence ticker4 = [D3''R'' D3''R'' R'C3''R'' C3''R''C3''R'' R'B2''R''];
+sequence ticker4 = [D3''R'' D3''R'' R{0.5}C3''R'' C3''R''C3''R'' R{0.5}B2''R''];
 sequence ticker5 = [D3''R'' D3''R'' C3''R''C3''R''C3''R''C3''R'' B2''R''B2''R''];
 at t7 play ticker4 on slapBass;
 at t7 play ticker5 on synth;
