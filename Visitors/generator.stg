@@ -11,7 +11,7 @@ midi = MIDIFile(numTracks=<vartrack>, file_format=1)
 midi.addTempo(0,0,bpm)
 currchannel = 0
 longest = 0
-ch_inst[]
+ch_inst = []
 >>
 
 body() ::= <<
@@ -31,7 +31,7 @@ def addnotes(notes):
                     noteDur = notes[1][i][1] #duration of the note
                     toInsert = notes[1][i][3] + initialTime
                     instrument = instrument = notes[1][i][2]
-                    if note < 0:
+                    if note \< 0:
                         continue
                 except:
                     pass
@@ -60,9 +60,11 @@ def checkChannel(instrument):
                 raise ValueError
         except ValueError:
             print("MIDI does not Support over 16 instruments/channels")
+            print("Dumping and quitting")
+            exportfile()
+            sys.exit(-1)
         ch_inst.append(instrument)
         return ch_inst.index(instrument)
-
 
 
 
@@ -192,9 +194,10 @@ def offsetstart(perf, offset):
 >>
 
 exportfile(name) ::= <<
-with open("<name>", 'wb') as file:
-    midi.writeFile(file) #Writting the file
-    print("MIDI File Written")
+def exportfile():
+    with open("<name>", 'wb') as file:
+        midi.writeFile(file) #Writting the file
+        print("MIDI File Written")
 >>
 
 
