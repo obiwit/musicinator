@@ -12,6 +12,10 @@ public class MusicinatorMain {
         String muxName = null, auxName = null;
         Music m = new Music();
         for (int i = 0; i < size; i++) {
+            if(size == 1 && args[i].contains("-h")){
+                System.out.println("Usage: java MusicinatorMain <main file> [aux file] [-d | --debug] ");
+                System.exit(1);
+            }           
             if (args[i].contains(".mux")) {
                 muxName = args[i];
             }
@@ -21,10 +25,11 @@ public class MusicinatorMain {
             if (args[i].contains(".aux")) {
                 auxName = args[i];
             }
+            
         }
 
         if (muxName == null) {
-            errors.error("ERROR! Usage: java MusicinatorMain <main file> [aux file] [-d | --debug] ");
+            errors.error("Usage: java MusicinatorMain <main file> [aux file] [-d | --debug] ");
             System.exit(1);
         }
         if (auxName != null) {
