@@ -11,8 +11,8 @@ sequence[] melody_lines = [
 // perform
 number offset = 0;
 for number n in 1->repeat_times {
+	at offset play melody_lines + 12*(n-1) on piano sequentially;
 	for sequence melody in melody_lines {
-		at offset play melody + 12*(n-1) on piano;
 		offset = offset + |melody|;
 	}
 }

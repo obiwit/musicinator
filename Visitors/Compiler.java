@@ -22,13 +22,19 @@ public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
 	private final STGroup group;
 	private PrintWriter printer;
 
+	private String dstFileName;
+	private boolean debugFlag;
+
 	private int varNum;
 	private String currentIndentation;
 
-	Compiler(Music m, Scope s, String dstFile) {
+	Compiler(Music m, Scope s, String dstFile, boolean debug) {
 		music = m;
 		globalScope = s;
 		currentScope = globalScope;
+
+		dstFileName = dstFile;
+		debugFlag = debug;
 
 		varNum = 0;
 		currentIndentation = "";
@@ -36,16 +42,18 @@ public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
 		group = new STGroupFile("generator.stg");
 
 		try {
-			printer = new PrintWriter(new FileOutputStream(new File(dstFile))); 
+			printer = new PrintWriter(new FileOutputStream(new File(dstFileName + ".py"))); 
 		} catch (IOException e) {
-			System.err.println("Couldn't write to \"" + dstFile + "\"!");
+			System.err.println("Couldn't write to \"" + dstFile + ".py\"!");
 			System.exit(1);
 		}
 	}
 
 	
 	@Override public Variable visitMain(MusicinatorParser.MainContext ctx) {
-System.out.println("Started Compilation (๑˃̵ᴗ˂̵)و"); 
+		if (debugFlag) {
+			System.out.println("Started Compilation (๑˃̵ᴗ˂̵)و"); 
+		}
 
 		printer.println(group.getInstanceOf("header").render()+"\n"); //Python imports
 
@@ -77,7 +85,7 @@ System.out.println("Started Compilation (๑˃̵ᴗ˂̵)و");
 			printer.println(gen.render());
 		}
 
-		// add methods
+		// add methods' declarations
 		printer.println("\n"+group.getInstanceOf("body").render()+"\n"); // def addnotes()
 
 		// visit children
@@ -85,7 +93,7 @@ System.out.println("Started Compilation (๑˃̵ᴗ˂̵)و");
 
 		// add instruction to export to destination file
 		gen = group.getInstanceOf("exportfile");
-		gen.add("name", "out.mid");
+		gen.add("name", dstFileName+".mid");
 		printer.println("\n"+gen.render());
 
 		printer.flush();
@@ -93,9 +101,11 @@ System.out.println("Started Compilation (๑˃̵ᴗ˂̵)و");
 
 	}
 
-	// TODO remove method
 	@Override public Variable visitInstructions(MusicinatorParser.InstructionsContext ctx) {
-printer.println(currentIndentation+"############################ LINE = "+ctx.start.getLine());	
+		if (debugFlag) {
+			printer.println(currentIndentation+"################# LINE = "+ctx.start.getLine());
+			printer.println(currentIndentation+"# original instruction =  "+ctx.getText());
+		}	
 		return visitChildren(ctx);
 	}
 	
@@ -298,6 +308,8 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 				gen.add("value", startTime+"+"+increment);
 				printer.println(gen.render());
 
+			} else {
+				generateSimplePlay(instanceName, repeatTimes, startTime);
 			}
 
 			// end generated for loop
@@ -311,7 +323,7 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 			gen.add("value", per.name());
 			printer.println(gen.render());
 
-			generateSimplePlay(instanceName, repeatTimes, "0");
+			generateSimplePlay(instanceName, repeatTimes, startTime);
 		}
 
 		if(!(ctx.getParent() instanceof MusicinatorParser.TimedPlayContext)) {
@@ -495,17 +507,47 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 
 		} else { 
 
-			// firstOperand is a performance or sequence
-			gen = group.getInstanceOf("u_modTempo");
-			gen.add("indentation", currentIndentation);
-			gen.add("varname", varName);
-			gen.add("performance", firstOperand.name());
+			if (Type.isSimpleType(firstOperand.type())) {
 
-			String modNumber = visit(ctx.e2).name();
-			if (ctx.op.getText().equals("/")) 
-				modNumber = "1/"+modNumber;
+				// firstOperand is a performance or sequence
+				gen = group.getInstanceOf("u_modTempo");
+				gen.add("indentation", currentIndentation);
+				gen.add("varname", varName);
+				gen.add("performance", firstOperand.name());
 
-			gen.add("modnumber", modNumber);
+				String modNumber = visit(ctx.e2).name();
+				if (ctx.op.getText().equals("/")) 
+					modNumber = "1/"+modNumber;
+				gen.add("modnumber", modNumber);
+
+			} else {
+				// firstOperand is a performance array or sequence array
+
+				// generate for loop
+				gen = group.getInstanceOf("forloop");
+				gen.add("indentation", currentIndentation);
+				gen.add("instance", varName);
+				gen.add("array", "range(0, len("+firstOperand.name()+"))");
+				printer.println(gen.render());
+				currentIndentation += "\t";
+
+				// generate tempo modulation for each performance or sequence in array
+				gen = group.getInstanceOf("u_modTempo");
+				gen.add("indentation", currentIndentation);
+				gen.add("varname", firstOperand.name()+"["+varName+"]");
+				gen.add("performance", firstOperand.name()+"["+varName+"]");
+
+				String modNumber = visit(ctx.e2).name();
+				if (ctx.op.getText().equals("/")) 
+					modNumber = "1/"+modNumber;
+				gen.add("modnumber", modNumber);
+
+				// end generated for loop
+				currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
+
+				// return (modded) array itself
+				varName = firstOperand.name();
+			}
 		}
 		
 		printer.println(gen.render());
@@ -527,17 +569,48 @@ printer.println(currentIndentation+"############################ LINE = "+ctx.st
 			gen.add("value", firstOperand.name()+ctx.op.getText()+visit(ctx.e2).name());
 
 		} else { 
-			
-			// firstOperand is a performance or sequence
-			gen = group.getInstanceOf("u_modPitch");
-			gen.add("indentation", currentIndentation);
-			gen.add("varname", varName);
-			gen.add("performance", firstOperand.name());
 
-			String modNumber = visit(ctx.e2).name();
-			if (ctx.op.getText().equals("-")) 
-				modNumber = "-1*"+modNumber;
-			gen.add("modnumber", modNumber);
+			if (Type.isSimpleType(firstOperand.type())) {
+
+				// firstOperand is a performance or sequence
+				gen = group.getInstanceOf("u_modPitch");
+				gen.add("indentation", currentIndentation);
+				gen.add("varname", varName);
+				gen.add("performance", firstOperand.name());
+
+				String modNumber = visit(ctx.e2).name();
+				if (ctx.op.getText().equals("-")) 
+					modNumber = "-1*"+modNumber;
+				gen.add("modnumber", modNumber);
+
+			} else {
+				// firstOperand is a performance array or sequence array
+
+				// generate for loop
+				gen = group.getInstanceOf("forloop");
+				gen.add("indentation", currentIndentation);
+				gen.add("instance", varName);
+				gen.add("array", "range(0, len("+firstOperand.name()+"))");
+				printer.println(gen.render());
+				currentIndentation += "\t";
+
+				// generate pitch modulation for each performance or sequence in array
+				gen = group.getInstanceOf("u_modPitch");
+				gen.add("indentation", currentIndentation);
+				gen.add("varname", firstOperand.name()+"["+varName+"]");
+				gen.add("performance", firstOperand.name()+"["+varName+"]");
+
+				String modNumber = visit(ctx.e2).name();
+				if (ctx.op.getText().equals("-")) 
+					modNumber = "-1*"+modNumber;
+				gen.add("modnumber", modNumber);
+
+				// end generated for loop
+				currentIndentation = currentIndentation.substring(0, currentIndentation.length() -1);
+
+				// return (modded) array itself
+				varName = firstOperand.name();
+			}
 		}
 		
 		printer.println(gen.render());

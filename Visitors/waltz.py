@@ -4,7 +4,7 @@ import sys
 import copy
 
 bpm = 320
-midi = MIDIFile(numTracks=10, file_format=1)
+midi = MIDIFile(numTracks=10, file_format=1, deinterleave=False)
 midi.addTempo(0,0,bpm)
 currchannel = 0
 longest = 0
@@ -199,7 +199,8 @@ def exportfile(name):
         midi.writeFile(file) #Writting the file
         print("MIDI File Written")
 
-############################ LINE = 3
+################# LINE = 3
+# original instruction =  sequencewaltz=[BC5D5BG{2}BC5D5BG{2}G5F5E5{2}E5{2}E5{2}E5{3}D5C5BA{2}A{2}A{2}D5{3}C5C5AGFGBAFG4D5F5G5{2}G5{2}A5{2}G5{2}G5{2}A5{2}G5{2}A5{2}B5{2}A5F5D5{2}E5F5G5F5G5D5F5D5G5F5G5D5F5D5G5{2}D5C5BAG4GBD5{2}D#5C5D5C5D5BE5D5C5BA{2}A{2}D5{2}B{2}R{2}GBD5{2}D5C#5D5C5D5BE5D5C5BA{2}AGABG4D5{2}G5{2}G5{2}B5G5D5{2}D5G5D5BG{2}GFGBB{2}A{2}D5F5G5{2}G5{2}B5G5D5{2}D5{2}G5D5BD5GBAFG{4}];
 _0 = []
 _1 = [(71,1.0,-1,-1)]
 _0 = extendseq(_0, _1)
@@ -478,14 +479,15 @@ _0 = extendseq(_0, _137)
 _138 = [(67,4.0,-1,-1)]
 _0 = extendseq(_0, _138)
 waltz = _0
-############################ LINE = 49
+################# LINE = 49
+# original instruction =  at2playwaltz+12onpiano;
 _141 = 12
 _140 = modPitch(waltz, _141)
 _139 = setinstrument(_140, piano)
 _139 = [[-1], _139, -1]
 _142 = 0
 _143 = _139
-_143[0] = [0]
+_143[0] = [_142]
 _143[2] = 1
 _143 = prepplay(_143)
 _144 = 2
@@ -495,19 +497,20 @@ _146 = setinstrument(_147, piano)
 _146 = [[-1], _146, -1]
 _149 = 0
 _150 = _146
-_150[0] = [0]
+_150[0] = [_149]
 _150[2] = 1
 _150 = prepplay(_150)
 _145 = _146
 _145 = offsetstart(_145, [_144])
 _145 = prepplay(_145)
 addnotes(_145)
-############################ LINE = 50
+################# LINE = 50
+# original instruction =  at1playwaltzonflute;
 _151 = setinstrument(waltz, flute)
 _151 = [[-1], _151, -1]
 _152 = 0
 _153 = _151
-_153[0] = [0]
+_153[0] = [_152]
 _153[2] = 1
 _153 = prepplay(_153)
 _154 = 1
@@ -515,25 +518,27 @@ _156 = setinstrument(waltz, flute)
 _156 = [[-1], _156, -1]
 _157 = 0
 _158 = _156
-_158[0] = [0]
+_158[0] = [_157]
 _158[2] = 1
 _158 = prepplay(_158)
 _155 = _156
 _155 = offsetstart(_155, [_154])
 _155 = prepplay(_155)
 addnotes(_155)
-############################ LINE = 51
+################# LINE = 51
+# original instruction =  playwaltz-24onbass;
 _161 = 24
 _160 = modPitch(waltz, -1*_161)
 _159 = setinstrument(_160, bass)
 _159 = [[-1], _159, -1]
 _162 = 0
 _163 = _159
-_163[0] = [0]
+_163[0] = [_162]
 _163[2] = 1
 _163 = prepplay(_163)
 addnotes(_163)
-############################ LINE = 53
+################# LINE = 53
+# original instruction =  loop[G0B0D1]onstrings;
 _165 = []
 _166 = [(19,1.0,-1,-1)]
 _165 = extendseq(_165, _166)
@@ -548,4 +553,4 @@ _169[0] = [0]
 _169 = preploop(_169)
 addnotes(_169)
 
-exportfile("out.mid")
+exportfile("waltz.mid")

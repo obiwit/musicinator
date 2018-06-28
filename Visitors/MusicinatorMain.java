@@ -10,7 +10,7 @@ public class MusicinatorMain {
         // looking for files
         int size = args.length;
         String muxName = null, auxName = null;
-        Music m;
+        Music m = new Music();
         for (int i = 0; i < size; i++) {
             if (args[i].contains(".mux")) {
                 muxName = args[i];
@@ -27,11 +27,9 @@ public class MusicinatorMain {
             errors.error("ERROR! Usage: java MusicinatorMain <main file> [aux file] [-d | --debug] ");
             System.exit(1);
         }
-        if (auxName == null) {
-            m = new Music();
-        } else {
+        if (auxName != null) {
+            // get input streams for aux file
             InputStream aux_in = null;
-
             try {
                 aux_in = new FileInputStream(new File(auxName));
             } catch (FileNotFoundException e) {
@@ -45,10 +43,14 @@ public class MusicinatorMain {
             CommonTokenStream aux_tokens = new CommonTokenStream(aux_lexer);
             AuxinatorParser aux_parser = new AuxinatorParser(aux_tokens);
 
+            // begin parsing at main rule
             ParseTree aux_tree = aux_parser.main();
+
             if (aux_parser.getNumberOfSyntaxErrors() == 0) {
+
                 AuxVisitor aux = new AuxVisitor();
                 aux.visit(aux_tree);
+
                 m = aux.music;
             } else {
                 errors.error("Aborting... Syntax errors in " + auxName);
@@ -56,7 +58,7 @@ public class MusicinatorMain {
             }
         }
 
-        // get input streams for aux and main files
+        // get input streams for main file
         InputStream main_in = null;
         try {
             main_in = new FileInputStream(new File(muxName));
@@ -66,7 +68,9 @@ public class MusicinatorMain {
         }
 
         // generate output filename
-        String filename = muxName.split("\\.")[0];
+        String[] path = muxName.split("\\.")[0].split("\\\\");
+        path = path[path.length-1].split("/");
+        String filename = path[path.length-1];
 
         // create a parser from the main file
         CharStream main_input = CharStreams.fromStream(main_in);
@@ -75,17 +79,11 @@ public class MusicinatorMain {
         MusicinatorParser main_parser = new MusicinatorParser(main_tokens);
 
         // begin parsing at main rule
-        ParseTree aux_tree = aux_parser.main();
         ParseTree main_tree = main_parser.main();
 
-        if (aux_parser.getNumberOfSyntaxErrors() == 0 && main_parser.getNumberOfSyntaxErrors() == 0) {
+        if (main_parser.getNumberOfSyntaxErrors() == 0) {
 
-            // Visitor
-            AuxVisitor aux = new AuxVisitor();
-            aux.visit(aux_tree);
-
-            // visit main file's tree;
-
+            // visit main file's tree
             SemanticAnalysis semanticVisitor = new SemanticAnalysis(m);
             semanticVisitor.visit(main_tree);
 
@@ -95,7 +93,6 @@ public class MusicinatorMain {
             }
 
             // start compilation
-
             Compiler compilerVisitor = new Compiler(m, semanticVisitor.globalScope, filename, debugflag);
             compilerVisitor.visit(main_tree);
         }

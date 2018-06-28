@@ -4,7 +4,7 @@ import sys
 import copy
 
 bpm = 160
-midi = MIDIFile(numTracks=10, file_format=1)
+midi = MIDIFile(numTracks=10, file_format=1, deinterleave=False)
 midi.addTempo(0,0,bpm)
 currchannel = 0
 longest = 0
@@ -264,18 +264,18 @@ melody_lines = _1
 _31 = 0
 offset = _31
 ################# LINE = 13
-# original instruction =  fornumbernin1->repeat_times{atoffsetplaymelody_lines+12*(n-1)onpiano;forsequencemelodyinmelody_lines{offset=offset+|melody|;}}
+# original instruction =  fornumbernin1->repeat_times{atoffsetplaymelody_lines+12*(n-1)onpianosequentially;forsequencemelodyinmelody_lines{offset=offset+|melody|;}}
 _33 = 1
 _32 = range(_33, repeat_times+1)
 for n in _32:
 	################# LINE = 14
-	# original instruction =  atoffsetplaymelody_lines+12*(n-1)onpiano;
-	for _35 in melody_lines:
+	# original instruction =  atoffsetplaymelody_lines+12*(n-1)onpianosequentially;
+	for _35 in range(0, len(melody_lines)):
 		_37 = 12
 		_39 = 1
 		_38 = n-_39
 		_36 = _37*_38
-		_35 = modPitch(melody_lines, _36)
+		melody_lines[_35] = modPitch(melody_lines[_35], _36)
 	_34 = []
 	for _40 in melody_lines:
 		_40 = setinstrument(_40, piano)
@@ -286,17 +286,19 @@ for n in _32:
 		_42[0] = [_41]
 		_42[2] = 1
 		_42 = prepplay(_42)
-	for _43 in _34:
-		_43 = offsetstart(_43, [offset])
-		_43 = prepplay(_43)
-		addnotes(_43)
+		_43 = duration(_42)
+		_41 = _41+_43
+	for _44 in _34:
+		_44 = offsetstart(_44, [offset])
+		_44 = prepplay(_44)
+		addnotes(_44)
 	################# LINE = 15
 	# original instruction =  forsequencemelodyinmelody_lines{offset=offset+|melody|;}
 	for melody in melody_lines:
 		################# LINE = 16
 		# original instruction =  offset=offset+|melody|;
-		_45 = duration(melody)
-		_44 = offset+_45
-		offset = _44
+		_46 = duration(melody)
+		_45 = offset+_46
+		offset = _45
 
-exportfile("examples/bday.mid")
+exportfile("bday.mid")

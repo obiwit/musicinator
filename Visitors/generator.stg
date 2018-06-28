@@ -7,7 +7,7 @@ import copy
 
 createmidi(varbpm, vartrack) ::= <<
 bpm = <varbpm>
-midi = MIDIFile(numTracks=<vartrack>, file_format=1)
+midi = MIDIFile(numTracks=<vartrack>, file_format=1, deinterleave=False)
 midi.addTempo(0,0,bpm)
 currchannel = 0
 longest = 0
@@ -125,14 +125,14 @@ def modTempo(toMod, ModNumber):
     modded = []
     if type(toMod[0]) is tuple:
         for tup in toMod:
-            newTempo = tup[1] * ModNumber
+            newTempo = tup[1] / ModNumber
             newtup = (tup[0], newTempo,tup[2],tup[3])
             modded.append(newtup)
         return modded
     else:
         temp = copy.deepcopy(toMod)
         for tup in toMod[1]:
-            newTempo = tup[1] * ModNumber
+            newTempo = tup[1] / ModNumber
             newtup = (tup[0], newTempo,tup[2],tup[3])
             modded.append(newtup)
         temp[1] = modded

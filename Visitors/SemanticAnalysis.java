@@ -176,7 +176,8 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	@Override public Type visitMulDivExpr(MusicinatorParser.MulDivExprContext ctx) { 
 		// guarantee first operand is Type.NUMBER, Type.SEQUENCE or Type.PERFORMANCE
 		Type e1Type = visit(ctx.e1);
-		if (e1Type != Type.NUMBER && e1Type != Type.SEQUENCE && e1Type != Type.PERFORMANCE)
+		if (e1Type != Type.NUMBER && e1Type != Type.SEQUENCE && e1Type != Type.PERFORMANCE
+			&& e1Type != Type.SEQUENCE_ARRAY && e1Type != Type.PERFORMANCE_ARRAY)
 			errors.error("Variable \"" + ctx.e1.getText() + "\" is not a number, sequence"
 				  +" or performance!", ctx);
 
@@ -190,7 +191,8 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 	@Override public Type visitAddSubExpr(MusicinatorParser.AddSubExprContext ctx) { 
 		// guarantee first operand is Type.NUMBER, Type.SEQUENCE or Type.PERFORMANCE
 		Type e1Type = visit(ctx.e1);
-		if (e1Type != Type.NUMBER && e1Type != Type.SEQUENCE && e1Type != Type.PERFORMANCE)
+		if (e1Type != Type.NUMBER && e1Type != Type.SEQUENCE && e1Type != Type.PERFORMANCE
+			&& e1Type != Type.SEQUENCE_ARRAY && e1Type != Type.PERFORMANCE_ARRAY)
 			errors.error("Variable \"" + ctx.e1.getText() + "\" is not a number, sequence"
 				  +" or performance!", ctx);
 
