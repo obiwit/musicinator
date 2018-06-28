@@ -53,7 +53,7 @@ sequence
 		| CHORD									#seqChord	
 		;
 
-number 	: BAR variable BAR 						#numDuration
+number 	: BAR expr BAR 							#numDuration
 		| DOUBLE 								#numDouble
 		| INT 									#numInt
 		| GETINT OPEN_PR STRING? CLOSE_PR 		#numGetInt

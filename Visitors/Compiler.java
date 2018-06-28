@@ -872,7 +872,7 @@ public class Compiler extends MusicinatorParserBaseVisitor<Variable> {
 		ST gen = group.getInstanceOf("u_duration");
 		gen.add("indentation", currentIndentation);
 		gen.add("varname", varName);
-		gen.add("performance", visit(ctx.variable()).name());
+		gen.add("performance", visit(ctx.expr()).name());
 
 		printer.println(gen.render());
 

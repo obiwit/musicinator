@@ -123,23 +123,28 @@ def modPitch(toMod, ModNumber):
 
 def modTempo(toMod, ModNumber):
     modded = []
-    offset = 0
+    newInsert = 0
+    prevOriginalInsert = -1
     if type(toMod[0]) is tuple:
         for tup in toMod:
-            newTempo = tup[1] * ModNumber
-            newInsert = tup[3] - offset
+            newTempo = tup[1] / ModNumber
+            if prevOriginalInsert == tup[3]: # for chords
+                newInsert -= newTempo
             newtup = (tup[0], newTempo,tup[2],newInsert)
+            newInsert += newTempo
+            prevOriginalInsert = tup[3]
             modded.append(newtup)
-            offset += newTempo
         return modded
     else:
         temp = copy.deepcopy(toMod)
         for tup in toMod[1]:
-            newTempo = tup[1] * ModNumber
-            newInsert = tup[3] - offset
+            newTempo = tup[1] / ModNumber
+            if prevOriginalInsert == tup[3]: # for chords
+                newInsert -= newTempo
             newtup = (tup[0], newTempo,tup[2],newInsert)
+            newInsert += newTempo
+            prevOriginalInsert = tup[3]
             modded.append(newtup)
-            offset += newTempo
         temp[1] = modded
         return temp
 

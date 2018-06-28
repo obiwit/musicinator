@@ -319,10 +319,10 @@ public class SemanticAnalysis extends MusicinatorParserBaseVisitor<Type> {
 
 	@Override public Type visitNumDuration(MusicinatorParser.NumDurationContext ctx) { 
 		// verify variable is single sequence or performance
-		Type varType = visit(ctx.variable());
+		Type varType = visit(ctx.expr());
 
 		if (varType != Type.SEQUENCE && varType != Type.PERFORMANCE) {
-			errors.error("Variable \"" + ctx.variable().getText()
+			errors.error("Variable \"" + ctx.expr().getText()
 				  + "\" is neither a sequence nor a performance!", ctx);
 		} 
 
