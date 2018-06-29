@@ -49,7 +49,16 @@ def addnotes(notes):
 
 def checkChannel(instrument):
     global ch_inst
+        
     if instrument == 119:
+        if len(ch_inst) >= 16:
+                raise ValueError
+        except ValueError:
+            print("MIDI does not Support over 16 instruments/channels")
+            print("Dumping and quitting")
+            exportfile()
+            sys.exit(-1)
+        ch_inst.append(instrument)
         return 10
 
     if len(ch_inst) == 0:
