@@ -49,6 +49,8 @@ def addnotes(notes):
 
 def checkChannel(instrument):
     global ch_inst
+    if instrument == 119:
+        return 10
 
     if len(ch_inst) == 0:
         ch_inst.append(instrument)
