@@ -342,14 +342,14 @@ sequence[] melody_lines = [
     [D{1.5} D{0.5}   D5 B G F# E],
     [C5{1.5} C5{0.5} B  G A G{3}]];
 
-play melody_lines /*sequentially*/ on piano; // descomentar sequentially para tocar melody_lines de forma sequencial
+play melody_lines on piano /*sequentially*/; // descomentar sequentially para tocar melody_lines de forma sequencial
 \end{lstlisting}
 
 \begin{lstlisting} 
 // exemplo com instrumentos
 instrument[] band = [piano, guitar, bass, drums];
 
-play melody_lines[0] /*sequentially*/ on band;
+play melody_lines[0] on band /*sequentially*/;
 \end{lstlisting}
 
 \begin{lstlisting} 
@@ -373,7 +373,7 @@ sequence[] melody_lines = [
 // definir array de instrumentos
 instrument[] band = [piano, guitar, bass, drums];
 
-play melody_lines /*sequentially*/ on band; // ilegal!!
+play melody_lines on band /*sequentially*/; // ilegal!!
 \end{lstlisting}
 Para se obter este tipo de resultados, têm que ser utilizadas instruções de repetição (ver secção \ref{flux}).
 
@@ -406,7 +406,6 @@ play p+5;
 \subsubsection{de Tempo}
 Pode mudar-se o tempo (ou seja, a velocidade) de um dada sequência ou performance através dos operadores \texttt{*} e \texttt{/}. A sequência ou performance devolvida será a sequência ou performance original com todas as suas notas aceleradas ou atrasadas \textit{n} vezes.\footnote{A nova velocidade é dada por \texttt{velocidade original * fator}, ou por \texttt{velocidade original / fator}, conforme os operadores \texttt{*} ou \texttt{/} são usados, respetivamente.}
 \begin{lstlisting} 
-// performance original
 performance p = [D{1.5} D{0.5} E D G F#{2}] on bass;
 
 play p * 5; // toca a sequencia 5x mais rapido (cada nota dura 1/5 do seu tempo original)
@@ -415,7 +414,6 @@ play p * 5; // toca a sequencia 5x mais rapido (cada nota dura 1/5 do seu tempo 
 \end{lstlisting}
 
 \begin{lstlisting} 
-// performance original
 performance p = [D{1.5} D{0.5} E D G F#{2}] on bass;
 
 play (p + 5) * 5; // toca a sequencia 5x mais rapido, com todas as notas 5 meios-tons mais agudas
@@ -592,7 +590,7 @@ BPM = 200;
 
 \begin{lstlisting}[caption=bday.mux]
 // get user input
-number repeat_times = getInt("Number of repetitions: ");
+number repeat_times = getInt("Number of repetitions and octaves to increase (max 3): ");
 
 // define melody sequences
 sequence[] melody_lines = [
