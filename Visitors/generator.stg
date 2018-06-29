@@ -58,7 +58,8 @@ def checkChannel(instrument):
             print("Dumping and quitting")
             exportfile()
             sys.exit(-1)
-        ch_inst.append(instrument)
+        if instrument not in ch_inst:
+            ch_inst.append(instrument)
         return 10
 
     if len(ch_inst) == 0:
