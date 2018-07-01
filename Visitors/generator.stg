@@ -51,7 +51,8 @@ def checkChannel(instrument):
     global ch_inst
         
     if instrument == 119:
-        if len(ch_inst) >= 16:
+        try:
+            if len(ch_inst) >= 16:
                 raise ValueError
         except ValueError:
             print("MIDI does not Support over 16 instruments/channels")
