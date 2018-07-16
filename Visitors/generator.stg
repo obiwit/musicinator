@@ -49,7 +49,7 @@ def addnotes(notes):
 
 def checkChannel(instrument):
     global ch_inst
-        
+
     if instrument == 119:
         try:
             if len(ch_inst) >= 16:
@@ -183,7 +183,7 @@ def appendseq(original, toappend):
     for tup in toappend:
         newTime = offsetTime
         if tup[3] > 0:
-            newtime += tup[3]
+            newTime += tup[3]
         newtup = (tup[0],tup[1],tup[2],newTime)
         original.append(newtup)
     return original
